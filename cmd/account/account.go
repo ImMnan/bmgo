@@ -5,8 +5,10 @@ package account
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // accountCmd represents the account command
@@ -29,4 +31,18 @@ func init() {
 
 func getAccountId(accountId int) {
 	fmt.Println("this is the account ID used:", accountId)
+}
+
+func Getapikeys() (string, string) {
+	vp := viper.New()
+	vp.SetConfigName("api-key")
+	vp.SetConfigType("json")
+	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	apiId := vp.GetString("id")
+	apiSecret := vp.GetString("secret")
+	return apiId, apiSecret
 }
