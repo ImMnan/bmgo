@@ -11,7 +11,6 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // invitationCmd represents the invitation command
@@ -31,16 +30,8 @@ func init() {
 }
 
 func invitations(accountId int) {
-	vp := viper.New()
-	vp.SetConfigName("api-key")
-	vp.SetConfigType("json")
-	vp.AddConfigPath(".")
-	err := vp.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	apiId := vp.GetString("id")
-	apiSecret := vp.GetString("secret")
+	apiId, apiSecret := Getapikeys()
+	fmt.Println("this was used", apiId, apiSecret)
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
