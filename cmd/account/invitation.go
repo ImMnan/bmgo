@@ -31,7 +31,6 @@ func init() {
 
 func invitations(accountId int) {
 	apiId, apiSecret := Getapikeys()
-	fmt.Println("this was used", apiId, apiSecret)
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
