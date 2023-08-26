@@ -28,5 +28,5 @@ func init() {
 }
 
 func getAccountId(accountId int) {
-	fmt.Println("this is the account ID passed:", accountId)
+	fmt.Println("this is the account ID used:", accountId)
 }
