@@ -6,7 +6,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/immnan/bmgo/cmd/account"
+	"github.com/immnan/bmgo/cmd/get"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,6 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
-
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -31,7 +30,7 @@ func Execute() {
 }
 
 func addSubCommand() {
-	rootCmd.AddCommand(account.AccountCmd)
+	rootCmd.AddCommand(get.GetCmd)
 }
 func init() {
 	//	cobra.OnInitialize(initConfig)
