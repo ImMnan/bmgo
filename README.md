@@ -1,0 +1,3 @@
+# bmgo
+Blazemeter CLI tool 
+
