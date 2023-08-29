@@ -16,7 +16,7 @@ import (
 // accountCmd represents the account command
 var accountCmd = &cobra.Command{
 	Use:   "account",
-	Short: "Get details about the account, use with other sub-commands to get specific info",
+	Short: "Get details about the account, use with other sub-commands to get specific/detailed info",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("account called")
