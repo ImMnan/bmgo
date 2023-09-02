@@ -5,27 +5,51 @@ package find
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
 
 // userCmd represents the user command
 var userCmd = &cobra.Command{
-	Use:   "user",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "User details",
+	Short: "Get details about the user",
+	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("user called")
+		fmt.Println("user find called")
+		userEmail, _ := cmd.Flags().GetString("email")
+		getUserByEmail(userEmail)
 	},
+}
+
+func getUserByEmail(userEmail int) {
+	apiId, apiSecret := Getapikeys()
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/admin/users?email="+userEmail+, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
 
 func init() {
 	FindCmd.AddCommand(userCmd)
+	userCmd.PersistentFlags().string("email", "-e", "", " [*Required] Confirm the user email address")
+	userCmd.MarkPersistentFlagRequired("email")
 
 	// Here you will define your flags and configuration settings.
 
