@@ -14,30 +14,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dedicatedipCmd represents the dedicatedip command
-var dedicatedipCmd = &cobra.Command{
-	Use:   "dedicatedip",
+// dedicatedipsCmd represents the dedicatedip command
+var dedicatedipsCmd = &cobra.Command{
+	Use:   "dedicatedips",
 	Short: "A brief description of your command",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("dedicatedip called")
+		fmt.Println("dedicatedipd called")
 		accountId, _ := cmd.Flags().GetInt("id")
 		getDedicatedIp(accountId)
 	},
 }
 
 func init() {
-	accountCmd.AddCommand(dedicatedipCmd)
+	accountCmd.AddCommand(dedicatedipsCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// dedicatedipCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// dedicatedipsCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// dedicatedipCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// dedicatedipsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 type workspaceList struct {
