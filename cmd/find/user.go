@@ -22,7 +22,6 @@ var userCmd = &cobra.Command{
 		fmt.Println("user find called")
 		emailIdUser, _ := cmd.Flags().GetString("email")
 		getUserByEmail(emailIdUser)
-		getuserIdKeycloak(emailIdUser)
 	},
 }
 
