@@ -4,32 +4,54 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package find
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
 
 // userCmd represents the user command
 var userCmd = &cobra.Command{
-	Use:   "User details",
+	Use:   "user",
 	Short: "Get details about the user",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("user find called")
-		userEmail, _ := cmd.Flags().GetString("email")
-		getUserByEmail(userEmail)
+		emailIdUser, _ := cmd.Flags().GetString("email")
+		getUserByEmail(emailIdUser)
+		getuserIdKeycloak(emailIdUser)
 	},
 }
 
-func getUserByEmail(userEmail int) {
-	apiId, apiSecret := Getapikeys()
+func init() {
+	FindCmd.AddCommand(userCmd)
+	userCmd.Flags().StringP("email", "e", "", "Source directory to read from")
+	userCmd.MarkFlagRequired("email")
+}
 
+type responseBody struct {
+	Result []userResult `json:"result"`
+}
+
+type userResult struct {
+	Id             int      `json:"id"`
+	FirstName      string   `json:"firstName"`
+	LastName       string   `json:"LastName"`
+	DefaultProject struct{} `json:"defaultProject"`
+}
+
+type DefaultProject struct {
+	AccountId   int `json:"accountId"`
+	WorkspaceId int `json:"workspaceId"`
+}
+
+func getUserByEmail(emailIdUser string) {
+	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/admin/users?email="+userEmail+, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/admin/users?email="+emailIdUser, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,20 +66,21 @@ func getUserByEmail(userEmail int) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", bodyText)
+	var responseObject responseBody
+	json.Unmarshal(bodyText, &responseObject)
+	fmt.Println("Total users found: ", len(responseObject.Result))
+	fmt.Println("userId: ", responseObject.Result[0].Id)
+	fmt.Println("firstName: ", responseObject.Result[0].FirstName)
+	fmt.Println("lastName: ", responseObject.Result[0].LastName)
+
 }
 
-func init() {
-	FindCmd.AddCommand(userCmd)
-	userCmd.PersistentFlags().string("email", "-e", "", " [*Required] Confirm the user email address")
-	userCmd.MarkPersistentFlagRequired("email")
+// Here you will define your flags and configuration settings.
 
-	// Here you will define your flags and configuration settings.
+// Cobra supports Persistent Flags which will work for this command
+// and all subcommands, e.g.:
+// userCmd.PersistentFlags().String("foo", "", "A help for foo")
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// userCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// userCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
+// Cobra supports local flags which will only run when this command
+// is called directly, e.g.:
+// userCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
