@@ -84,9 +84,9 @@ func getDedicatedIps(accountId int) []int {
 	return slice
 }
 
-func removeDuplicateValues(slice []int) []int {
-	keys := make(map[int]bool)
-	list := []int{}
+func removeDuplicateValues(slice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
 
 	// If the key(values of the slice) is not equal
 	// to the already present value in new slice (list)
@@ -106,20 +106,20 @@ type workspaceList1 struct {
 }
 
 type ipResult struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	Id string `json:"id"`
+	Ip string `jason:"ip"`
 }
 
 func getDedicatedIp(accountId int) {
 	workspaceIds := getDedicatedIps(accountId)
 	fmt.Println("Searching within account: ", accountId)
 	apiId, apiSecret := Getapikeys()
-	slice := []int{}
+	slice := []string{}
 
 	for i := 0; i < len(workspaceIds); i++ {
 		workspaceIdStr := strconv.Itoa(workspaceIds[i])
 		client := &http.Client{}
-		req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", nil)
+		req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/dedicated-ips?workspaceId="+workspaceIdStr+"&limit=200", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -138,10 +138,10 @@ func getDedicatedIp(accountId int) {
 		json.Unmarshal(bodyText, &responseObject)
 
 		for i := 0; i < len(responseObject.Result); i++ {
-			userArr := responseObject.Result[i].Id
+			userArr := responseObject.Result[i].Ip
 			slice = append(slice, userArr)
 		}
-		fmt.Println("Total users in ", workspaceIds[i], responseObject.Total)
+		fmt.Println("Total Ips in ", workspaceIds[i], responseObject.Total)
 
 	}
 	totalIps := removeDuplicateValues(slice)
