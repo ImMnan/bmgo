@@ -32,7 +32,7 @@ func Execute() {
 
 func addSubCommand() {
 	rootCmd.AddCommand(get.GetCmd)
-	rootCmd.AddCommand(find.GetCmd)
+	rootCmd.AddCommand(find.FindCmd)
 }
 func init() {
 	//	cobra.OnInitialize(initConfig)
