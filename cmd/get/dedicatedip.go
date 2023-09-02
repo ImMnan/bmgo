@@ -22,7 +22,7 @@ var dedicatedipCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("dedicatedip called")
 		accountId, _ := cmd.Flags().GetInt("id")
-		getDedicatedips(accountId)
+		getDedicatedIp(accountId)
 	},
 }
 
@@ -43,6 +43,7 @@ func init() {
 type workspaceList struct {
 	Result []workspaceResult `json:"result"`
 	Name   string            `json:"name"`
+	Total  int               `JSON:"total"`
 }
 
 type workspaceResult struct {
@@ -50,7 +51,7 @@ type workspaceResult struct {
 	Userid int `json:"userid"`
 }
 
-func getDedicatedips(accountId int) {
+func getDedicatedIps(accountId int) []int {
 	apiId, apiSecret := Getapikeys()
 
 	client := &http.Client{}
@@ -80,5 +81,52 @@ func getDedicatedips(accountId int) {
 	}
 	// Append element 4 to slice
 	fmt.Println(slice) // [1 2 3 4]
+	return slice
+}
 
+type workspaceList1 struct {
+	Result []ipResult `json:"result"`
+	Total  int        `JSON:"total"`
+}
+
+type ipResult struct {
+	Id    int    `json:"id"`
+	Email string `json:"email"`
+}
+
+func getDedicatedIp(accountId int) {
+	workspaceIds := getDedicatedIps(accountId)
+	fmt.Println(accountId)
+	apiId, apiSecret := Getapikeys()
+	slice := []int{}
+
+	for i := 0; i < len(workspaceIds); i++ {
+		workspaceIdStr := strconv.Itoa(workspaceIds[i])
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		req.SetBasicAuth(apiId, apiSecret)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+		bodyText, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//	fmt.Printf("%s\n", bodyText)
+		var responseObject workspaceList1
+		json.Unmarshal(bodyText, &responseObject)
+
+		for i := 0; i < len(responseObject.Result); i++ {
+			userArr := responseObject.Result[i].Id
+			slice = append(slice, userArr)
+		}
+		//fmt.Println("Total users in ", workspaceIds[i], responseObject.Total,)
+
+	}
+	fmt.Println(slice)
 }
