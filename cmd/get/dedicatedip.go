@@ -80,8 +80,24 @@ func getDedicatedIps(accountId int) []int {
 		slice = append(slice, arr)
 	}
 	// Append element 4 to slice
-	fmt.Println(slice) // [1 2 3 4]
+	//fmt.Println(slice) // [1 2 3 4]
 	return slice
+}
+
+func removeDuplicateValues(slice []int) []int {
+	keys := make(map[int]bool)
+	list := []int{}
+
+	// If the key(values of the slice) is not equal
+	// to the already present value in new slice (list)
+	// then we append it. else we jump on another element.
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 type workspaceList1 struct {
@@ -96,7 +112,7 @@ type ipResult struct {
 
 func getDedicatedIp(accountId int) {
 	workspaceIds := getDedicatedIps(accountId)
-	fmt.Println(accountId)
+	fmt.Println("Searching within account: ", accountId)
 	apiId, apiSecret := Getapikeys()
 	slice := []int{}
 
@@ -125,8 +141,10 @@ func getDedicatedIp(accountId int) {
 			userArr := responseObject.Result[i].Id
 			slice = append(slice, userArr)
 		}
-		//fmt.Println("Total users in ", workspaceIds[i], responseObject.Total,)
+		fmt.Println("Total users in ", workspaceIds[i], responseObject.Total)
 
 	}
-	fmt.Println(slice)
+	totalIps := removeDuplicateValues(slice)
+	fmt.Println("Total Ips in this account: ", len(totalIps))
+	fmt.Println(totalIps)
 }
