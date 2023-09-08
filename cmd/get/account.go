@@ -4,6 +4,7 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package get
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -25,6 +26,30 @@ var accountCmd = &cobra.Command{
 	},
 }
 
+type responseBody struct {
+	Result result
+}
+type result struct {
+	Name            string `json:"name"`
+	Owner           owner
+	MembersCount    int `json:"membersCount"`
+	WorkspacesCount int `json:"workspacesCount"`
+	Plan            plan
+	CloudProviders  []string
+}
+
+type owner struct {
+	Id    int    `json:"id"`
+	Email string `json:"email"`
+}
+
+type plan struct {
+	Id               string `json:"id"`
+	Name             string `json:"name"`
+	ReportRetention  int    `json:"reportRetention"`
+	ThreadsPerEngine int    `json:"threadsPerEngine"`
+}
+
 func getAccountId(accountId int) {
 	apiId, apiSecret := Getapikeys()
 
@@ -44,7 +69,35 @@ func getAccountId(accountId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", bodyText)
+	//fmt.Printf("%s\n", bodyText)
+	var responseObject responseBody
+	json.Unmarshal(bodyText, &responseObject)
+
+	accountName := responseObject.Result.Name
+	ownerEmail := responseObject.Result.Owner.Email
+	workspaceCount := responseObject.Result.WorkspacesCount
+	memberCount := responseObject.Result.MembersCount
+
+	accountPlanId := responseObject.Result.Plan.Id
+	accountPlanName := responseObject.Result.Plan.Name
+	accountReportRet := responseObject.Result.Plan.ReportRetention
+	accountThreadsPE := responseObject.Result.Plan.ThreadsPerEngine
+
+	fmt.Printf("\n%-20s %-30s %-10s %-10s\n", "NAME", "OWNER", "WORKSPACES", "USERS")
+	fmt.Printf("%-20s %-30s %-10d %-10d\n\n", accountName, ownerEmail, workspaceCount, memberCount)
+
+	fmt.Printf("PLan details for account %s (%v)\n", accountName, accountId)
+
+	fmt.Printf("%-20s %-30s %-15s %-10s\n", "PLAN ID", "PLAN NAME", "REPORT RETENT.", "THREADS/ENGINE")
+	fmt.Printf("%-20s %-30s %-15d %-10d\n", accountPlanId, accountPlanName, accountReportRet, accountThreadsPE)
+
+	cloudProviders := []string{}
+	for i := 0; i < len(responseObject.Result.CloudProviders); i++ {
+		cloudProlist := responseObject.Result.CloudProviders[i]
+		cloudProviders = append(cloudProviders, cloudProlist)
+	}
+	fmt.Printf("\n Available cloud provider for %s (%v): \n", accountName, accountId)
+	fmt.Println(cloudProviders)
 }
 
 func init() {
