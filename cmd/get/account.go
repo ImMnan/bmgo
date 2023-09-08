@@ -22,7 +22,12 @@ var accountCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("account called")
 		accountId, _ := cmd.Flags().GetInt("id")
-		getAccountId(accountId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if rawOutput {
+			getAccountIdRaw(accountId)
+		} else {
+			getAccountId(accountId)
+		}
 	},
 }
 
@@ -100,11 +105,33 @@ func getAccountId(accountId int) {
 	fmt.Println(cloudProviders)
 }
 
+func getAccountIdRaw(accountId int) {
+	apiId, apiSecret := Getapikeys()
+
+	accountIdStr := strconv.Itoa(accountId)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
 func init() {
 	GetCmd.AddCommand(accountCmd)
-	accountCmd.PersistentFlags().Int("id", 0, " [*Required] Confirm the account id")
+	accountCmd.PersistentFlags().Int("id", 0, "Confirm the account id")
 	accountCmd.MarkPersistentFlagRequired("id")
-
+	accountCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
