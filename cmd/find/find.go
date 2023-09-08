@@ -13,7 +13,7 @@ import (
 // findCmd represents the find command
 var FindCmd = &cobra.Command{
 	Use:   "find",
-	Short: "Used to find",
+	Short: "Used to find resources in Blazemeter database",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
