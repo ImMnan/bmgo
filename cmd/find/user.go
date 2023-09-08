@@ -22,7 +22,13 @@ var userCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("user find called")
 		emailIdUser, _ := cmd.Flags().GetString("email")
-		getUserByEmail(emailIdUser)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+
+		if rawOutput {
+			getUserByEmailRaw(emailIdUser)
+		} else {
+			getUserByEmail(emailIdUser)
+		}
 	},
 }
 
@@ -30,6 +36,7 @@ func init() {
 	FindCmd.AddCommand(userCmd)
 	userCmd.Flags().StringP("email", "e", "", "Source directory to read from")
 	userCmd.MarkFlagRequired("email")
+	userCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 }
 
 type responseBody struct {
@@ -67,7 +74,8 @@ func getUserByEmail(emailIdUser string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", bodyText)
+	//fmt.Printf("%s\n", bodyText)
+
 	var responseObject responseBody
 	json.Unmarshal(bodyText, &responseObject)
 
@@ -85,6 +93,26 @@ func getUserByEmail(emailIdUser string) {
 	fmt.Println("Default Workspace Name: ", responseObject.Result[0].DefaultProject.WorkspaceName)
 	fmt.Println("Navigate to Blazemeter User account: ", "https://a.blazemeter.com/app/#/accounts/"+accountIdstr+"/workspaces/"+workspaceIdstr+"/dashboard")
 
+}
+
+func getUserByEmailRaw(emailIdUser string) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/admin/users?email="+emailIdUser, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
 
 // Here you will define your flags and configuration settings.
