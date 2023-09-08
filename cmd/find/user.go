@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -36,15 +37,17 @@ type responseBody struct {
 }
 
 type userResult struct {
-	Id             int      `json:"id"`
-	FirstName      string   `json:"firstName"`
-	LastName       string   `json:"LastName"`
-	DefaultProject struct{} `json:"defaultProject"`
+	Id             int    `json:"id"`
+	FirstName      string `json:"firstName"`
+	LastName       string `json:"LastName"`
+	DefaultProject defaultProject
 }
 
-type DefaultProject struct {
-	AccountId   int `json:"accountId"`
-	WorkspaceId int `json:"workspaceId"`
+type defaultProject struct {
+	AccountId     int    `json:"accountId"`
+	WorkspaceId   int    `json:"workspaceId"`
+	AccountName   string `json:"accountName"`
+	WorkspaceName string `json:"workspaceName"`
 }
 
 func getUserByEmail(emailIdUser string) {
@@ -67,10 +70,20 @@ func getUserByEmail(emailIdUser string) {
 	fmt.Printf("%s\n", bodyText)
 	var responseObject responseBody
 	json.Unmarshal(bodyText, &responseObject)
+
 	fmt.Println("Total users found: ", len(responseObject.Result))
 	fmt.Println("userId: ", responseObject.Result[0].Id)
 	fmt.Println("firstName: ", responseObject.Result[0].FirstName)
 	fmt.Println("lastName: ", responseObject.Result[0].LastName)
+
+	accountIdstr := strconv.Itoa(responseObject.Result[0].DefaultProject.AccountId)
+	workspaceIdstr := strconv.Itoa(responseObject.Result[0].DefaultProject.WorkspaceId)
+
+	fmt.Println("Default Account ID: ", responseObject.Result[0].DefaultProject.AccountId)
+	fmt.Println("Default Account Name: ", responseObject.Result[0].DefaultProject.AccountName)
+	fmt.Println("Default Workspace ID: ", responseObject.Result[0].DefaultProject.WorkspaceId)
+	fmt.Println("Default Workspace Name: ", responseObject.Result[0].DefaultProject.WorkspaceName)
+	fmt.Println("Navigate to Blazemeter User account: ", "https://a.blazemeter.com/app/#/accounts/"+accountIdstr+"/workspaces/"+workspaceIdstr+"/dashboard")
 
 }
 
