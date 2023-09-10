@@ -23,12 +23,12 @@ var usersWSCmd = &cobra.Command{
 		fmt.Println("users called")
 		workspaceId, _ := cmd.Flags().GetInt("id")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		enabledUsers, _ := usersCmd.Flags().GetBool("enabled")
-		if rawOutput && enabledUsers {
-			getUsersWSraw(workspaceId)
-		} else if rawOutput {
+		disabledUsers, _ := cmd.Flags().GetBool("disabled")
+		if (rawOutput) && (disabledUsers) {
 			getUsersWSrawDis(workspaceId)
-		} else if enabledUsers {
+		} else if rawOutput {
+			getUsersWSraw(workspaceId)
+		} else if disabledUsers {
 			getUsersWSDis(workspaceId)
 		} else {
 			getUsersWS(workspaceId)
@@ -38,7 +38,7 @@ var usersWSCmd = &cobra.Command{
 
 func init() {
 	workspaceCmd.AddCommand(usersWSCmd)
-	usersCmd.Flags().Bool("enabled", true, "[Optional] will show enabled users only")
+	usersWSCmd.Flags().Bool("disabled", false, "[Optional] will show enabled users only")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -92,7 +92,6 @@ func getUsersWS(workspaceId int) {
 
 func getUsersWSraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
-
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
@@ -114,10 +113,9 @@ func getUsersWSraw(workspaceId int) {
 
 func getUsersWSDis(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
-
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,7 +144,7 @@ func getUsersWSrawDis(workspaceId int) {
 
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
