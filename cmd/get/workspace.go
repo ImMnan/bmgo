@@ -99,7 +99,7 @@ func init() {
 	GetCmd.AddCommand(workspaceCmd)
 	workspaceCmd.PersistentFlags().Int("id", 0, "Confirm the workspace id")
 	workspaceCmd.MarkPersistentFlagRequired("id")
-	workspaceCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
+	workspaceCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
