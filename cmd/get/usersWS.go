@@ -23,8 +23,13 @@ var usersWSCmd = &cobra.Command{
 		fmt.Println("users called")
 		workspaceId, _ := cmd.Flags().GetInt("id")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if rawOutput {
+		enabledUsers, _ := usersCmd.Flags().GetBool("enabled")
+		if rawOutput && enabledUsers {
 			getUsersWSraw(workspaceId)
+		} else if rawOutput {
+			getUsersWSrawDis(workspaceId)
+		} else if enabledUsers {
+			getUsersWSDis(workspaceId)
 		} else {
 			getUsersWS(workspaceId)
 		}
@@ -33,7 +38,7 @@ var usersWSCmd = &cobra.Command{
 
 func init() {
 	workspaceCmd.AddCommand(usersWSCmd)
-	//usersCmd.Flags().BoolP("ra", "w", false, "[Optional] If set, the output will be raw json")
+	usersCmd.Flags().Bool("enabled", true, "[Optional] will show enabled users only")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -61,7 +66,7 @@ func getUsersWS(workspaceId int) {
 
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=200", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,7 +95,58 @@ func getUsersWSraw(workspaceId int) {
 
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=200", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+func getUsersWSDis(workspaceId int) {
+	apiId, apiSecret := Getapikeys()
+
+	client := &http.Client{}
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("%s\n", bodyText)
+	var responseBodyWsUsers usersResponse
+	json.Unmarshal(bodyText, &responseBodyWsUsers)
+	fmt.Printf("\n%-10s %-25s %-25s %-10s\n", "ID", "NAME", "EMAIL", "ENABLED")
+	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
+		fmt.Printf("\n%-10v %-25s %-25s %-10t", (responseBodyWsUsers.Result[i].Id), (responseBodyWsUsers.Result[i].DisplayName), (responseBodyWsUsers.Result[i].Email), (responseBodyWsUsers.Result[i].Enabled))
+	}
+	fmt.Println("\n")
+}
+
+func getUsersWSrawDis(workspaceId int) {
+	apiId, apiSecret := Getapikeys()
+
+	client := &http.Client{}
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
