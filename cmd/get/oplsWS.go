@@ -22,7 +22,12 @@ var oplsWSCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("opls called")
 		workspaceId, _ := cmd.Flags().GetInt("id")
-		getOplsWS(workspaceId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if rawOutput {
+			getOplsWSRaw(workspaceId)
+		} else {
+			getOplsWS(workspaceId)
+		}
 	},
 }
 
@@ -31,10 +36,10 @@ func init() {
 }
 
 type oplsResponseWS struct {
-	Result []oplsResult `json:"result"`
+	Result []oplsResultWS `json:"result"`
 }
 
-type oplsResult struct {
+type oplsResultWS struct {
 	Id               string   `json:"id"`
 	Name             string   `json:"name"`
 	ThreadsPerEngine int      `json:"threadsPerEngine"`
@@ -52,7 +57,6 @@ type ships struct {
 
 func getOplsWS(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
-
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=100", nil)
@@ -99,4 +103,25 @@ func getOplsWS(workspaceId int) {
 		}
 	}
 	fmt.Println("\n")
+}
+
+func getOplsWSRaw(workspaceId int) {
+	apiId, apiSecret := Getapikeys()
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=100", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
