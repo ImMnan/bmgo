@@ -55,10 +55,11 @@ type usersResponse struct {
 }
 
 type usersResult struct {
-	Id          int    `json:"id"`
-	Email       string `json:"email"`
-	DisplayName string `json:"displayName"`
-	Enabled     bool   `json:"enabled"`
+	Id          int      `json:"id"`
+	Email       string   `json:"email"`
+	DisplayName string   `json:"displayName"`
+	Enabled     bool     `json:"enabled"`
+	RolesWS     []string `json:"roles"`
 }
 
 func getUsersWS(workspaceId int) {
@@ -80,12 +81,17 @@ func getUsersWS(workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
+
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
-	fmt.Printf("\n%-10s %-25s %-25s %-10s\n", "ID", "NAME", "EMAIL", "ENABLED")
+	fmt.Printf("\n%-10s %-25s %-25s %-10s %-20s\n", "ID", "NAME", "EMAIL", "ENABLED", "ROLES")
+	//	rolesListTotal := []string{}
 	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
-		fmt.Printf("\n%-10v %-25s %-25s %-10t", (responseBodyWsUsers.Result[i].Id), (responseBodyWsUsers.Result[i].DisplayName), (responseBodyWsUsers.Result[i].Email), (responseBodyWsUsers.Result[i].Enabled))
+		userIdWS := responseBodyWsUsers.Result[i].Id
+		displayNameWS := responseBodyWsUsers.Result[i].DisplayName
+		emailIdWS := responseBodyWsUsers.Result[i].Email
+		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
+		fmt.Printf("\n%-10v %-25s %-25s %-10t %-20s", userIdWS, displayNameWS, emailIdWS, enabledUserWS, responseBodyWsUsers.Result[i].RolesWS[0])
 	}
 	fmt.Println("\n")
 }
