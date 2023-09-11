@@ -28,7 +28,6 @@ var oplsCmd = &cobra.Command{
 		} else {
 			getOpls(accountId)
 		}
-		getOpls(accountId)
 	},
 }
 
