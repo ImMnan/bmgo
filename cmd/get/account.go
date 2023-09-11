@@ -132,7 +132,7 @@ func init() {
 	accountCmd.PersistentFlags().Int("id", 0, "Confirm the account id")
 	accountCmd.MarkPersistentFlagRequired("id")
 	accountCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
-	// Here you will define your flags and configuration settings.
+	accountCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
