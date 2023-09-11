@@ -84,14 +84,14 @@ func getUsersWS(workspaceId int) {
 
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
-	fmt.Printf("\n%-10s %-25s %-25s %-10s %-20s\n", "ID", "NAME", "EMAIL", "ENABLED", "ROLES")
+	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
 	//	rolesListTotal := []string{}
 	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
 		userIdWS := responseBodyWsUsers.Result[i].Id
 		displayNameWS := responseBodyWsUsers.Result[i].DisplayName
 		emailIdWS := responseBodyWsUsers.Result[i].Email
 		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
-		fmt.Printf("\n%-10v %-25s %-25s %-10t %-20s", userIdWS, displayNameWS, emailIdWS, enabledUserWS, responseBodyWsUsers.Result[i].RolesWS[0])
+		fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].RolesWS[0], enabledUserWS)
 	}
 	fmt.Println("\n")
 }
@@ -138,9 +138,13 @@ func getUsersWSDis(workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
-	fmt.Printf("\n%-10s %-25s %-25s %-10s\n", "ID", "NAME", "EMAIL", "ENABLED")
+	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
 	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
-		fmt.Printf("\n%-10v %-25s %-25s %-10t", (responseBodyWsUsers.Result[i].Id), (responseBodyWsUsers.Result[i].DisplayName), (responseBodyWsUsers.Result[i].Email), (responseBodyWsUsers.Result[i].Enabled))
+		userIdWS := responseBodyWsUsers.Result[i].Id
+		displayNameWS := responseBodyWsUsers.Result[i].DisplayName
+		emailIdWS := responseBodyWsUsers.Result[i].Email
+		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
+		fmt.Printf("\n%-10v %-25s %30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].RolesWS[0], enabledUserWS)
 	}
 	fmt.Println("\n")
 }
