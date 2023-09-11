@@ -41,6 +41,13 @@ type oplsResult struct {
 	Slots            int      `json:"slots"`
 	FuncIds          []string `json:"funcIds"`
 	ShipsId          []string `json:"shipsId"`
+	Ships            []ships
+}
+
+type ships struct {
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	State string `json:"state"`
 }
 
 func getOplsWS(workspaceId int) {
@@ -73,13 +80,23 @@ func getOplsWS(workspaceId int) {
 		enginePerAgent := responseBodyWsOpls.Result[i].Slots
 		fmt.Printf("\n%-25s %-20s %-10v %-10v %-10v %-10v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyWsOpls.Result[i].ShipsId), (threadsPerEngine * enginePerAgent * len(responseBodyWsOpls.Result[i].ShipsId)))
 	}
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("\n%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
+	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+	fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
 	for i := 0; i < len(responseBodyWsOpls.Result); i++ {
 		oplName := responseBodyWsOpls.Result[i].Name
 		functAgent := responseBodyWsOpls.Result[i].FuncIds
 		fmt.Printf("\n%-20s %-5s", oplName, functAgent)
 	}
-
+	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+	fmt.Printf("%-20s %-20s %-25s %-10s\n", "NAME", "SHIP NAME", "SHIP ID", "STATE")
+	for i := 0; i < len(responseBodyWsOpls.Result); i++ {
+		oplName := responseBodyWsOpls.Result[i].Name
+		for f := 0; f < len(responseBodyWsOpls.Result[i].Ships); f++ {
+			shipId := responseBodyWsOpls.Result[i].Ships[f].Id
+			shipName := responseBodyWsOpls.Result[i].Ships[f].Name
+			shipStatus := responseBodyWsOpls.Result[i].Ships[f].State
+			fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+		}
+	}
 	fmt.Println("\n")
 }
