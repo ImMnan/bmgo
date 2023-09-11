@@ -79,16 +79,18 @@ func getUserByEmail(emailIdUser string) {
 	rolesListTotal := []string{}
 	var responseObject responseBody
 	json.Unmarshal(bodyText, &responseObject)
-
-	userId := responseObject.Result[0].Id
-	firstName := responseObject.Result[0].FirstName
-	lastName := responseObject.Result[0].LastName
-	accountIdstr := strconv.Itoa(responseObject.Result[0].DefaultProject.AccountId)
-	workspaceIdstr := strconv.Itoa(responseObject.Result[0].DefaultProject.WorkspaceId)
-
-	for i := 0; i < len(responseObject.Result[0].Roles); i++ {
-		rolesList := responseObject.Result[0].Roles[i]
-		rolesListTotal = append(rolesListTotal, rolesList)
+	var firstName, lastName, accountIdstr, workspaceIdstr string
+	var userId int
+	for i := 0; i < len(responseObject.Result); i++ {
+		userId = responseObject.Result[i].Id
+		firstName = responseObject.Result[i].FirstName
+		lastName = responseObject.Result[i].LastName
+		accountIdstr = strconv.Itoa(responseObject.Result[i].DefaultProject.AccountId)
+		workspaceIdstr = strconv.Itoa(responseObject.Result[i].DefaultProject.WorkspaceId)
+		for r := 0; r < len(responseObject.Result[i].Roles); r++ {
+			rolesList := responseObject.Result[i].Roles[r]
+			rolesListTotal = append(rolesListTotal, rolesList)
+		}
 	}
 
 	fmt.Printf("\n%-15s %-15s %-15s %-5s\n", "USERID", "FIRSTNAME", "LASTNAME", "ROLES")
