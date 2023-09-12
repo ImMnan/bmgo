@@ -1,5 +1,5 @@
-# bmgo
-Blazemeter CLI tool - programmed in Golang! 
+
+ programmed in Golang! 
 
 
 
