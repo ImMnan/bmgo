@@ -102,7 +102,7 @@ func getOplsWS(workspaceId int) {
 			fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
 		}
 	}
-	fmt.Println("\n")
+	fmt.Println("\n-")
 }
 
 func getOplsWSRaw(workspaceId int) {

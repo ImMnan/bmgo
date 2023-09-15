@@ -84,7 +84,7 @@ func getOpls(accountId int) {
 		functAgent := responseBodyAcOpls.Result[i].FuncIds
 		fmt.Printf("\n%-20s %-5s", oplName, functAgent)
 	}
-	fmt.Println("\n")
+	fmt.Println("\n-")
 }
 func getOplsRaw(accountId int) {
 	apiId, apiSecret := Getapikeys()

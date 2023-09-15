@@ -78,7 +78,7 @@ func getSharedFolderWs(workspaceId int) {
 		epochCreated := time.Unix(sFolderCreated, 0)
 		fmt.Printf("\n%-25s %-15s %-32v %-10t", sFolderId, sFolderName, epochCreated, sFHidden)
 	}
-	fmt.Println("\n")
+	fmt.Println("\n-")
 }
 
 func getSharedFolderWsRaw(workspaceId int) {
