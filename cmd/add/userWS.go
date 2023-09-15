@@ -27,6 +27,7 @@ var userWsCmd = &cobra.Command{
 		if workspaceId == 0 {
 			fmt.Println("\nPlease provide a Workspace ID or an Account ID")
 			fmt.Println("[bmgo add -w <workspace_ID>...] OR [bmgo add -a <account_ID>...]")
+			cmd.Help()
 		} else {
 			addUserByUid(userId, workspaceId)
 		}
