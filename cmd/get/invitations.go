@@ -20,13 +20,13 @@ var invitationsCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("invitations called")
-		accountId, _ := cmd.Flags().GetInt("id")
+		accountId, _ := cmd.Flags().GetInt("accountid")
 		getInvitations(accountId)
 	},
 }
 
 func init() {
-	accountCmd.AddCommand(invitationsCmd)
+	GetCmd.AddCommand(invitationsCmd)
 
 	// Here you will define your flags and configuration settings.
 

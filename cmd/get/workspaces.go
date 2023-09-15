@@ -20,23 +20,13 @@ var workspacesCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("workspaces called")
-		accountId, _ := cmd.Flags().GetInt("id")
+		accountId, _ := cmd.Flags().GetInt("accountid")
 		getWorkspaces(accountId)
 	},
 }
 
 func init() {
-	accountCmd.AddCommand(workspacesCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// workspacesCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// workspacesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	GetCmd.AddCommand(workspacesCmd)
 }
 
 func getWorkspaces(accountId int) {

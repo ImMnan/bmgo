@@ -21,13 +21,13 @@ var dedicatedipsCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("dedicatedipd called")
-		accountId, _ := cmd.Flags().GetInt("id")
+		accountId, _ := cmd.Flags().GetInt("accountid")
 		getDedicatedIp(accountId)
 	},
 }
 
 func init() {
-	accountCmd.AddCommand(dedicatedipsCmd)
+	GetCmd.AddCommand(dedicatedipsCmd)
 
 	// Here you will define your flags and configuration settings.
 

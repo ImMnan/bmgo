@@ -22,7 +22,7 @@ var sharedfoldersCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		workspaceId, _ := cmd.Flags().GetInt("id")
+		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
 		rawrawOutput, _ := cmd.Flags().GetBool("raw")
 		if rawrawOutput {
 			getSharedFolderWsRaw(workspaceId)
@@ -34,7 +34,7 @@ var sharedfoldersCmd = &cobra.Command{
 }
 
 func init() {
-	workspaceCmd.AddCommand(sharedfoldersCmd)
+	GetCmd.AddCommand(sharedfoldersCmd)
 }
 
 type sfolderResponseWS struct {
@@ -69,7 +69,7 @@ func getSharedFolderWs(workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyWsSfolders sfolderResponseWS
 	json.Unmarshal(bodyText, &responseBodyWsSfolders)
-	fmt.Printf("\n%-25s %-15s %-32s %-10s\n", "ID", "NAME", "CREATED ON", "HIDDEN")
+	fmt.Printf("\n%-25s %-15s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
 	for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
 		sFolderId := responseBodyWsSfolders.Result[i].Id
 		sFolderName := responseBodyWsSfolders.Result[i].Name
