@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/immnan/bmgo/cmd/add"
 	"github.com/immnan/bmgo/cmd/find"
 	"github.com/immnan/bmgo/cmd/get"
 	"github.com/spf13/cobra"
@@ -33,6 +34,7 @@ func Execute() {
 func addSubCommand() {
 	rootCmd.AddCommand(get.GetCmd)
 	rootCmd.AddCommand(find.FindCmd)
+	rootCmd.AddCommand(add.AddCmd)
 }
 func init() {
 	//	cobra.OnInitialize(initConfig)
