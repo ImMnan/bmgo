@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -20,15 +21,20 @@ var userWsCmd = &cobra.Command{
 	Short: "Get details about the user",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("user find called")
+		//	fmt.Println("user add called")
 		userId, _ := cmd.Flags().GetInt("uid")
 		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		if workspaceId == 0 {
+			fmt.Println("\nPlease provide a Workspace ID or an Account ID")
+			fmt.Println("[bmgo add -w <workspace_ID>...] OR [bmgo add -a <account_ID>...]")
+		} else {
+			addUserByUid(userId, workspaceId)
+		}
 		//rawOutput, _ := cmd.Flags().GetBool("raw")
-
 		//		if rawOutput {
 		//	addUserByUidRaw(userId, workspaceId)
 		//	} else {
-		addUserByUid(userId, workspaceId)
+
 		//	}
 	},
 }
@@ -37,17 +43,33 @@ func init() {
 	AddCmd.AddCommand(userWsCmd)
 	userWsCmd.Flags().Int("uid", 0, "User ID for the user")
 	userWsCmd.MarkFlagRequired("uid")
-	userWsCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
+	//	userWsCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
+}
+
+func userRoleSelector() string {
+	prompt := promptui.Select{
+		Label: "Select Role",
+		Items: []string{"tester", "manager", "viewer"},
+	}
+	_, roleSelected, err := prompt.Run()
+
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+	}
+	fmt.Printf("You choose %q\n", roleSelected)
+	return roleSelected
 }
 
 func addUserByUid(userId, workspaceId int) {
+	role := userRoleSelector()
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
 	//	var data = strings.NewReader(`{"usersIds":[%v],"roles": ["manager"]}`)
-	data := fmt.Sprintf(`{"usersIds":[%v],"roles": ["manager"]}`, userId)
-	var bodyData = strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", bodyData)
+	data := fmt.Sprintf(`{"usersIds":[%v],"roles": ["%s"]}`, userId, role)
+	var reqBodyData = strings.NewReader(data)
+	fmt.Println(reqBodyData)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", reqBodyData)
 	if err != nil {
 		log.Fatal(err)
 	}
