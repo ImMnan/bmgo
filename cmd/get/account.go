@@ -94,11 +94,11 @@ func getAccountId(accountId int) {
 	accountExpiration := int64(responseObject.Result.Expiration)
 	mytimeExpiration := time.Unix(accountExpiration, 0)
 	fmt.Printf("\n%-20s %-30s %-10s %-10s %-20s\n", "NAME", "OWNER", "WORKSPACES", "USERS", "PLAN NAME")
-	fmt.Printf("%-20s %-30s %-10d %-10d %-20s\n\n", accountName, ownerEmail, workspaceCount, memberCount, accountPlanName)
+	fmt.Printf("%-20s %-30s %-10d %-10d %-20s\n", accountName, ownerEmail, workspaceCount, memberCount, accountPlanName)
 
-	fmt.Printf("PLan details for account %s (%v)\n", accountName, accountId)
+	fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
 
-	fmt.Printf("%-20s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
+	fmt.Printf("\n%-20s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
 	fmt.Printf("%-20s %-10v %-10d %-10d %-20v\n", accountPlanId, accountCredits, accountReportRet, accountThreadsPE, mytimeExpiration)
 
 	cloudProviders := []string{}
@@ -106,8 +106,8 @@ func getAccountId(accountId int) {
 		cloudProlist := responseObject.Result.CloudProviders[i]
 		cloudProviders = append(cloudProviders, cloudProlist)
 	}
-	fmt.Printf("\n Available cloud provider for %s (%v): \n", accountName, accountId)
-	fmt.Println(cloudProviders)
+	fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
+	fmt.Printf("\nSupported cloud providers: %v \n\n", cloudProviders)
 }
 
 func getAccountIdRaw(accountId int) {

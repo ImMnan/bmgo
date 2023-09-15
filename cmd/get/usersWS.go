@@ -93,7 +93,7 @@ func getUsersWS(workspaceId int) {
 		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
 		fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].RolesWS[0], enabledUserWS)
 	}
-	fmt.Println("\n")
+	fmt.Println("\n-")
 }
 
 func getUsersWSraw(workspaceId int) {
@@ -146,7 +146,7 @@ func getUsersWSDis(workspaceId int) {
 		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
 		fmt.Printf("\n%-10v %-25s %30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].RolesWS[0], enabledUserWS)
 	}
-	fmt.Println("\n")
+	fmt.Println("\n-")
 }
 
 func getUsersWSrawDis(workspaceId int) {
