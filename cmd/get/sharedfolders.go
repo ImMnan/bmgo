@@ -69,7 +69,7 @@ func getSharedFolderWs(workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyWsSfolders sfolderResponseWS
 	json.Unmarshal(bodyText, &responseBodyWsSfolders)
-	fmt.Printf("\n%-25s %-15s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
+	fmt.Printf("\n%-25s %-15s %-32s %-10s\n", "ID", "NAME", "CREATED ON", "HIDDEN")
 	for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
 		sFolderId := responseBodyWsSfolders.Result[i].Id
 		sFolderName := responseBodyWsSfolders.Result[i].Name
