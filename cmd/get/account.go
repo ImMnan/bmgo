@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,8 @@ type result struct {
 	WorkspacesCount int `json:"workspacesCount"`
 	Plan            plan
 	CloudProviders  []string
+	Credits         int `json:"credits"`
+	Expiration      int `json:"expiration"`
 }
 
 type owner struct {
@@ -87,14 +90,16 @@ func getAccountId(accountId int) {
 	accountPlanName := responseObject.Result.Plan.Name
 	accountReportRet := responseObject.Result.Plan.ReportRetention
 	accountThreadsPE := responseObject.Result.Plan.ThreadsPerEngine
-
-	fmt.Printf("\n%-20s %-30s %-10s %-10s\n", "NAME", "OWNER", "WORKSPACES", "USERS")
-	fmt.Printf("%-20s %-30s %-10d %-10d\n\n", accountName, ownerEmail, workspaceCount, memberCount)
+	accountCredits := responseObject.Result.Credits
+	accountExpiration := int64(responseObject.Result.Expiration)
+	mytimeExpiration := time.Unix(accountExpiration, 0)
+	fmt.Printf("\n%-20s %-30s %-10s %-10s %-20s\n", "NAME", "OWNER", "WORKSPACES", "USERS", "PLAN NAME")
+	fmt.Printf("%-20s %-30s %-10d %-10d %-20s\n\n", accountName, ownerEmail, workspaceCount, memberCount, accountPlanName)
 
 	fmt.Printf("PLan details for account %s (%v)\n", accountName, accountId)
 
-	fmt.Printf("%-20s %-30s %-15s %-10s\n", "PLAN ID", "PLAN NAME", "REPORT RETENT.", "THREADS/ENGINE")
-	fmt.Printf("%-20s %-30s %-15d %-10d\n", accountPlanId, accountPlanName, accountReportRet, accountThreadsPE)
+	fmt.Printf("%-20s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
+	fmt.Printf("%-20s %-10v %-10d %-10d %-20v\n", accountPlanId, accountCredits, accountReportRet, accountThreadsPE, mytimeExpiration)
 
 	cloudProviders := []string{}
 	for i := 0; i < len(responseObject.Result.CloudProviders); i++ {
