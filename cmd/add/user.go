@@ -4,11 +4,13 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package add
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os/user"
+	"os"
 	"strconv"
 	"strings"
 
@@ -29,17 +31,34 @@ var userCmd = &cobra.Command{
 		accountId, _ := cmd.Flags().GetInt("accountid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 
-		if (workspaceId != 0) && (accountId == 0) && (emailId == "") {
-			addUserByUidWs(userId, workspaceId)
-		} else if (workspaceId == 0) && (accountId != 0) && (emailId != "") {
+		//if (workspaceId != 0) && (accountId == 0) && rawOutput {
+		//	addUserByUidWs(userId, workspaceId)
+		//} else if (workspaceId == 0) && (accountId != 0) && (emailId != "") {
+		//	addUserByEmailA(emailId, accountId)
+		//} else if (workspaceId != 0) && (accountId == 0) {
+		//	addUserByUidWs(userId, workspaceId)
+		//} else if (accountId != 0) && (workspaceId == 0) {
+		//	addUserByUidA(userId, accountId)
+		//} else if (workspaceId != 0) && (accountId == 0) && rawOutput && emailId != "" {
+		//	addUserByUidA(userId, accountId)
+		//} else {
+		//	fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
+		//	fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
+		//}
+		switch {
+		case (workspaceId == 0) && (accountId != 0) && (emailId != "") && rawOutput:
+			addUserByEmailAraw(emailId, accountId)
+		case (workspaceId == 0) && (accountId != 0) && (emailId != ""):
 			addUserByEmailA(emailId, accountId)
-		} else if (workspaceId != 0) && (accountId == 0) {
+		case (workspaceId != 0) && (accountId == 0) && rawOutput:
 			addUserByUidWs(userId, workspaceId)
-		} else if (accountId != 0) && (workspaceId == 0) {
+		case (workspaceId == 0) && (accountId != 0) && rawOutput:
 			addUserByUidA(userId, accountId)
-		} else if (workspaceId != 0) && (accountId == 0) && rawOutput && emailId != "" {
+		case (workspaceId != 0) && (accountId == 0):
+			addUserByUidWs(userId, workspaceId)
+		case (workspaceId == 0) && (accountId != 0):
 			addUserByUidA(userId, accountId)
-		} else {
+		default:
 			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
 			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
 		}
@@ -71,7 +90,6 @@ func userRoleSelectorA() (string, bool) {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
 	boolVal, _ := strconv.ParseBool(attachAuto)
-	fmt.Printf("You choose %q and %t\n", roleSelected, boolVal)
 	return roleSelected, boolVal
 }
 func userRoleSelectorWs() string {
@@ -80,29 +98,41 @@ func userRoleSelectorWs() string {
 		Items: []string{"tester", "manager", "viewer"},
 	}
 	_, roleSelected, err := prompt.Run()
-
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
-	fmt.Printf("You choose %q\n", roleSelected)
 	return roleSelected
 }
 
 func workspaceIdPrompt() string {
-	var username string
-	u, err := user.Current()
-	if err == nil {
-		username = u.Username
+	validate := func(input string) error {
+		_, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			return errors.New("invalid workspace")
+		}
+		return nil
 	}
 	prompt := promptui.Prompt{
-		Label:   "Provide Workspace ID to add user into",
-		Default: username,
+		Label:    "Provide Workspace/s-[int Array supported]",
+		Validate: validate,
 	}
 	resultWsId, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
+		os.Exit(1)
 	}
 	return resultWsId
+}
+
+type addUsersResponse struct {
+	Result []addusersResult `json:"result"`
+}
+
+type addusersResult struct {
+	Id           string `json:"id"`
+	InviteeEmail string `json:"inviteeEmail"`
+	AccountId    int    `json:"accountId"`
+	WorkspacesId []int  `json:"workspacesId"`
 }
 
 func addUserByUidWs(userId, workspaceId int) {
@@ -162,13 +192,52 @@ func addUserByUidA(userId, accountId int) {
 func addUserByEmailA(emailId string, accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdStr := strconv.Itoa(accountId)
-	roleWs := userRoleSelectorWs()
 	rolesA, boolVal := userRoleSelectorA()
 	resultWsId := workspaceIdPrompt()
+	roleWs := userRoleSelectorWs()
+	client := &http.Client{}
+	data := fmt.Sprintf(`{"invitations":[{"inviteeEmail":"%s","attachAutomatically":%t,"accountRoles":["%s"], "workspacesId":[%v],"workspacesRoles":["%s"]}]}`, emailId, boolVal, rolesA, resultWsId, roleWs)
+	var reqBodyData = strings.NewReader(data)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/invitations", reqBodyData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var responseBodyInviteUser addUsersResponse
+	json.Unmarshal(bodyText, &responseBodyInviteUser)
+	totalWsinvited := []int{}
+	fmt.Printf("\n%-25s %-30s %-15s %-5s\n", "INVITE_ID", "INVITEE", "ACCOUNT", "WORKSPACE")
+	for i := 0; i < len(responseBodyInviteUser.Result); i++ {
+		inviteId := responseBodyInviteUser.Result[i].Id
+		invitee := responseBodyInviteUser.Result[i].InviteeEmail
+		invitedAccount := responseBodyInviteUser.Result[i].AccountId
+
+		for w := 0; w < len(responseBodyInviteUser.Result[i].WorkspacesId); w++ {
+			wsIdarr := responseBodyInviteUser.Result[i].WorkspacesId[w]
+			totalWsinvited = append(totalWsinvited, wsIdarr)
+		}
+		fmt.Printf("%-25s %-30s %-15v %-5v\n", inviteId, invitee, invitedAccount, totalWsinvited)
+	}
+}
+func addUserByEmailAraw(emailId string, accountId int) {
+	apiId, apiSecret := Getapikeys()
+	accountIdStr := strconv.Itoa(accountId)
+	rolesA, boolVal := userRoleSelectorA()
+	resultWsId := workspaceIdPrompt()
+	roleWs := userRoleSelectorWs()
 	client := &http.Client{}
 	data := fmt.Sprintf(`{"invitations":[{"inviteeEmail":"%s","attachAutomatically":%t,"accountRoles":["%s"],
 	"workspacesId":[%v],"workspacesRoles":["%s"]}]}`, emailId, boolVal, rolesA, resultWsId, roleWs)
-	fmt.Println(data)
 	var reqBodyData = strings.NewReader(data)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/invitations", reqBodyData)
 	if err != nil {
