@@ -30,21 +30,6 @@ var userCmd = &cobra.Command{
 		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
 		accountId, _ := cmd.Flags().GetInt("accountid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-
-		//if (workspaceId != 0) && (accountId == 0) && rawOutput {
-		//	addUserByUidWs(userId, workspaceId)
-		//} else if (workspaceId == 0) && (accountId != 0) && (emailId != "") {
-		//	addUserByEmailA(emailId, accountId)
-		//} else if (workspaceId != 0) && (accountId == 0) {
-		//	addUserByUidWs(userId, workspaceId)
-		//} else if (accountId != 0) && (workspaceId == 0) {
-		//	addUserByUidA(userId, accountId)
-		//} else if (workspaceId != 0) && (accountId == 0) && rawOutput && emailId != "" {
-		//	addUserByUidA(userId, accountId)
-		//} else {
-		//	fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
-		//	fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
-		//}
 		switch {
 		case (workspaceId == 0) && (accountId != 0) && (emailId != "") && rawOutput:
 			addUserByEmailAraw(emailId, accountId)
@@ -68,9 +53,7 @@ var userCmd = &cobra.Command{
 func init() {
 	AddCmd.AddCommand(userCmd)
 	userCmd.Flags().Int("uid", 0, "User ID for the user")
-	//	userCmd.MarkFlagRequired("uid")
 	userCmd.Flags().String("email", "", "Enter the Email ID of the user invited!")
-	//	userWsCmd.Flags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 }
 func userRoleSelectorA() (string, bool) {
 	prompt := promptui.Select{
@@ -126,7 +109,6 @@ func workspaceIdPrompt() string {
 type addUsersResponse struct {
 	Result []addusersResult `json:"result"`
 }
-
 type addusersResult struct {
 	Id           string   `json:"id"`
 	InviteeEmail string   `json:"inviteeEmail"`
@@ -202,33 +184,6 @@ func addUserByUidWsraw(userId, workspaceId int) {
 	fmt.Printf("%s\n", bodyText)
 }
 
-// This below is an Admin level command
-func addUserByUidA(userId, accountId int) {
-	apiId, apiSecret := Getapikeys()
-	accountIdStr := strconv.Itoa(accountId)
-	client := &http.Client{}
-	data := fmt.Sprintf(`{ "accountId": %v, "id": %v }`, accountId, userId)
-	fmt.Println(data)
-	var reqBodyData = strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/"+accountIdStr+"/{s}/users", reqBodyData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
 func addUserByEmailA(emailId string, accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdStr := strconv.Itoa(accountId)
@@ -283,6 +238,33 @@ func addUserByEmailAraw(emailId string, accountId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+// This below is an Admin level command
+func addUserByUidA(userId, accountId int) {
+	apiId, apiSecret := Getapikeys()
+	accountIdStr := strconv.Itoa(accountId)
+	client := &http.Client{}
+	data := fmt.Sprintf(`{ "accountId": %v, "id": %v }`, accountId, userId)
+	fmt.Println(data)
+	var reqBodyData = strings.NewReader(data)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/"+accountIdStr+"/{s}/users", reqBodyData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
