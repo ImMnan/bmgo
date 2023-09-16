@@ -33,15 +33,15 @@ var userCmd = &cobra.Command{
 		switch {
 		case (workspaceId == 0) && (accountId != 0) && (emailId != "") && rawOutput:
 			addUserByEmailAraw(emailId, accountId)
-		case (workspaceId == 0) && (accountId != 0) && (emailId != ""):
+		case (workspaceId == 0) && (accountId != 0) && (emailId != "") && !rawOutput:
 			addUserByEmailA(emailId, accountId)
 		case (workspaceId != 0) && (accountId == 0) && rawOutput:
 			addUserByUidWsraw(userId, workspaceId)
 		case (workspaceId == 0) && (accountId != 0) && rawOutput:
 			addUserByUidA(userId, accountId)
-		case (workspaceId != 0) && (accountId == 0):
+		case (workspaceId != 0) && (accountId == 0) && !rawOutput:
 			addUserByUidWs(userId, workspaceId)
-		case (workspaceId == 0) && (accountId != 0):
+		case (workspaceId == 0) && (accountId != 0) && !rawOutput:
 			addUserByUidA(userId, accountId)
 		default:
 			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
