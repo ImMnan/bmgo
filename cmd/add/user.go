@@ -51,7 +51,7 @@ var userCmd = &cobra.Command{
 		case (workspaceId == 0) && (accountId != 0) && (emailId != ""):
 			addUserByEmailA(emailId, accountId)
 		case (workspaceId != 0) && (accountId == 0) && rawOutput:
-			addUserByUidWs(userId, workspaceId)
+			addUserByUidWsraw(userId, workspaceId)
 		case (workspaceId == 0) && (accountId != 0) && rawOutput:
 			addUserByUidA(userId, accountId)
 		case (workspaceId != 0) && (accountId == 0):
@@ -103,7 +103,6 @@ func userRoleSelectorWs() string {
 	}
 	return roleSelected
 }
-
 func workspaceIdPrompt() string {
 	validate := func(input string) error {
 		_, err := strconv.ParseFloat(input, 64)
@@ -113,7 +112,7 @@ func workspaceIdPrompt() string {
 		return nil
 	}
 	prompt := promptui.Prompt{
-		Label:    "Provide Workspace/s-[int Array supported]",
+		Label:    "Provide Workspace/s-[Array supported]",
 		Validate: validate,
 	}
 	resultWsId, err := prompt.Run()
@@ -129,13 +128,54 @@ type addUsersResponse struct {
 }
 
 type addusersResult struct {
-	Id           string `json:"id"`
-	InviteeEmail string `json:"inviteeEmail"`
-	AccountId    int    `json:"accountId"`
-	WorkspacesId []int  `json:"workspacesId"`
+	Id           string   `json:"id"`
+	InviteeEmail string   `json:"inviteeEmail"`
+	AccountId    int      `json:"accountId"`
+	WorkspacesId []int    `json:"workspacesId"`
+	DisplayName  string   `json:"displayName"`
+	Email        string   `json:"email"`
+	Roles        []string `json:"roles"`
 }
 
 func addUserByUidWs(userId, workspaceId int) {
+	roleWs := userRoleSelectorWs()
+	apiId, apiSecret := Getapikeys()
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	client := &http.Client{}
+	//	var data = strings.NewReader(`{"usersIds":[%v],"roles": ["manager"]}`)
+	data := fmt.Sprintf(`{"usersIds":[%v],"roles": ["%s"]}`, userId, roleWs)
+	var reqBodyData = strings.NewReader(data)
+	fmt.Println(reqBodyData)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", reqBodyData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var responseBodyWsAddUser addUsersResponse
+	json.Unmarshal(bodyText, &responseBodyWsAddUser)
+	totalRoles := []string{}
+	fmt.Printf("\n%-20s %-30s %-5s", "NAME", "EMAIL", "ROLES")
+	for i := 0; i < len(responseBodyWsAddUser.Result); i++ {
+		userName := responseBodyWsAddUser.Result[i].DisplayName
+		userEmail := responseBodyWsAddUser.Result[i].Email
+		for r := 0; r < len(responseBodyWsAddUser.Result[i].Roles); r++ {
+			arr := responseBodyWsAddUser.Result[i].Roles[r]
+			totalRoles = append(totalRoles, arr)
+		}
+		fmt.Printf("\n%-20s %-30s %-5s\n", userName, userEmail, totalRoles)
+	}
+}
+func addUserByUidWsraw(userId, workspaceId int) {
 	roleWs := userRoleSelectorWs()
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
