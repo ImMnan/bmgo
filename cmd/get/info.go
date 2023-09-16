@@ -182,8 +182,8 @@ func getWorkspace(workspaceId int) {
 	accountId := responseObjectWS.Result.AccountId
 	enabled := responseObjectWS.Result.Enabled
 
-	fmt.Printf("\n%-20s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
-	fmt.Printf("%-20s %-10d %-10d %-10t\n\n", workspaceName, accountId, members, enabled)
+	fmt.Printf("\n%-25s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
+	fmt.Printf("%-25s %-10d %-10d %-10t\n\n", workspaceName, accountId, members, enabled)
 }
 
 func getWorkspaceRaw(workspaceId int) {
