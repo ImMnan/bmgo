@@ -55,12 +55,28 @@ type oplsResult struct {
 	FuncIds          []string `json:"funcIds"`
 	ShipsId          []string `json:"shipsId"`
 	Ships            []ships
+	WorkspacesId     []int `json:"workspacesId"`
 }
-
 type ships struct {
 	Id    string `json:"id"`
 	Name  string `json:"name"`
 	State string `json:"state"`
+}
+
+func removeDuplicateValuesInt(slice []int) []int {
+	keys := make(map[int]bool)
+	list := []int{}
+
+	// If the key(values of the slice) is not equal
+	// to the already present value in new slice (list)
+	// then we append it. else we jump on another element.
+	for _, entry := range slice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func getOpls(accountId int) {
@@ -82,22 +98,29 @@ func getOpls(accountId int) {
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", bodyText)
-	fmt.Printf("\n%-25s %-20s %-10s %-10s %-10s %-10s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "CAP")
+	fmt.Printf("\n%-25s %-20s %-7s %-7s %-7s %-10s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "WORKSPACES")
 	var responseBodyAcOpls oplsResponse
 	json.Unmarshal(bodyText, &responseBodyAcOpls)
+	totalWorkspaces := []int{}
 	for i := 0; i < len(responseBodyAcOpls.Result); i++ {
 		harbourID := responseBodyAcOpls.Result[i].Id
 		oplName := responseBodyAcOpls.Result[i].Name
 		threadsPerEngine := responseBodyAcOpls.Result[i].ThreadsPerEngine
 		enginePerAgent := responseBodyAcOpls.Result[i].Slots
-		fmt.Printf("\n%-25s %-20s %-10v %-10v %-10v %-10v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyAcOpls.Result[i].ShipsId), (threadsPerEngine * enginePerAgent * len(responseBodyAcOpls.Result[i].ShipsId)))
+		for wd := 0; wd < len(responseBodyAcOpls.Result[i].WorkspacesId); wd++ {
+			workspaceList := responseBodyAcOpls.Result[i].WorkspacesId[wd]
+			totalWorkspaces = append(totalWorkspaces, workspaceList)
+		}
+		totalWorkspacesDup := removeDuplicateValuesInt(totalWorkspaces)
+		fmt.Printf("\n%-25s %-20s %-7v %-7v %-7v %-5v", harbourID, oplName, threadsPerEngine, enginePerAgent,
+			len(responseBodyAcOpls.Result[i].ShipsId), totalWorkspacesDup)
 	}
 	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 	fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
 	for i := 0; i < len(responseBodyAcOpls.Result); i++ {
 		oplName := responseBodyAcOpls.Result[i].Name
 		functAgent := responseBodyAcOpls.Result[i].FuncIds
-		fmt.Printf("\n%-20s %-5s", oplName, functAgent)
+		fmt.Printf("\n%-20s %-5s\n", oplName, functAgent)
 	}
 	fmt.Println("\n-")
 }
