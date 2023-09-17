@@ -47,8 +47,9 @@ func agentNamePrompt() string {
 		return nil
 	}
 	prompt := promptui.Prompt{
-		Label:    "Name your agent:",
-		Validate: validate,
+		Label:       "Name your agent:",
+		HideEntered: true,
+		Validate:    validate,
 	}
 	resultWsId, err := prompt.Run()
 	if err != nil {

@@ -50,12 +50,14 @@ func init() {
 
 func updateUserSelectorA() (string, bool) {
 	prompt := promptui.Select{
-		Label: "Select Account Role:",
-		Items: []string{"admin", "standard", "user_manager", "billing"},
+		Label:        "Select Account Role:",
+		Items:        []string{"admin", "standard", "user_manager", "billing"},
+		HideSelected: true,
 	}
 	prompt1 := promptui.Select{
-		Label: "Enable:",
-		Items: []bool{true, false},
+		Label:        "Enable:",
+		Items:        []bool{true, false},
+		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
 	if err != nil {
@@ -70,12 +72,14 @@ func updateUserSelectorA() (string, bool) {
 }
 func updateUserSelectorWs() (string, bool) {
 	prompt := promptui.Select{
-		Label: "Select Account Role:",
-		Items: []string{"tester", "manager", "viewer"},
+		Label:        "Select Account Role:",
+		Items:        []string{"tester", "manager", "viewer"},
+		HideSelected: true,
 	}
 	prompt1 := promptui.Select{
-		Label: "Enable:",
-		Items: []bool{true, false},
+		Label:        "Enable:",
+		Items:        []bool{true, false},
+		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
 	if err != nil {

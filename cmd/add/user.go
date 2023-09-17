@@ -57,12 +57,14 @@ func init() {
 }
 func userRoleSelectorA() (string, bool) {
 	prompt := promptui.Select{
-		Label: "Select Account Role",
-		Items: []string{"admin", "standard", "user_manager", "billing"},
+		Label:        "Select Account Role",
+		Items:        []string{"admin", "standard", "user_manager", "billing"},
+		HideSelected: true,
 	}
 	prompt1 := promptui.Select{
-		Label: "attachAutomatically",
-		Items: []bool{true, false},
+		Label:        "attachAutomatically",
+		Items:        []bool{true, false},
+		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
 	if err != nil {
@@ -77,8 +79,9 @@ func userRoleSelectorA() (string, bool) {
 }
 func userRoleSelectorWs() string {
 	prompt := promptui.Select{
-		Label: "Select Workspace Role",
-		Items: []string{"tester", "manager", "viewer"},
+		Label:        "Select Workspace Role",
+		Items:        []string{"tester", "manager", "viewer"},
+		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
 	if err != nil {
@@ -95,8 +98,9 @@ func workspaceIdPrompt() string {
 		return nil
 	}
 	prompt := promptui.Prompt{
-		Label:    "Provide Workspace/s-[Array supported]",
-		Validate: validate,
+		Label:       "Provide Workspace/s-[Array supported]",
+		HideEntered: true,
+		Validate:    validate,
 	}
 	resultWsId, err := prompt.Run()
 	if err != nil {
@@ -127,7 +131,6 @@ func addUserByUidWs(userId, workspaceId int) {
 	//	var data = strings.NewReader(`{"usersIds":[%v],"roles": ["manager"]}`)
 	data := fmt.Sprintf(`{"usersIds":[%v],"roles": ["%s"]}`, userId, roleWs)
 	var reqBodyData = strings.NewReader(data)
-	fmt.Println(reqBodyData)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", reqBodyData)
 	if err != nil {
 		log.Fatal(err)
@@ -162,10 +165,8 @@ func addUserByUidWsraw(userId, workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
-	//	var data = strings.NewReader(`{"usersIds":[%v],"roles": ["manager"]}`)
 	data := fmt.Sprintf(`{"usersIds":[%v],"roles": ["%s"]}`, userId, roleWs)
 	var reqBodyData = strings.NewReader(data)
-	fmt.Println(reqBodyData)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users", reqBodyData)
 	if err != nil {
 		log.Fatal(err)
@@ -258,7 +259,6 @@ func addUserByUidA(userId, accountId int) {
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
 	data := fmt.Sprintf(`{ "accountId": %v, "id": %v }`, accountId, userId)
-	fmt.Println(data)
 	var reqBodyData = strings.NewReader(data)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/"+accountIdStr+"/{s}/users", reqBodyData)
 	if err != nil {
