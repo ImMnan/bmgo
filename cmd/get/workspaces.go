@@ -76,10 +76,10 @@ func getWorkspaces(accountId int) {
 	for i := 0; i < len(responseObjectWS.Result); i++ {
 		workspaceName := responseObjectWS.Result[i].Name
 		members := responseObjectWS.Result[i].MembersCount
-		created := int64(responseObjectWS.Result[i].Created)
+		createdepoch := int64(responseObjectWS.Result[i].Created)
 		enabled := responseObjectWS.Result[i].Enabled
-		createdepoch := time.Unix(created, 0)
-		fmt.Printf("\n%-30s %-10d %-10t %-30v", workspaceName, members, enabled, createdepoch)
+		created := time.Unix(createdepoch, 0)
+		fmt.Printf("\n%-30s %-10d %-10t %-30v", workspaceName, members, enabled, created)
 	}
 	fmt.Println("\n-")
 }
