@@ -9,6 +9,7 @@ import (
 	"github.com/immnan/bmgo/cmd/add"
 	"github.com/immnan/bmgo/cmd/find"
 	"github.com/immnan/bmgo/cmd/get"
+	"github.com/immnan/bmgo/cmd/update"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,7 @@ func addSubCommand() {
 	rootCmd.AddCommand(get.GetCmd)
 	rootCmd.AddCommand(find.FindCmd)
 	rootCmd.AddCommand(add.AddCmd)
+	rootCmd.AddCommand(update.UpdateCmd)
 }
 func init() {
 	//	cobra.OnInitialize(initConfig)
