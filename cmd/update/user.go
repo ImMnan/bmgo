@@ -107,7 +107,6 @@ func updateUserA(userId, accountId int) {
 	userIdStr := strconv.Itoa(userId)
 	// var data = strings.NewReader(`{"roles":["user_manager"],"enabled": false}`)
 	data := fmt.Sprintf(`{"roles": ["%s"], "enabled": %t}`, roleA, enableA)
-	fmt.Println(data)
 	var reqBodyDataA = strings.NewReader(data)
 	req, err := http.NewRequest("PUT", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users/"+userIdStr, reqBodyDataA)
 	if err != nil {
@@ -145,7 +144,6 @@ func updateUserAraw(userId, accountId int) {
 	userIdStr := strconv.Itoa(userId)
 	// var data = strings.NewReader(`{"roles":["user_manager"],"enabled": false}`)
 	data := fmt.Sprintf(`{"roles": ["%s"], "enabled": %t}`, roleA, enableA)
-	fmt.Println(data)
 	var reqBodyDataA = strings.NewReader(data)
 	req, err := http.NewRequest("PUT", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users/"+userIdStr, reqBodyDataA)
 	if err != nil {
@@ -166,7 +164,6 @@ func updateUserAraw(userId, accountId int) {
 }
 
 func updateUserWs(userId, workspaceId int) {
-	fmt.Println(workspaceId)
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()
 	roleWs, enableWs := updateUserSelectorWs()
@@ -203,7 +200,6 @@ func updateUserWs(userId, workspaceId int) {
 	fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailWs, userTypeWs, userStatusWs, userRoleWs)
 }
 func updateUserWsraw(userId, workspaceId int) {
-	fmt.Println(workspaceId)
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()
 	roleWs, enableWs := updateUserSelectorWs()
