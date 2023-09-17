@@ -36,6 +36,7 @@ var agentCmd = &cobra.Command{
 func init() {
 	AddCmd.AddCommand(agentCmd)
 	agentCmd.Flags().String("hid", "", "Provide Harbour ID")
+	agentCmd.MarkFlagRequired("hid")
 }
 
 func agentNamePrompt() string {

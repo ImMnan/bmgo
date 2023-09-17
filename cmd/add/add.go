@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// getCmd represents the get command
+// AddCmd represents the add command
 var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Use get command Adding resources to Blazemeter",
