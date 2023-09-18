@@ -45,7 +45,7 @@ type addFolderResponse struct {
 	Result addfolderResult `json:"result"`
 }
 type addfolderResult struct {
-	Id   int    `json:"id"`
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -56,7 +56,7 @@ func addSharedfolder(folderName string, workspaceId int) {
 		"name": "%s",  
 		"workspaceId": %v}`, folderName, workspaceId)
 	reqBodyData := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/projects", reqBodyData)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/folders", reqBodyData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -76,8 +76,8 @@ func addSharedfolder(folderName string, workspaceId int) {
 	json.Unmarshal(bodyText, &responseBodyAddFolder)
 	folderIdres := responseBodyAddFolder.Result.Id
 	folderNameres := responseBodyAddFolder.Result.Name
-	fmt.Printf("\n%-15s %-15s", "Folder ID", "NAME")
-	fmt.Printf("\n%-15v %-15s", folderIdres, folderNameres)
+	fmt.Printf("\n%-30s %-15s", "Folder ID", "NAME")
+	fmt.Printf("\n%-30s %-15s", folderIdres, folderNameres)
 	fmt.Println("\n-")
 }
 func addSharedfolderraw(folderName string, workspaceId int) {
@@ -87,7 +87,7 @@ func addSharedfolderraw(folderName string, workspaceId int) {
 		"name": "%s",  
 		"workspaceId": %v}`, folderName, workspaceId)
 	reqBodyData := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/projects", reqBodyData)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/folders", reqBodyData)
 	if err != nil {
 		log.Fatal(err)
 	}
