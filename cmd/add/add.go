@@ -13,7 +13,7 @@ import (
 // AddCmd represents the add command
 var AddCmd = &cobra.Command{
 	Use:   "add",
-	Short: "Use get command Adding resources to Blazemeter",
+	Short: "Use Add command for Adding resources to Blazemeter",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()

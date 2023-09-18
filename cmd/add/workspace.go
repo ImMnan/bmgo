@@ -25,8 +25,11 @@ var workspaceCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if accountId != 0 && rawOutput {
 			addWorkspaceraw(workspaceName, accountId)
-		} else {
+		} else if accountId != 0 {
 			addWorkspace(workspaceName, accountId)
+		} else {
+			fmt.Println("\nPlease provide a correct Account Id to add workspace to")
+			fmt.Println("[bmgo add -a <account_id>...]")
 		}
 	},
 }

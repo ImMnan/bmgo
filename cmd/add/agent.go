@@ -25,10 +25,13 @@ var agentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if rawOutput {
+		if harbourId != "" && rawOutput {
 			addAgentraw(harbourId)
-		} else {
+		} else if harbourId != "" {
 			addAgent(harbourId)
+		} else {
+			fmt.Println("\nPlease provide a correct Harbour ID to add agent")
+			fmt.Println("[bmgo add agent --hid <harbour id>]")
 		}
 	},
 }
