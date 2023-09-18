@@ -21,13 +21,13 @@ var projectCmd = &cobra.Command{
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
-		workspaceName, _ := cmd.Flags().GetString("name")
+		projectName, _ := cmd.Flags().GetString("name")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
-		case (workspaceId != 0) && (workspaceName != "") && rawOutput:
-			addProjectraw(workspaceName, workspaceId)
-		case (workspaceId != 0) && (workspaceName != ""):
-			addProject(workspaceName, workspaceId)
+		case (workspaceId != 0) && (projectName != "") && rawOutput:
+			addProjectraw(projectName, workspaceId)
+		case (workspaceId != 0) && (projectName != ""):
+			addProject(projectName, workspaceId)
 		default:
 			fmt.Println("\nPlease provide a correct Workspace Id & Project Name")
 			fmt.Println("[bmgo add -w <workspace id> project --name <project name>]\n-")
@@ -49,13 +49,13 @@ type addProjectResult struct {
 	Name string `json:"name"`
 }
 
-func addProject(workspaceName string, workspaceId int) {
+func addProject(projectName string, workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	data := fmt.Sprintf(`{
 		"name": "%s", 
 		"description": "Project created through bmgo", 
-		"workspaceId": %v}`, workspaceName, workspaceId)
+		"workspaceId": %v}`, projectName, workspaceId)
 	reqBodyData := strings.NewReader(data)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/projects", reqBodyData)
 	if err != nil {
@@ -75,19 +75,19 @@ func addProject(workspaceName string, workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddProject addProjectResponse
 	json.Unmarshal(bodyText, &responseBodyAddProject)
-	projectId := responseBodyAddProject.Result.Id
-	projectName := responseBodyAddProject.Result.Name
+	projectIdres := responseBodyAddProject.Result.Id
+	projectNameres := responseBodyAddProject.Result.Name
 	fmt.Printf("\n%-15s %-15s", "PROJECT ID", "NAME")
-	fmt.Printf("\n%-15v %-15s", projectId, projectName)
+	fmt.Printf("\n%-15v %-15s", projectIdres, projectNameres)
 	fmt.Println("\n-")
 }
-func addProjectraw(workspaceName string, workspaceId int) {
+func addProjectraw(projectName string, workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	data := fmt.Sprintf(`{
 		"name": "%s", 
 		"description": "Project created through bmgo", 
-		"workspaceId": %v}`, workspaceName, workspaceId)
+		"workspaceId": %v}`, projectName, workspaceId)
 	reqBodyData := strings.NewReader(data)
 	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/projects", reqBodyData)
 	if err != nil {
