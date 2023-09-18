@@ -37,12 +37,8 @@ var userCmd = &cobra.Command{
 			addUserByEmailA(emailId, accountId)
 		case (workspaceId != 0) && (accountId == 0) && rawOutput:
 			addUserByUidWsraw(userId, workspaceId)
-		case (workspaceId == 0) && (accountId != 0) && rawOutput:
-			addUserByUidA(userId, accountId)
 		case (workspaceId != 0) && (accountId == 0) && !rawOutput:
 			addUserByUidWs(userId, workspaceId)
-		case (workspaceId == 0) && (accountId != 0) && !rawOutput:
-			addUserByUidA(userId, accountId)
 		default:
 			fmt.Println("\nPlease provide a correct workspace Id or Account Id to add user")
 			fmt.Println("[bmgo add -a <account_id>...] OR [bmgo add -w <workspace_id>...]")
@@ -239,32 +235,6 @@ func addUserByEmailAraw(emailId string, accountId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-// This below is an Admin level command
-func addUserByUidA(userId, accountId int) {
-	apiId, apiSecret := Getapikeys()
-	accountIdStr := strconv.Itoa(accountId)
-	client := &http.Client{}
-	data := fmt.Sprintf(`{ "accountId": %v, "id": %v }`, accountId, userId)
-	var reqBodyData = strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/"+accountIdStr+"/{s}/users", reqBodyData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
