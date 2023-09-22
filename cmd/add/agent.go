@@ -20,7 +20,7 @@ import (
 // oplCmd represents the opl command
 var agentCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Add agent",
+	Short: "Add agent into an OPL",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")

@@ -17,7 +17,7 @@ import (
 // workspaceCmd represents the workspace command
 var workspaceCmd = &cobra.Command{
 	Use:   "workspace",
-	Short: "Add workspace to account",
+	Short: "Add workspace to an account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		accountId, _ := cmd.Flags().GetInt("accountid")
@@ -28,8 +28,8 @@ var workspaceCmd = &cobra.Command{
 		} else if accountId != 0 {
 			addWorkspace(workspaceName, accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct Account Id to add workspace to")
-			fmt.Println("[bmgo add -a <account_id>...]")
+			fmt.Println("\nPlease provide a correct Account Id and workspace name to add workspace to")
+			fmt.Println("[bmgo add -a <account_id> workspace --name <workspace name>]")
 		}
 	},
 }

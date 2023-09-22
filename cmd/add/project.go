@@ -17,7 +17,7 @@ import (
 // projectCmd represents the project command
 var projectCmd = &cobra.Command{
 	Use:   "project",
-	Short: "A brief description of your command",
+	Short: "Add Project into workspace",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		workspaceId, _ := cmd.Flags().GetInt("workspaceid")

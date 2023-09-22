@@ -21,9 +21,9 @@ var AddCmd = &cobra.Command{
 }
 
 func init() {
-	AddCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Provide Account ID to add a resource to")
-	AddCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Provide Workspace ID to add a resource to")
-	AddCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
+	AddCmd.PersistentFlags().IntP("accountid", "a", 0, " Provide Account ID to add a resource to")
+	AddCmd.PersistentFlags().IntP("workspaceid", "w", 0, " Provide Workspace ID to add a resource to")
+	AddCmd.PersistentFlags().BoolP("raw", "r", false, "[OPTIONAL] If set, the output will be raw json")
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")

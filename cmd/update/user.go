@@ -36,8 +36,8 @@ var userCmd = &cobra.Command{
 		case (workspaceId == 0) && (accountId != 0) && !rawOutput:
 			updateUserA(userId, accountId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
-			fmt.Println("[bmgo update -a <account_id>...] OR [bmgo update -w <workspace_id>...]")
+			fmt.Println("\nPlease provide a correct workspace Id or Account Id to update the user")
+			fmt.Println("[bmgo update -a <account_id> user --uid <user Id>] OR [bmgo update -w <workspace_id> user --uid <user Id>]")
 		}
 	},
 }

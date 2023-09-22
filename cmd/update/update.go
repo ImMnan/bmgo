@@ -4,7 +4,6 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package update
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -14,16 +13,16 @@ import (
 // updateCmd represents the update command
 var UpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "A brief description of your command",
+	Short: "Use update command to modify exisiting resources in Blazemeter",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("update called")
+		cmd.Help()
 	},
 }
 
 func init() {
-	UpdateCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Provide Account ID to add a resource to")
-	UpdateCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Provide Workspace ID to add a resource to")
+	UpdateCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Account ID of the resource expected to being updated")
+	UpdateCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Workspace ID of the resource expected to being updated")
 	UpdateCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 	// Here you will define your flags and configuration settings.
 

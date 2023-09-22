@@ -17,7 +17,7 @@ import (
 // projectCmd represents the project command
 var sharedfolderCmd = &cobra.Command{
 	Use:   "sharedfolder",
-	Short: "A brief description of your command",
+	Short: "Add shared folder into workspace",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
