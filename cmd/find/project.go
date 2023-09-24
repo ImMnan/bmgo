@@ -84,6 +84,46 @@ func findProject(projectId int) {
 	projectCreatedEp := int64(responseObjectProject.Result.Created)
 	projectCreated := time.Unix(projectCreatedEp, 0)
 	fmt.Printf("%-20s %-15v %-15v\n", projectName, projectWorkspace, projectCreated)
+	listTestsProject(projectId)
+}
+func listTestsProject(projectId int) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	projectIdStr := strconv.Itoa(projectId)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("\n---------------------------------------------------------------------------------------------")
+	var responseObjectListTests ListTestsResponse
+	json.Unmarshal(bodyText, &responseObjectListTests)
+	fmt.Printf("%-10s %-30s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+	for i := 0; i < len(responseObjectListTests.Result); i++ {
+		testName := responseObjectListTests.Result[i].Name
+		testId := responseObjectListTests.Result[i].Id
+		testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
+		testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
+		if testLastRunEp1 != 0 {
+			testLastRun := time.Unix(testLastRunEp, 0)
+			fmt.Printf("\n%-10v %-30v %-15s", testId, testLastRun, testName)
+		} else {
+			testLastRun := testLastRunEp1
+			fmt.Printf("\n%-10v %-30v %-15s", testId, testLastRun, testName)
+		}
+
+	}
+	fmt.Println("\n-")
 }
 
 func findProjectraw(projectId int) {
