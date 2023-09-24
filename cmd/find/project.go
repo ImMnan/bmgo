@@ -108,7 +108,7 @@ func listTestsProject(projectId int) {
 	fmt.Println("\n---------------------------------------------------------------------------------------------")
 	var responseObjectListTests ListTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListTests)
-	fmt.Printf("%-10s %-30s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+	fmt.Printf("%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
 	for i := 0; i < len(responseObjectListTests.Result); i++ {
 		testName := responseObjectListTests.Result[i].Name
 		testId := responseObjectListTests.Result[i].Id
@@ -116,12 +116,12 @@ func listTestsProject(projectId int) {
 		testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
 		if testLastRunEp1 != 0 {
 			testLastRun := time.Unix(testLastRunEp, 0)
-			fmt.Printf("\n%-10v %-30v %-15s", testId, testLastRun, testName)
+			testLastRunSp := fmt.Sprint(testLastRun)
+			fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
 		} else {
 			testLastRun := testLastRunEp1
-			fmt.Printf("\n%-10v %-30v %-15s", testId, testLastRun, testName)
+			fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
 		}
-
 	}
 	fmt.Println("\n-")
 }
