@@ -76,7 +76,7 @@ func findTest(testId int) {
 	var responseObjectTest FindTestsResponse
 	json.Unmarshal(bodyText, &responseObjectTest)
 	testName := responseObjectTest.Result.Name
-	fmt.Printf("\nTEST NAME: %s\n", testName)
+	fmt.Printf("\nTEST NAME: %s", testName)
 	testLastRunEp1 := responseObjectTest.Result.LastRunTime
 	testProjectId := responseObjectTest.Result.ProjectId
 	testLastRunEp := int64(responseObjectTest.Result.LastRunTime)
@@ -90,10 +90,10 @@ func findTest(testId int) {
 	if testLastRunEp1 != 0 {
 		testLastRun := time.Unix(testLastRunEp, 0)
 		testLastRunSp := fmt.Sprint(testLastRun)
-		fmt.Printf("%-10v %-20s %-10d %-10s", testId, testLastRunSp[0:16], testProjectId, testExecutor)
+		fmt.Printf("%-10v %-20s %-10d %-10s\n\n", testId, testLastRunSp[0:16], testProjectId, testExecutor)
 	} else {
 		testLastRun := testLastRunEp1
-		fmt.Printf("%-10v %-20v %-10d %-10s\n", testId, testLastRun, testProjectId, testExecutor)
+		fmt.Printf("%-10v %-20v %-10d %-10s\n\n", testId, testLastRun, testProjectId, testExecutor)
 	}
 }
 func findTestraw(testId int) {
