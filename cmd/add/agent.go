@@ -54,12 +54,12 @@ func agentNamePrompt() string {
 		HideEntered: true,
 		Validate:    validate,
 	}
-	resultWsId, err := prompt.Run()
+	resultAgentName, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-	return resultWsId
+	return resultAgentName
 }
 
 type addAgentResponse struct {

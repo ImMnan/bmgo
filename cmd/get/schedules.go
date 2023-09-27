@@ -53,6 +53,7 @@ type scheduleResult struct {
 	NextRun     int    `json:"nextRun"`
 	Cron        string `json:"cron"`
 	CreatedById int    `json:"createdById"`
+	Enabled     bool   `json:"enabled"`
 }
 
 func getShedulesA(accountId int) {
@@ -75,16 +76,17 @@ func getShedulesA(accountId int) {
 	}
 	var responseBodyShedules shedulesResponse
 	json.Unmarshal(bodyText, &responseBodyShedules)
-	fmt.Printf("\n%-10s %-10s %-50s %-20s\n", "TEST", "OWNER", "CRON", "ID")
+	fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
 	for i := 0; i < len(responseBodyShedules.Result); i++ {
 		sheduleId := responseBodyShedules.Result[i].Id
 		scheduleTest := responseBodyShedules.Result[i].TestId
 		sheduleOwn := responseBodyShedules.Result[i].CreatedById
 		sheduleCron := responseBodyShedules.Result[i].Cron
+		sheduleEnabled := responseBodyShedules.Result[i].Enabled
 		//	sheduleNextRun := responseBodyShedules.Result[i].Next
 		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
 		fullDescription, _ := cd.GetDescription(crondescriptor.Full)
-		fmt.Printf("\n%-10v %-10v %-50s %-20s", scheduleTest, sheduleOwn, *fullDescription, sheduleId)
+		fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
 	}
 	fmt.Println("\n-")
 }
@@ -131,16 +133,17 @@ func getShedulesWs(workspaceId int) {
 	}
 	var responseBodyShedulesWs shedulesResponse
 	json.Unmarshal(bodyText, &responseBodyShedulesWs)
-	fmt.Printf("\n%-10s %-10s %-50s %-20s\n", "TEST", "OWNER", "CRON", "ID")
+	fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
 	for i := 0; i < len(responseBodyShedulesWs.Result); i++ {
 		sheduleId := responseBodyShedulesWs.Result[i].Id
 		scheduleTest := responseBodyShedulesWs.Result[i].TestId
 		sheduleOwn := responseBodyShedulesWs.Result[i].CreatedById
 		sheduleCron := responseBodyShedulesWs.Result[i].Cron
+		sheduleEnabled := responseBodyShedulesWs.Result[i].Enabled
 		//	sheduleNextRun := responseBodyShedules.Result[i].Next
 		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
 		fullDescription, _ := cd.GetDescription(crondescriptor.Full)
-		fmt.Printf("\n%-10v %-10v %-50s %-20s", scheduleTest, sheduleOwn, *fullDescription, sheduleId)
+		fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
 	}
 	fmt.Println("\n-")
 }
