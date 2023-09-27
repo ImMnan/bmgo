@@ -49,6 +49,7 @@ type findscheduleResult struct {
 	Cron           string `json:"cron"`
 	CreatedById    int    `json:"createdById"`
 	Created        int    `json:"created"`
+	Enabled        bool   `json:"enabled"`
 }
 
 func findSchedule(scheduleId string) {
@@ -71,17 +72,18 @@ func findSchedule(scheduleId string) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyFindShedules findshedulesResponse
 	json.Unmarshal(bodyText, &responseBodyFindShedules)
-	fmt.Printf("\n%-10s %-10s %-50s %-20s", "TEST", "OWNER", "CRON", "CREATED ON")
+	fmt.Printf("\n%-10s %-10s %-10s %-20s %-40s", "TEST", "OWNER", "ENABLED", "CREATED ON", "CRON")
 	scheduleTest := responseBodyFindShedules.Result.TestId
 	sheduleOwn := responseBodyFindShedules.Result.CreatedById
+	sheduleEnabled := responseBodyFindShedules.Result.Enabled
 	sheduleCron := responseBodyFindShedules.Result.Cron
 	cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
 	sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
-
 	sheduleCreatedEp := int64(responseBodyFindShedules.Result.Created)
 	sheduleCreated := time.Unix(sheduleCreatedEp, 0)
 	sheduleCreatedStr := fmt.Sprint(sheduleCreated)
-	fmt.Printf("\n%-10v %-10v %-50s %-20s\n", scheduleTest, sheduleOwn, *sheduleCronStr, sheduleCreatedStr[0:16])
+
+	fmt.Printf("\n%-10v %-10v %-10t %-20s %-40s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
 	fmt.Println("\n---------------------------------------------------------------------------------------------")
 	fmt.Println("List of upcomming test runs\n-")
 	for i := 0; i < len(responseBodyFindShedules.Result.NextExecutions); i++ {

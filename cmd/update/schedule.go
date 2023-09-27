@@ -89,7 +89,7 @@ func updateSchedule(scheduleId string) {
 	}
 	var responseBodyUpdateShedules updateshedulesResponse
 	json.Unmarshal(bodyText, &responseBodyUpdateShedules)
-	fmt.Printf("\n%-10s %-10s %-50s %-20s", "TEST", "ENABLED", "CRON", "CREATED ON")
+	fmt.Printf("\n%-10s %-10s %-20s %-40s", "TEST", "ENABLED", "CREATED ON", "CRON")
 	scheduleTest := responseBodyUpdateShedules.Result.TestId
 	sheduleEnabled := responseBodyUpdateShedules.Result.Enabled
 	sheduleCron := responseBodyUpdateShedules.Result.Cron
@@ -99,7 +99,7 @@ func updateSchedule(scheduleId string) {
 	sheduleCreatedEp := int64(responseBodyUpdateShedules.Result.Created)
 	sheduleCreated := time.Unix(sheduleCreatedEp, 0)
 	sheduleCreatedStr := fmt.Sprint(sheduleCreated)
-	fmt.Printf("\n%-10v %-10t %-50s %-20s\n\n", scheduleTest, sheduleEnabled, *sheduleCronStr, sheduleCreatedStr[0:16])
+	fmt.Printf("\n%-10v %-10t %-20s %-40s\n\n", scheduleTest, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
 }
 func updateScheduleraw(scheduleId string) {
 	apiId, apiSecret := Getapikeys()
