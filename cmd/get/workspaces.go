@@ -49,6 +49,7 @@ type wsResult struct {
 	MembersCount int    `json:"membersCount"`
 	AccountId    int    `json:"accountId"`
 	Created      int    `json:"created"`
+	Id           int    `json:"id"`
 }
 
 func getWorkspaces(accountId int) {
@@ -72,14 +73,16 @@ func getWorkspaces(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObjectWS workspacesResponse
 	json.Unmarshal(bodyText, &responseObjectWS)
-	fmt.Printf("\n%-30s %-10s %-10s %-30s\n", "NAME", "MEMBERS", "ENABLED", "CREATED")
+	fmt.Printf("\n%-10s %-35s %-10s %-10s %-30s\n", "ID", "NAME", "MEMBERS", "ENABLED", "CREATED")
 	for i := 0; i < len(responseObjectWS.Result); i++ {
+		workspaceId := responseObjectWS.Result[i].Id
 		workspaceName := responseObjectWS.Result[i].Name
 		members := responseObjectWS.Result[i].MembersCount
 		createdepoch := int64(responseObjectWS.Result[i].Created)
 		enabled := responseObjectWS.Result[i].Enabled
 		created := time.Unix(createdepoch, 0)
-		fmt.Printf("\n%-30s %-10d %-10t %-30v", workspaceName, members, enabled, created)
+		createdstr := fmt.Sprint(created)
+		fmt.Printf("\n% -10v %-35s %-10d %-10t %-30v", workspaceId, workspaceName, members, enabled, createdstr[0:16])
 	}
 	fmt.Println("\n-")
 }
