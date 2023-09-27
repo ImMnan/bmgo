@@ -26,8 +26,15 @@ var scheduleCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")
-		//	rawOutput, _ := cmd.Flags().GetBool("raw")
-		addSchedule(testId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if testId != 0 && rawOutput {
+			addScheduleraw(testId)
+		} else if testId != 0 {
+			addSchedule(testId)
+		} else {
+			fmt.Println("\nPlease provide a correct Test ID to add a schedule to")
+			fmt.Println("[bmgo add schedule --tid <test id>]")
+		}
 	},
 }
 
@@ -44,7 +51,7 @@ func cronPrompt() string {
 		return nil
 	}
 	prompt := promptui.Prompt{
-		Label:       "Cron Expression: ",
+		Label:       "Cron [example: 0 0 * * 1-5 ]: ",
 		HideEntered: true,
 		Validate:    validate,
 	}
@@ -93,7 +100,7 @@ func addSchedule(testId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddShedules addShedulesResponse
 	json.Unmarshal(bodyText, &responseBodyAddShedules)
-	fmt.Printf("\n%-28s %-10s %-50s %-15s", "SCHEDULE ID", "ENABLED", "CRON", "NEXT RUN")
+	fmt.Printf("\n%-28s %-10s %-20s %-40s", "SCHEDULE ID", "ENABLED", "NEXT RUN", "CRON")
 	scheduleId := responseBodyAddShedules.Result.Id
 	//sheduleOwn := responseBodyAddShedules.Result.CreatedById
 	sheduleCron := responseBodyAddShedules.Result.Cron
@@ -103,5 +110,28 @@ func addSchedule(testId int) {
 	sheduleNextrunEP := int64(responseBodyAddShedules.Result.Created)
 	sheduleNextRun := time.Unix(sheduleNextrunEP, 0)
 	sheduleNextRunStr := fmt.Sprint(sheduleNextRun)
-	fmt.Printf("\n%-28s %-10t %-50s %-15s\n\n", scheduleId, scheduleEnabled, *sheduleCronStr, sheduleNextRunStr[0:16])
+	fmt.Printf("\n%-28s %-10t %-20s %-40s\n\n", scheduleId, scheduleEnabled, sheduleNextRunStr[0:16], *sheduleCronStr)
+}
+func addScheduleraw(testId int) {
+	apiId, apiSecret := Getapikeys()
+	cronExpression := cronPrompt()
+	client := &http.Client{}
+	data := fmt.Sprintf(`{"cron":"%s","testId":%d}`, cronExpression, testId)
+	reqBodydata := strings.NewReader(data)
+	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/schedules", reqBodydata)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
