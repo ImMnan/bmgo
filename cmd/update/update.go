@@ -21,9 +21,9 @@ var UpdateCmd = &cobra.Command{
 }
 
 func init() {
-	UpdateCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Account ID of the resource expected to being updated")
-	UpdateCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Workspace ID of the resource expected to being updated")
-	UpdateCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
+	UpdateCmd.PersistentFlags().IntP("accountid", "a", 0, "Account ID of the resource expected to being updated")
+	UpdateCmd.PersistentFlags().IntP("workspaceid", "w", 0, "Workspace ID of the resource expected to being updated")
+	UpdateCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional]If set, the output will be raw json")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command

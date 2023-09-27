@@ -63,11 +63,11 @@ func updateUserSelectorA() (string, bool) {
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
-	_, attachAuto, err := prompt1.Run()
+	_, enableUser, err := prompt1.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
-	boolVal, _ := strconv.ParseBool(attachAuto)
+	boolVal, _ := strconv.ParseBool(enableUser)
 	return roleSelected, boolVal
 }
 func updateUserSelectorWs() (string, bool) {
