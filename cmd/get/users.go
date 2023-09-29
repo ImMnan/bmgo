@@ -20,9 +20,19 @@ var usersCmd = &cobra.Command{
 	Short: "Get a list of users part of the account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("users called")
-		accountId, _ := cmd.Flags().GetInt("accountid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		disabledUsers, _ := cmd.Flags().GetBool("disabled")
 

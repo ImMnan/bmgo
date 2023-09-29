@@ -21,12 +21,18 @@ var testsCmd = &cobra.Command{
 	Short: "Get list of tests",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		workspacesId, _ := cmd.Flags().GetInt("workspaceid")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var workspaceId int
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if workspacesId != 0 && rawOutput {
-			listTestsWSraw(workspacesId)
-		} else if workspacesId != 0 {
-			listTestsWS(workspacesId)
+		if workspaceId != 0 && rawOutput {
+			listTestsWSraw(workspaceId)
+		} else if workspaceId != 0 {
+			listTestsWS(workspaceId)
 		} else {
 			fmt.Println("\nPlease provide a valid Workspace ID to get list of tests")
 			fmt.Println("[bmgo get -w <workspace id>...")

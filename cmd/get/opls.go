@@ -20,9 +20,19 @@ var oplsCmd = &cobra.Command{
 	Short: "Get a list of Private locations in the account",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("opls called")
-		accountId, _ := cmd.Flags().GetInt("accountid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if (workspaceId != 0) && (accountId == 0) && rawOutput {
 			getOplsWSRaw(workspaceId)

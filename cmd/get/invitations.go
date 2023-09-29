@@ -21,8 +21,13 @@ var invitationsCmd = &cobra.Command{
 	Short: "Get a list of pending invitations within your account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("invitations called")
-		accountId, _ := cmd.Flags().GetInt("accountid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		var accountId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
 		getInvitations(accountId)
 	},
 }
@@ -45,10 +50,8 @@ type invitesResult struct {
 
 func getInvitations(accountId int) {
 	apiId, apiSecret := Getapikeys()
-
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	fmt.Println("Account scanned is: ", accountIdStr)
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/invitations?limit=300", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +72,7 @@ func getInvitations(accountId int) {
 	totalWsNames := []string{}
 	totalARoles := []string{}
 	//totalWsRoles := []string{}
-	fmt.Printf("\n\n%-25s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "AC_ROLE", "WORKSPACE/S & ROLES")
+	fmt.Printf("\n%-25s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "AC_ROLE", "WORKSPACE/S & ROLES")
 	for i := 0; i < len(responseBodyInvites.Result); i++ {
 		accountName := responseBodyInvites.Result[i].AccountName
 		userEmail := responseBodyInvites.Result[i].InviteeEmail

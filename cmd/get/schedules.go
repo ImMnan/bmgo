@@ -21,8 +21,19 @@ var schedulesCmd = &cobra.Command{
 	Short: "Get a list of schedules in the account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		accountId, _ := cmd.Flags().GetInt("accountid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
 		case (accountId != 0) && (workspaceId == 0) && rawOutput:

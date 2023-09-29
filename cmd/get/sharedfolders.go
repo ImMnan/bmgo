@@ -21,8 +21,13 @@ var sharedfoldersCmd = &cobra.Command{
 	Short: "Get details of shared folders within workspace",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var workspaceId int
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawrawOutput, _ := cmd.Flags().GetBool("raw")
 		if rawrawOutput {
 			getSharedFolderWsRaw(workspaceId)

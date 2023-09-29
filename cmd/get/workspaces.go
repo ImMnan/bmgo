@@ -21,8 +21,14 @@ var workspacesCmd = &cobra.Command{
 	Short: "Get a list of workspaces in the account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("workspaces called")
-		accountId, _ := cmd.Flags().GetInt("accountid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		var accountId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if accountId != 0 && rawOutput {
 			getWorkspacesraw(accountId)

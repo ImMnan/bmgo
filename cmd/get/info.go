@@ -21,9 +21,20 @@ var infoCmd = &cobra.Command{
 	Short: "Get details about the account, use with other sub-commands to get specific/detailed info",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		accountId, _ := cmd.Flags().GetInt("accountid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 
 		if (workspaceId != 0) && (accountId == 0) && rawOutput {
 			getWorkspaceRaw(workspaceId)

@@ -21,8 +21,19 @@ var projectsCmd = &cobra.Command{
 	Short: "Get the list of Projects under workspace",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
-		accountId, _ := cmd.Flags().GetInt("accountid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
 		case workspaceId == 0 && accountId != 0 && rawOutput:

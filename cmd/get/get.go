@@ -24,7 +24,8 @@ func init() {
 	GetCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Provide Account ID to add a resource to")
 	GetCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Provide Workspace ID to add a resource to")
 	GetCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
-	// Cobra supports Persistent Flags which will work for this command
+	GetCmd.PersistentFlags().Bool("ac", false, "Use default account Id (defaults.yaml)")
+	GetCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (defaults.yaml)")
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
 
@@ -45,4 +46,29 @@ func Getapikeys() (string, string) {
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
+}
+
+func defaultAccount() int {
+	vp := viper.New()
+	vp.SetConfigName("defaults")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	accountId := vp.GetInt("accountId")
+	return accountId
+}
+func defaultWorkspace() int {
+	vp := viper.New()
+	vp.SetConfigName("defaults")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	workspaceId := vp.GetInt("workspaceId")
+	return workspaceId
 }
