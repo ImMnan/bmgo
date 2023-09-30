@@ -37,10 +37,10 @@ func init() {
 // Getting the API Keys
 func Getapikeys() (string, string) {
 	vp := viper.New()
-	vp.SetConfigName("api-key")
-	vp.SetConfigType("json")
-	vp.AddConfigPath(".")
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
 	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
 	err := vp.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -53,9 +53,10 @@ func Getapikeys() (string, string) {
 // Getting default account Id in case user uses --ac
 func defaultAccount() int {
 	vp := viper.New()
-	vp.SetConfigName("defaults")
+	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
 	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -67,9 +68,10 @@ func defaultAccount() int {
 // Getting default workspace Id in case user uses --ws
 func defaultWorkspace() int {
 	vp := viper.New()
-	vp.SetConfigName("defaults")
+	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
 	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)

@@ -57,6 +57,7 @@ func init() {
 
 type inforesponseA struct {
 	Result result
+	Error  errorResult `json:"error"`
 }
 type result struct {
 	Name            string `json:"name"`
@@ -80,10 +81,13 @@ type plan struct {
 	ReportRetention  int    `json:"reportRetention"`
 	ThreadsPerEngine int    `json:"threadsPerEngine"`
 }
+type errorResult struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 func getAccountId(accountId int) {
 	apiId, apiSecret := Getapikeys()
-
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr, nil)
@@ -103,35 +107,37 @@ func getAccountId(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObject inforesponseA
 	json.Unmarshal(bodyText, &responseObject)
+	if responseObject.Error.Code == 0 {
+		accountName := responseObject.Result.Name
+		ownerEmail := responseObject.Result.Owner.Email
+		workspaceCount := responseObject.Result.WorkspacesCount
+		memberCount := responseObject.Result.MembersCount
+		accountPlanId := responseObject.Result.Plan.Id
+		//	accountPlanName := responseObject.Result.Plan.Name
+		accountReportRet := responseObject.Result.Plan.ReportRetention
+		accountThreadsPE := responseObject.Result.Plan.ThreadsPerEngine
+		accountCredits := responseObject.Result.Credits
+		accountExpiration := int64(responseObject.Result.Expiration)
+		mytimeExpiration := time.Unix(accountExpiration, 0)
+		expirationTimeStr := fmt.Sprint(mytimeExpiration)
+		fmt.Printf("\n%-25s %-35s %-15s %-10s\n", "NAME", "OWNER", "WORKSPACES", "USERS")
+		fmt.Printf("%-25s %-35s %-15d %-10d\n", accountName, ownerEmail, workspaceCount, memberCount)
 
-	accountName := responseObject.Result.Name
-	ownerEmail := responseObject.Result.Owner.Email
-	workspaceCount := responseObject.Result.WorkspacesCount
-	memberCount := responseObject.Result.MembersCount
-
-	accountPlanId := responseObject.Result.Plan.Id
-	//	accountPlanName := responseObject.Result.Plan.Name
-	accountReportRet := responseObject.Result.Plan.ReportRetention
-	accountThreadsPE := responseObject.Result.Plan.ThreadsPerEngine
-	accountCredits := responseObject.Result.Credits
-	accountExpiration := int64(responseObject.Result.Expiration)
-	mytimeExpiration := time.Unix(accountExpiration, 0)
-	expirationTimeStr := fmt.Sprint(mytimeExpiration)
-	fmt.Printf("\n%-25s %-35s %-15s %-10s\n", "NAME", "OWNER", "WORKSPACES", "USERS")
-	fmt.Printf("%-25s %-35s %-15d %-10d\n", accountName, ownerEmail, workspaceCount, memberCount)
-
-	fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
-
-	fmt.Printf("\n%-35s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
-	fmt.Printf("%-35s %-10v %-10d %-10d %-20v\n", accountPlanId, accountCredits, accountReportRet, accountThreadsPE, expirationTimeStr[0:16])
-
-	cloudProviders := []string{}
-	for i := 0; i < len(responseObject.Result.CloudProviders); i++ {
-		cloudProlist := responseObject.Result.CloudProviders[i]
-		cloudProviders = append(cloudProviders, cloudProlist)
+		fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
+		fmt.Printf("\n%-35s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
+		fmt.Printf("%-35s %-10v %-10d %-10d %-20v\n", accountPlanId, accountCredits, accountReportRet, accountThreadsPE, expirationTimeStr[0:16])
+		cloudProviders := []string{}
+		for i := 0; i < len(responseObject.Result.CloudProviders); i++ {
+			cloudProlist := responseObject.Result.CloudProviders[i]
+			cloudProviders = append(cloudProviders, cloudProlist)
+		}
+		fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
+		fmt.Printf("\nSupported cloud providers: %v \n\n", cloudProviders)
+	} else {
+		errorCode := responseObject.Error.Code
+		errorMessage := responseObject.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
-	fmt.Printf("\nSupported cloud providers: %v \n\n", cloudProviders)
 }
 
 func getAccountIdRaw(accountId int) {
@@ -158,6 +164,7 @@ func getAccountIdRaw(accountId int) {
 
 type inforesponseBodyWS struct {
 	Result resultWS
+	Error  errorResult `json:"error"`
 }
 
 type resultWS struct {
@@ -188,14 +195,18 @@ func getWorkspace(workspaceId int) {
 	}
 	var responseObjectWS inforesponseBodyWS
 	json.Unmarshal(bodyText, &responseObjectWS)
-
-	workspaceName := responseObjectWS.Result.Name
-	members := responseObjectWS.Result.MembersCount
-	accountId := responseObjectWS.Result.AccountId
-	enabled := responseObjectWS.Result.Enabled
-
-	fmt.Printf("\n%-25s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
-	fmt.Printf("%-25s %-10d %-10d %-10t\n\n", workspaceName, accountId, members, enabled)
+	if responseObjectWS.Error.Code == 0 {
+		workspaceName := responseObjectWS.Result.Name
+		members := responseObjectWS.Result.MembersCount
+		accountId := responseObjectWS.Result.AccountId
+		enabled := responseObjectWS.Result.Enabled
+		fmt.Printf("\n%-25s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
+		fmt.Printf("%-25s %-10d %-10d %-10t\n\n", workspaceName, accountId, members, enabled)
+	} else {
+		errorCode := responseObjectWS.Error.Code
+		errorMessage := responseObjectWS.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 
 func getWorkspaceRaw(workspaceId int) {
