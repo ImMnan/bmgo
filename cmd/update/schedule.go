@@ -9,12 +9,10 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jsuar/go-cron-descriptor/pkg/crondescriptor"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -40,20 +38,6 @@ var scheduleCmd = &cobra.Command{
 func init() {
 	UpdateCmd.AddCommand(scheduleCmd)
 	scheduleCmd.Flags().String("sid", "", "Provide the schedule ID to modify")
-}
-
-func isEnabledPromt() bool {
-	prompt1 := promptui.Select{
-		Label:        "Enable:",
-		Items:        []bool{true, false},
-		HideSelected: true,
-	}
-	_, attachAuto, err := prompt1.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	boolVal, _ := strconv.ParseBool(attachAuto)
-	return boolVal
 }
 
 type updateshedulesResponse struct {

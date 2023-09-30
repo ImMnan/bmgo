@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -48,51 +47,6 @@ func init() {
 	userCmd.MarkFlagRequired("uid")
 }
 
-func updateUserSelectorA() (string, bool) {
-	prompt := promptui.Select{
-		Label:        "Select Account Role:",
-		Items:        []string{"admin", "standard", "user_manager", "billing"},
-		HideSelected: true,
-	}
-	prompt1 := promptui.Select{
-		Label:        "Enable:",
-		Items:        []bool{true, false},
-		HideSelected: true,
-	}
-	_, roleSelected, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	_, enableUser, err := prompt1.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	boolVal, _ := strconv.ParseBool(enableUser)
-	return roleSelected, boolVal
-}
-func updateUserSelectorWs() (string, bool) {
-	prompt := promptui.Select{
-		Label:        "Select Account Role:",
-		Items:        []string{"tester", "manager", "viewer"},
-		HideSelected: true,
-	}
-	prompt1 := promptui.Select{
-		Label:        "Enable:",
-		Items:        []bool{true, false},
-		HideSelected: true,
-	}
-	_, roleSelected, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	_, enableUser, err := prompt1.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	boolVal, _ := strconv.ParseBool(enableUser)
-	return roleSelected, boolVal
-}
-
 type updateUserResponse struct {
 	Result updateUserResult `json:"result"`
 }
@@ -104,8 +58,9 @@ type updateUserResult struct {
 }
 
 func updateUserA(userId, accountId int) {
-	roleA, enableA := updateUserSelectorA()
 	apiId, apiSecret := Getapikeys()
+	roleA := updateUserRolesA()
+	enableA := isEnabledPromt()
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
 	userIdStr := strconv.Itoa(userId)
@@ -141,8 +96,9 @@ func updateUserA(userId, accountId int) {
 	fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailA, userTypeA, userStatusA, userRoleA)
 }
 func updateUserAraw(userId, accountId int) {
-	roleA, enableA := updateUserSelectorA()
 	apiId, apiSecret := Getapikeys()
+	roleA := updateUserRolesA()
+	enableA := isEnabledPromt()
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
 	userIdStr := strconv.Itoa(userId)
@@ -170,7 +126,8 @@ func updateUserAraw(userId, accountId int) {
 func updateUserWs(userId, workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()
-	roleWs, enableWs := updateUserSelectorWs()
+	roleWs := updateUserRolesWs()
+	enableWs := isEnabledPromt()
 	userIdStr := strconv.Itoa(userId)
 	client := &http.Client{}
 	data := fmt.Sprintf(`{"roles":["%s"],"enabled": %t}`, roleWs, enableWs)
@@ -206,7 +163,8 @@ func updateUserWs(userId, workspaceId int) {
 func updateUserWsraw(userId, workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()
-	roleWs, enableWs := updateUserSelectorWs()
+	roleWs := updateUserRolesWs()
+	enableWs := isEnabledPromt()
 	userIdStr := strconv.Itoa(userId)
 	client := &http.Client{}
 	data := fmt.Sprintf(`{"roles":["%s"],"enabled": %t}`, roleWs, enableWs)

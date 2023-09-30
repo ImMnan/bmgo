@@ -4,8 +4,11 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package update
 
 import (
+	"fmt"
 	"log"
+	"strconv"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -47,4 +50,43 @@ func Getapikeys() (string, string) {
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
+}
+
+// Functions to support the subcommands
+func isEnabledPromt() bool {
+	prompt1 := promptui.Select{
+		Label:        "Enable:",
+		Items:        []bool{true, false},
+		HideSelected: true,
+	}
+	_, attachAuto, err := prompt1.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+	}
+	boolVal, _ := strconv.ParseBool(attachAuto)
+	return boolVal
+}
+func updateUserRolesWs() string {
+	prompt := promptui.Select{
+		Label:        "Select Account Role:",
+		Items:        []string{"tester", "manager", "viewer"},
+		HideSelected: true,
+	}
+	_, roleSelected, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+	}
+	return roleSelected
+}
+func updateUserRolesA() string {
+	prompt := promptui.Select{
+		Label:        "Select Account Role:",
+		Items:        []string{"admin", "standard", "user_manager", "billing"},
+		HideSelected: true,
+	}
+	_, roleSelected, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+	}
+	return roleSelected
 }
