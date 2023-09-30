@@ -34,6 +34,7 @@ func init() {
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+// Getting the API Keys
 func Getapikeys() (string, string) {
 	vp := viper.New()
 	vp.SetConfigName("api-key")
@@ -48,6 +49,7 @@ func Getapikeys() (string, string) {
 	return apiId, apiSecret
 }
 
+// Getting default account Id in case user uses --ac
 func defaultAccount() int {
 	vp := viper.New()
 	vp.SetConfigName("defaults")
@@ -60,6 +62,8 @@ func defaultAccount() int {
 	accountId := vp.GetInt("accountId")
 	return accountId
 }
+
+// Getting default workspace Id in case user uses --ws
 func defaultWorkspace() int {
 	vp := viper.New()
 	vp.SetConfigName("defaults")

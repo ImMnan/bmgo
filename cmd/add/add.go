@@ -52,7 +52,8 @@ func Getapikeys() (string, string) {
 	return apiId, apiSecret
 }
 
-// Functions to support the subcommands
+// Helper functions added here
+// Prompt to user-input for agent name
 func agentNamePrompt() string {
 	validate := func(input string) error {
 		if len(input) <= 2 {
@@ -72,6 +73,8 @@ func agentNamePrompt() string {
 	}
 	return resultAgentName
 }
+
+// Prompt to user to configure OPL
 func oplconfigPrompt() (int, int) {
 	validate := func(input string) error {
 		_, err := strconv.ParseFloat(input, 64)
@@ -105,6 +108,7 @@ func oplconfigPrompt() (int, int) {
 	return resultEPA, resultTPE
 }
 
+// Prompt to user-input for cron expression
 func cronPrompt() string {
 	validate := func(input string) error {
 		if len(input) <= 8 {
@@ -125,6 +129,7 @@ func cronPrompt() string {
 	return resultCronEx
 }
 
+// Prompt to user-input for selection of account level user roles
 func userRoleSelectorA() (string, bool) {
 	prompt := promptui.Select{
 		Label:        "Select Account Role",
@@ -147,6 +152,8 @@ func userRoleSelectorA() (string, bool) {
 	boolVal, _ := strconv.ParseBool(attachAuto)
 	return roleSelected, boolVal
 }
+
+// Prompt to user-input for selection of workspace level user roles
 func userRoleSelectorWs() string {
 	prompt := promptui.Select{
 		Label:        "Select Workspace Role",
@@ -160,6 +167,7 @@ func userRoleSelectorWs() string {
 	return roleSelected
 }
 
+// Prompt to user for workspace ids
 func workspaceIdPrompt() string {
 	validate := func(input string) error {
 		_, err := strconv.ParseFloat(input, 64)

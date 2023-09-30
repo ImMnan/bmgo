@@ -52,7 +52,8 @@ func Getapikeys() (string, string) {
 	return apiId, apiSecret
 }
 
-// Functions to support the subcommands
+// Helper functions added here
+// Prompt to user-input to enable or disable resources
 func isEnabledPromt() bool {
 	prompt1 := promptui.Select{
 		Label:        "Enable:",
@@ -66,6 +67,8 @@ func isEnabledPromt() bool {
 	boolVal, _ := strconv.ParseBool(attachAuto)
 	return boolVal
 }
+
+// Prompt to user-input for role section within workspace
 func updateUserRolesWs() string {
 	prompt := promptui.Select{
 		Label:        "Select Account Role:",
@@ -78,6 +81,8 @@ func updateUserRolesWs() string {
 	}
 	return roleSelected
 }
+
+// Prompt to user-input for role section within account
 func updateUserRolesA() string {
 	prompt := promptui.Select{
 		Label:        "Select Account Role:",
