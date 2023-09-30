@@ -40,6 +40,7 @@ func Getapikeys() (string, string) {
 	vp.SetConfigName("api-key")
 	vp.SetConfigType("json")
 	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -78,6 +79,7 @@ func defaultWorkspace() int {
 }
 
 // Helper functions added here
+// Removing duplicates
 func removeDuplicateValuesInt(slice []int) []int {
 	keys := make(map[int]bool)
 	list := []int{}
