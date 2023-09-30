@@ -47,7 +47,8 @@ func init() {
 }
 
 type workspacesResponse struct {
-	Result []wsResult `json:"result"`
+	Result []wsResult  `json:"result"`
+	Error  errorResult `json:"error"`
 }
 type wsResult struct {
 	Name         string `json:"name"`
@@ -79,18 +80,24 @@ func getWorkspaces(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObjectWS workspacesResponse
 	json.Unmarshal(bodyText, &responseObjectWS)
-	fmt.Printf("\n%-10s %-35s %-10s %-10s %-30s\n", "ID", "NAME", "MEMBERS", "ENABLED", "CREATED")
-	for i := 0; i < len(responseObjectWS.Result); i++ {
-		workspaceId := responseObjectWS.Result[i].Id
-		workspaceName := responseObjectWS.Result[i].Name
-		members := responseObjectWS.Result[i].MembersCount
-		createdepoch := int64(responseObjectWS.Result[i].Created)
-		enabled := responseObjectWS.Result[i].Enabled
-		created := time.Unix(createdepoch, 0)
-		createdstr := fmt.Sprint(created)
-		fmt.Printf("\n% -10v %-35s %-10d %-10t %-30v", workspaceId, workspaceName, members, enabled, createdstr[0:16])
+	if responseObjectWS.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-35s %-10s %-10s %-30s\n", "ID", "NAME", "MEMBERS", "ENABLED", "CREATED")
+		for i := 0; i < len(responseObjectWS.Result); i++ {
+			workspaceId := responseObjectWS.Result[i].Id
+			workspaceName := responseObjectWS.Result[i].Name
+			members := responseObjectWS.Result[i].MembersCount
+			createdepoch := int64(responseObjectWS.Result[i].Created)
+			enabled := responseObjectWS.Result[i].Enabled
+			created := time.Unix(createdepoch, 0)
+			createdstr := fmt.Sprint(created)
+			fmt.Printf("\n% -10v %-35s %-10d %-10t %-30v", workspaceId, workspaceName, members, enabled, createdstr[0:16])
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseObjectWS.Error.Code
+		errorMessage := responseObjectWS.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 
 func getWorkspacesraw(accountId int) {

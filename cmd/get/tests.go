@@ -46,6 +46,7 @@ func init() {
 
 type ListTestsResponse struct {
 	Result []listTestsResult `json:"result"`
+	Error  errorResult       `json:"error"`
 }
 type listTestsResult struct {
 	Name        string `json:"name"`
@@ -74,22 +75,29 @@ func listTestsWS(workspaceId int) {
 	}
 	var responseObjectListTests ListTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListTests)
-	fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
-	for i := 0; i < len(responseObjectListTests.Result); i++ {
-		testName := responseObjectListTests.Result[i].Name
-		testId := responseObjectListTests.Result[i].Id
-		testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
-		testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
-		if testLastRunEp1 != 0 {
-			testLastRun := time.Unix(testLastRunEp, 0)
-			testLastRunSp := fmt.Sprint(testLastRun)
-			fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
-		} else {
-			testLastRun := testLastRunEp1
-			fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
+	if responseObjectListTests.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+		for i := 0; i < len(responseObjectListTests.Result); i++ {
+			testName := responseObjectListTests.Result[i].Name
+			testId := responseObjectListTests.Result[i].Id
+			testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
+			testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
+			if testLastRunEp1 != 0 {
+				testLastRun := time.Unix(testLastRunEp, 0)
+				testLastRunSp := fmt.Sprint(testLastRun)
+				fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
+			} else {
+				testLastRun := testLastRunEp1
+				fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
+			}
 		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseObjectListTests.Error.Code
+		errorMessage := responseObjectListTests.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
+
 }
 
 func listTestsWSraw(workspaceId int) {

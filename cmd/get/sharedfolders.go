@@ -32,7 +32,6 @@ var sharedfoldersCmd = &cobra.Command{
 		if rawrawOutput {
 			getSharedFolderWsRaw(workspaceId)
 		} else {
-			fmt.Printf("Getting sharedfolders within workspace %v ...\n", workspaceId)
 			getSharedFolderWs(workspaceId)
 		}
 	},
@@ -44,6 +43,7 @@ func init() {
 
 type sfolderResponseWS struct {
 	Result []sfoldersResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 
 type sfoldersResult struct {
@@ -74,16 +74,23 @@ func getSharedFolderWs(workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyWsSfolders sfolderResponseWS
 	json.Unmarshal(bodyText, &responseBodyWsSfolders)
-	fmt.Printf("\n%-25s %-15s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
-	for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
-		sFolderId := responseBodyWsSfolders.Result[i].Id
-		sFolderName := responseBodyWsSfolders.Result[i].Name
-		sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
-		sFHidden := responseBodyWsSfolders.Result[i].Hidden
-		epochCreated := time.Unix(sFolderCreated, 0)
-		fmt.Printf("\n%-25s %-15s %-32v %-10t", sFolderId, sFolderName, epochCreated, sFHidden)
+	if responseBodyWsSfolders.Error.Code == 0 {
+		fmt.Printf("\n%-25s %-25s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
+		for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
+			sFolderId := responseBodyWsSfolders.Result[i].Id
+			sFolderName := responseBodyWsSfolders.Result[i].Name
+			sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
+			sFHidden := responseBodyWsSfolders.Result[i].Hidden
+			epochCreated := time.Unix(sFolderCreated, 0)
+			fmt.Printf("\n%-25s %-25s %-32v %-10t", sFolderId, sFolderName, epochCreated, sFHidden)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyWsSfolders.Error.Code
+		errorMessage := responseBodyWsSfolders.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
+
 }
 
 func getSharedFolderWsRaw(workspaceId int) {

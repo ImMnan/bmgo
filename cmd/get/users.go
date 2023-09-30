@@ -66,6 +66,7 @@ func init() {
 
 type usersResponse struct {
 	Result []usersResult `json:"result"`
+	Error  errorResult   `json:"error"`
 }
 
 type usersResult struct {
@@ -98,16 +99,22 @@ func getUsersA(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyAUsers)
-	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
-	//	rolesListTotal := []string{}
-	for i := 0; i < len(responseBodyAUsers.Result); i++ {
-		userIdWS := responseBodyAUsers.Result[i].Id
-		displayNameWS := responseBodyAUsers.Result[i].DisplayName
-		emailIdWS := responseBodyAUsers.Result[i].Email
-		enabledUserWS := responseBodyAUsers.Result[i].Enabled
-		fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+	if responseBodyAUsers.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		//	rolesListTotal := []string{}
+		for i := 0; i < len(responseBodyAUsers.Result); i++ {
+			userIdWS := responseBodyAUsers.Result[i].Id
+			displayNameWS := responseBodyAUsers.Result[i].DisplayName
+			emailIdWS := responseBodyAUsers.Result[i].Email
+			enabledUserWS := responseBodyAUsers.Result[i].Enabled
+			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAUsers.Error.Code
+		errorMessage := responseBodyAUsers.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func getUsersAraw(accountId int) {
 	apiId, apiSecret := Getapikeys()
@@ -153,16 +160,22 @@ func getUsersADis(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyAUsers)
-	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
-	//	rolesListTotal := []string{}
-	for i := 0; i < len(responseBodyAUsers.Result); i++ {
-		userIdWS := responseBodyAUsers.Result[i].Id
-		displayNameWS := responseBodyAUsers.Result[i].DisplayName
-		emailIdWS := responseBodyAUsers.Result[i].Email
-		enabledUserWS := responseBodyAUsers.Result[i].Enabled
-		fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+	if responseBodyAUsers.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		//	rolesListTotal := []string{}
+		for i := 0; i < len(responseBodyAUsers.Result); i++ {
+			userIdWS := responseBodyAUsers.Result[i].Id
+			displayNameWS := responseBodyAUsers.Result[i].DisplayName
+			emailIdWS := responseBodyAUsers.Result[i].Email
+			enabledUserWS := responseBodyAUsers.Result[i].Enabled
+			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAUsers.Error.Code
+		errorMessage := responseBodyAUsers.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func getUsersArawDis(accountId int) {
 	apiId, apiSecret := Getapikeys()
@@ -205,21 +218,25 @@ func getUsersWS(workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
-	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
-	//	rolesListTotal := []string{}
-	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
-		userIdWS := responseBodyWsUsers.Result[i].Id
-		displayNameWS := responseBodyWsUsers.Result[i].DisplayName
-		emailIdWS := responseBodyWsUsers.Result[i].Email
-		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
-		fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+	if responseBodyWsUsers.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		//	rolesListTotal := []string{}
+		for i := 0; i < len(responseBodyWsUsers.Result); i++ {
+			userIdWS := responseBodyWsUsers.Result[i].Id
+			displayNameWS := responseBodyWsUsers.Result[i].DisplayName
+			emailIdWS := responseBodyWsUsers.Result[i].Email
+			enabledUserWS := responseBodyWsUsers.Result[i].Enabled
+			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyWsUsers.Error.Code
+		errorMessage := responseBodyWsUsers.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
-
 func getUsersWSraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
@@ -262,17 +279,22 @@ func getUsersWSDis(workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
-	fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
-	for i := 0; i < len(responseBodyWsUsers.Result); i++ {
-		userIdWS := responseBodyWsUsers.Result[i].Id
-		displayNameWS := responseBodyWsUsers.Result[i].DisplayName
-		emailIdWS := responseBodyWsUsers.Result[i].Email
-		enabledUserWS := responseBodyWsUsers.Result[i].Enabled
-		fmt.Printf("\n%-10v %-25s %30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+	if responseBodyWsUsers.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		for i := 0; i < len(responseBodyWsUsers.Result); i++ {
+			userIdWS := responseBodyWsUsers.Result[i].Id
+			displayNameWS := responseBodyWsUsers.Result[i].DisplayName
+			emailIdWS := responseBodyWsUsers.Result[i].Email
+			enabledUserWS := responseBodyWsUsers.Result[i].Enabled
+			fmt.Printf("\n%-10v %-25s %30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyWsUsers.Error.Code
+		errorMessage := responseBodyWsUsers.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
-
 func getUsersWSrawDis(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 
