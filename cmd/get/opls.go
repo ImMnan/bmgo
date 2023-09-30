@@ -55,6 +55,7 @@ func init() {
 
 type oplsResponse struct {
 	Result []oplsResult `json:"result"`
+	Error  errorResult  `json:"error"`
 }
 
 type oplsResult struct {
@@ -95,28 +96,35 @@ func getOpls(accountId int) {
 	fmt.Printf("\n%-25s %-20s %-7s %-7s %-7s %-10s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "WORKSPACES")
 	var responseBodyAcOpls oplsResponse
 	json.Unmarshal(bodyText, &responseBodyAcOpls)
-	totalWorkspaces := []int{}
-	for i := 0; i < len(responseBodyAcOpls.Result); i++ {
-		harbourID := responseBodyAcOpls.Result[i].Id
-		oplName := responseBodyAcOpls.Result[i].Name
-		threadsPerEngine := responseBodyAcOpls.Result[i].ThreadsPerEngine
-		enginePerAgent := responseBodyAcOpls.Result[i].Slots
-		for wd := 0; wd < len(responseBodyAcOpls.Result[i].WorkspacesId); wd++ {
-			workspaceList := responseBodyAcOpls.Result[i].WorkspacesId[wd]
-			totalWorkspaces = append(totalWorkspaces, workspaceList)
+	if responseBodyAcOpls.Error.Code == 0 {
+		totalWorkspaces := []int{}
+		for i := 0; i < len(responseBodyAcOpls.Result); i++ {
+			harbourID := responseBodyAcOpls.Result[i].Id
+			oplName := responseBodyAcOpls.Result[i].Name
+			threadsPerEngine := responseBodyAcOpls.Result[i].ThreadsPerEngine
+			enginePerAgent := responseBodyAcOpls.Result[i].Slots
+			for wd := 0; wd < len(responseBodyAcOpls.Result[i].WorkspacesId); wd++ {
+				workspaceList := responseBodyAcOpls.Result[i].WorkspacesId[wd]
+				totalWorkspaces = append(totalWorkspaces, workspaceList)
+			}
+			totalWorkspacesDup := removeDuplicateValuesInt(totalWorkspaces)
+			fmt.Printf("\n%-25s %-20s %-7v %-7v %-7v %-5v", harbourID, oplName, threadsPerEngine, enginePerAgent,
+				len(responseBodyAcOpls.Result[i].ShipsId), totalWorkspacesDup)
 		}
-		totalWorkspacesDup := removeDuplicateValuesInt(totalWorkspaces)
-		fmt.Printf("\n%-25s %-20s %-7v %-7v %-7v %-5v", harbourID, oplName, threadsPerEngine, enginePerAgent,
-			len(responseBodyAcOpls.Result[i].ShipsId), totalWorkspacesDup)
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
+		for i := 0; i < len(responseBodyAcOpls.Result); i++ {
+			oplName := responseBodyAcOpls.Result[i].Name
+			functAgent := responseBodyAcOpls.Result[i].FuncIds
+			fmt.Printf("\n%-20s %-5s\n", oplName, functAgent)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAcOpls.Error.Code
+		errorMessage := responseBodyAcOpls.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
-	for i := 0; i < len(responseBodyAcOpls.Result); i++ {
-		oplName := responseBodyAcOpls.Result[i].Name
-		functAgent := responseBodyAcOpls.Result[i].FuncIds
-		fmt.Printf("\n%-20s %-5s\n", oplName, functAgent)
-	}
-	fmt.Println("\n-")
+
 }
 func getOplsRaw(accountId int) {
 	apiId, apiSecret := Getapikeys()
@@ -162,32 +170,38 @@ func getOplsWS(workspaceId int) {
 	fmt.Printf("\n%-25s %-20s %-10s %-10s %-10s %-10s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "CAP")
 	var responseBodyWsOpls oplsResponse
 	json.Unmarshal(bodyText, &responseBodyWsOpls)
-	for i := 0; i < len(responseBodyWsOpls.Result); i++ {
-		harbourID := responseBodyWsOpls.Result[i].Id
-		oplName := responseBodyWsOpls.Result[i].Name
-		threadsPerEngine := responseBodyWsOpls.Result[i].ThreadsPerEngine
-		enginePerAgent := responseBodyWsOpls.Result[i].Slots
-		fmt.Printf("\n%-25s %-20s %-10v %-10v %-10v %-10v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyWsOpls.Result[i].ShipsId), (threadsPerEngine * enginePerAgent * len(responseBodyWsOpls.Result[i].ShipsId)))
-	}
-	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
-	for i := 0; i < len(responseBodyWsOpls.Result); i++ {
-		oplName := responseBodyWsOpls.Result[i].Name
-		functAgent := responseBodyWsOpls.Result[i].FuncIds
-		fmt.Printf("\n%-20s %-5s", oplName, functAgent)
-	}
-	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-20s %-20s %-25s %-10s\n", "NAME", "SHIP NAME", "SHIP ID", "STATE")
-	for i := 0; i < len(responseBodyWsOpls.Result); i++ {
-		oplName := responseBodyWsOpls.Result[i].Name
-		for f := 0; f < len(responseBodyWsOpls.Result[i].Ships); f++ {
-			shipId := responseBodyWsOpls.Result[i].Ships[f].Id
-			shipName := responseBodyWsOpls.Result[i].Ships[f].Name
-			shipStatus := responseBodyWsOpls.Result[i].Ships[f].State
-			fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+	if responseBodyWsOpls.Error.Code == 0 {
+		for i := 0; i < len(responseBodyWsOpls.Result); i++ {
+			harbourID := responseBodyWsOpls.Result[i].Id
+			oplName := responseBodyWsOpls.Result[i].Name
+			threadsPerEngine := responseBodyWsOpls.Result[i].ThreadsPerEngine
+			enginePerAgent := responseBodyWsOpls.Result[i].Slots
+			fmt.Printf("\n%-25s %-20s %-10v %-10v %-10v %-10v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyWsOpls.Result[i].ShipsId), (threadsPerEngine * enginePerAgent * len(responseBodyWsOpls.Result[i].ShipsId)))
 		}
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
+		for i := 0; i < len(responseBodyWsOpls.Result); i++ {
+			oplName := responseBodyWsOpls.Result[i].Name
+			functAgent := responseBodyWsOpls.Result[i].FuncIds
+			fmt.Printf("\n%-20s %-5s", oplName, functAgent)
+		}
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NAME", "SHIP NAME", "SHIP ID", "STATE")
+		for i := 0; i < len(responseBodyWsOpls.Result); i++ {
+			oplName := responseBodyWsOpls.Result[i].Name
+			for f := 0; f < len(responseBodyWsOpls.Result[i].Ships); f++ {
+				shipId := responseBodyWsOpls.Result[i].Ships[f].Id
+				shipName := responseBodyWsOpls.Result[i].Ships[f].Name
+				shipStatus := responseBodyWsOpls.Result[i].Ships[f].State
+				fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+			}
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyWsOpls.Error.Code
+		errorMessage := responseBodyWsOpls.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 
 func getOplsWSRaw(workspaceId int) {

@@ -57,6 +57,7 @@ func init() {
 
 type projectsResponse struct {
 	Result []projectsResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 type projectsResult struct {
 	Id         int    `json:"id"`
@@ -85,16 +86,22 @@ func getProjectsWs(workspaceId int) {
 	}
 	var responseBodyProjectsWs projectsResponse
 	json.Unmarshal(bodyText, &responseBodyProjectsWs)
-	fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
-	for i := 0; i < len(responseBodyProjectsWs.Result); i++ {
-		projectId := responseBodyProjectsWs.Result[i].Id
-		projectName := responseBodyProjectsWs.Result[i].Name
-		projectTests := responseBodyProjectsWs.Result[i].TestsCount
-		pCreatedEpoch := int64(responseBodyProjectsWs.Result[i].Created)
-		projectCreated := time.Unix(pCreatedEpoch, 0)
-		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+	if responseBodyProjectsWs.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
+		for i := 0; i < len(responseBodyProjectsWs.Result); i++ {
+			projectId := responseBodyProjectsWs.Result[i].Id
+			projectName := responseBodyProjectsWs.Result[i].Name
+			projectTests := responseBodyProjectsWs.Result[i].TestsCount
+			pCreatedEpoch := int64(responseBodyProjectsWs.Result[i].Created)
+			projectCreated := time.Unix(pCreatedEpoch, 0)
+			fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyProjectsWs.Error.Code
+		errorMessage := responseBodyProjectsWs.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func getProjectsWsraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
@@ -137,16 +144,22 @@ func getProjectsA(accountId int) {
 	}
 	var responseBodyProjectsA projectsResponse
 	json.Unmarshal(bodyText, &responseBodyProjectsA)
-	fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
-	for i := 0; i < len(responseBodyProjectsA.Result); i++ {
-		projectId := responseBodyProjectsA.Result[i].Id
-		projectName := responseBodyProjectsA.Result[i].Name
-		projectTests := responseBodyProjectsA.Result[i].TestsCount
-		pCreatedEpoch := int64(responseBodyProjectsA.Result[i].Created)
-		projectCreated := time.Unix(pCreatedEpoch, 0)
-		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+	if responseBodyProjectsA.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
+		for i := 0; i < len(responseBodyProjectsA.Result); i++ {
+			projectId := responseBodyProjectsA.Result[i].Id
+			projectName := responseBodyProjectsA.Result[i].Name
+			projectTests := responseBodyProjectsA.Result[i].TestsCount
+			pCreatedEpoch := int64(responseBodyProjectsA.Result[i].Created)
+			projectCreated := time.Unix(pCreatedEpoch, 0)
+			fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyProjectsA.Error.Code
+		errorMessage := responseBodyProjectsA.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func getProjectsAraw(accountId int) {
 	apiId, apiSecret := Getapikeys()
