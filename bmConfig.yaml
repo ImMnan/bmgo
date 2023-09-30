@@ -2,4 +2,4 @@
 # Note these can be also be declared with command flag -a or -w followed by account id or workspace id respectively
 # Use --ac or --ws if you want to use these values by default[flag 1]
 accountId: 1195941
-workspaceId: 1294894
+workspaceId: 1226630
