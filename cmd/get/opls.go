@@ -73,22 +73,6 @@ type ships struct {
 	State string `json:"state"`
 }
 
-func removeDuplicateValuesInt(slice []int) []int {
-	keys := make(map[int]bool)
-	list := []int{}
-
-	// If the key(values of the slice) is not equal
-	// to the already present value in new slice (list)
-	// then we append it. else we jump on another element.
-	for _, entry := range slice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
 func getOpls(accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdStr := strconv.Itoa(accountId)
