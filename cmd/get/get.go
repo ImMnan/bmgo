@@ -34,6 +34,11 @@ func init() {
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+type errorResult struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 // Getting the API Keys
 func Getapikeys() (string, string) {
 	vp := viper.New()

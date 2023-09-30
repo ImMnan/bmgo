@@ -81,10 +81,6 @@ type plan struct {
 	ReportRetention  int    `json:"reportRetention"`
 	ThreadsPerEngine int    `json:"threadsPerEngine"`
 }
-type errorResult struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
 
 func getAccountId(accountId int) {
 	apiId, apiSecret := Getapikeys()
