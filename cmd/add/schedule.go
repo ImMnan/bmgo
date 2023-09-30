@@ -5,17 +5,14 @@ package add
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/jsuar/go-cron-descriptor/pkg/crondescriptor"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -41,26 +38,6 @@ var scheduleCmd = &cobra.Command{
 func init() {
 	AddCmd.AddCommand(scheduleCmd)
 	scheduleCmd.Flags().Int("tid", 0, "Provide a test id to create a schedule for")
-}
-
-func cronPrompt() string {
-	validate := func(input string) error {
-		if len(input) <= 8 {
-			return errors.New("invalid crone")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:       "Cron [example: 0 0 * * 1-5 ]: ",
-		HideEntered: true,
-		Validate:    validate,
-	}
-	resultCronEx, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	return resultCronEx
 }
 
 type addShedulesResponse struct {

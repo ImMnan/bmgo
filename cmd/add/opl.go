@@ -5,16 +5,12 @@ package add
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -57,39 +53,6 @@ type oplResult struct {
 	ShipsId          []string `json:"shipsId"`
 	AccountId        int      `json:"accountid"`
 	WorkspacesId     []int    `json:"workspacesId"`
-}
-
-func oplconfigPrompt() (int, int) {
-	validate := func(input string) error {
-		_, err := strconv.ParseFloat(input, 64)
-		if err != nil {
-			return errors.New("invalid number or nan")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:       "Number of Engines per Agent",
-		HideEntered: true,
-		Validate:    validate,
-	}
-	prompt1 := promptui.Prompt{
-		Label:       "Number of Threads per Engine",
-		HideEntered: true,
-		Validate:    validate,
-	}
-	resultEPAstr, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	resultTPEstr, err := prompt1.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	resultEPA, _ := strconv.Atoi(resultEPAstr)
-	resultTPE, _ := strconv.Atoi(resultTPEstr)
-	return resultEPA, resultTPE
 }
 
 func addOpl(accountId int, oplName string) {

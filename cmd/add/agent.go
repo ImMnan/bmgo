@@ -5,15 +5,12 @@ package add
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -40,26 +37,6 @@ func init() {
 	AddCmd.AddCommand(agentCmd)
 	agentCmd.Flags().String("hid", "", "Provide Harbour ID")
 	agentCmd.MarkFlagRequired("hid")
-}
-
-func agentNamePrompt() string {
-	validate := func(input string) error {
-		if len(input) <= 2 {
-			return errors.New("invalid name")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:       "Name your agent:",
-		HideEntered: true,
-		Validate:    validate,
-	}
-	resultAgentName, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	return resultAgentName
 }
 
 type addAgentResponse struct {

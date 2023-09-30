@@ -5,16 +5,13 @@ package add
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -50,60 +47,6 @@ func init() {
 	AddCmd.AddCommand(userCmd)
 	userCmd.Flags().Int("uid", 0, "User ID for the user")
 	userCmd.Flags().String("email", "", "Enter the Email ID of the user invited!")
-}
-func userRoleSelectorA() (string, bool) {
-	prompt := promptui.Select{
-		Label:        "Select Account Role",
-		Items:        []string{"admin", "standard", "user_manager", "billing"},
-		HideSelected: true,
-	}
-	prompt1 := promptui.Select{
-		Label:        "attachAutomatically",
-		Items:        []bool{true, false},
-		HideSelected: true,
-	}
-	_, roleSelected, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	_, attachAuto, err := prompt1.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	boolVal, _ := strconv.ParseBool(attachAuto)
-	return roleSelected, boolVal
-}
-func userRoleSelectorWs() string {
-	prompt := promptui.Select{
-		Label:        "Select Workspace Role",
-		Items:        []string{"tester", "manager", "viewer"},
-		HideSelected: true,
-	}
-	_, roleSelected, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-	}
-	return roleSelected
-}
-func workspaceIdPrompt() string {
-	validate := func(input string) error {
-		_, err := strconv.ParseFloat(input, 64)
-		if err != nil {
-			return errors.New("invalid workspace")
-		}
-		return nil
-	}
-	prompt := promptui.Prompt{
-		Label:       "Provide Workspace/s-[Array supported]",
-		HideEntered: true,
-		Validate:    validate,
-	}
-	resultWsId, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	return resultWsId
 }
 
 type addUsersResponse struct {
