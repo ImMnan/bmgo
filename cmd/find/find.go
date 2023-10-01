@@ -35,12 +35,13 @@ func init() {
 
 func Getapikeys() (string, string) {
 	vp := viper.New()
-	vp.SetConfigName("api-key")
-	vp.SetConfigType("json")
-	vp.AddConfigPath(".")
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
 	err := vp.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "\nPlease add your Blazemeter configurations to bmConfig.yaml file in your home directory")
 	}
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")

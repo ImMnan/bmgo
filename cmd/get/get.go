@@ -34,6 +34,7 @@ func init() {
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+// Error handling struct
 type errorResult struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -48,7 +49,7 @@ func Getapikeys() (string, string) {
 	//	vp.AddConfigPath(".")
 	err := vp.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err, "\nPlease add your Blazemeter configurations to bmConfig.yaml file in your home directory")
 	}
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
