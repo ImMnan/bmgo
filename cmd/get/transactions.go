@@ -28,20 +28,31 @@ var transactionsCmd = &cobra.Command{
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if workspaceId != 0 && rawOutput {
+		serviceId, _ := cmd.Flags().GetInt("serviceid")
+		switch {
+		case workspaceId != 0 && serviceId == 0 && rawOutput:
 			getTransactionsWsraw(workspaceId)
-		} else if workspaceId != 0 {
+		case workspaceId != 0 && serviceId != 0 && rawOutput:
+			getTransactionsServiceraw(workspaceId, serviceId)
+		case workspaceId != 0 && serviceId == 0:
 			getTransactionsWs(workspaceId)
-		} else {
-			fmt.Println("\nPlease provide a valid Workspace ID to get list of tests")
+		case workspaceId != 0 && serviceId != 0:
+			getTransactionsService(workspaceId, serviceId)
+		default:
+			fmt.Println("\nPlease provide a valid Workspace ID &+OR Service id to get list of transactions")
 			fmt.Println("[bmgo get -w <workspace id>...")
 		}
 	},
 }
 
+func init() {
+	GetCmd.AddCommand(transactionsCmd)
+	transactionsCmd.Flags().Int("serviceid", 0, "Provide a service Id")
+}
+
 type transactionsResponse struct {
 	Result []transactionsResult `json:"result"`
-	Error  errorResult          `json:"error"`
+	Error  string               `json:"error"`
 }
 type transactionsResult struct {
 	Id          int    `json:"id"`
@@ -50,9 +61,6 @@ type transactionsResult struct {
 	ServiceName string `json:"serviceName"`
 }
 
-func init() {
-	GetCmd.AddCommand(transactionsCmd)
-}
 func getTransactionsWs(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
@@ -87,7 +95,7 @@ func getTransactionsWs(workspaceId int) {
 		}
 		fmt.Println("\n-")
 	} else {
-		errorCode := 400
+		errorCode := 404
 		fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
 	}
 }
@@ -97,6 +105,68 @@ func getTransactionsWsraw(workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	//	serviceId := serviceIdPrompt()
 	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("accept", "*/*")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+func getTransactionsService(workspaceId, serviceId int) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	serviceIdStr := strconv.Itoa(serviceId)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("accept", "*/*")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var responseBodyTransactions transactionsResponse
+	json.Unmarshal(bodyText, &responseBodyTransactions)
+	if len(responseBodyTransactions.Result) >= 1 {
+		fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
+		for i := 0; i < len(responseBodyTransactions.Result); i++ {
+			transId := responseBodyTransactions.Result[i].Id
+			transName := responseBodyTransactions.Result[i].Name
+			serviceId := responseBodyTransactions.Result[i].ServiceId
+			serviceName := responseBodyTransactions.Result[i].ServiceName
+			fmt.Printf("\n%-10d %-35s %-10d %-15s", transId, transName, serviceId, serviceName)
+		}
+		fmt.Println("\n-")
+	} else if responseBodyTransactions.Error != "" {
+		errorCode := 404
+		fmt.Printf("\nError Code: %v\nError Message: %v\n-", errorCode, responseBodyTransactions.Error)
+	} else {
+		errorCode := 404
+		fmt.Printf("\nError code: %v\nError Message:No Transactions found in workspace %v or service %v.\nPlease provide correct workspace Id or Service Id.\n\n-", errorCode, workspaceId, serviceId)
+	}
+}
+func getTransactionsServiceraw(workspaceId, serviceId int) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	serviceIdStr := strconv.Itoa(serviceId)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}

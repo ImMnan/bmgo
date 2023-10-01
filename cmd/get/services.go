@@ -45,7 +45,7 @@ func init() {
 
 type servicesResponse struct {
 	Result []servicesResult `json:"result"`
-	Error  errorResult      `json:"error"`
+	Error  string           `json:"error"`
 }
 type servicesResult struct {
 	Id          int    `json:"id"`
@@ -84,9 +84,12 @@ func getServicesWs(workspaceId int) {
 			fmt.Printf("\n%-10d %-30s %-30s", serviceId, serviceName, serviceDescr)
 		}
 		fmt.Println("\n-")
+	} else if responseBodyServices.Error != "" {
+		errorCode := 404
+		fmt.Printf("\nError Code: %v\nError Message: %v\n-", errorCode, responseBodyServices.Error)
 	} else {
 		errorCode := 404
-		fmt.Printf("\nError code: %v\nError Message: No Services found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
+		fmt.Printf("\nError code: %v\nError Message:No Transactions found in workspace %v\nPlease provide correct workspace Id.\n-", errorCode, workspaceId)
 	}
 }
 func getServicesWsraw(workspaceId int) {
