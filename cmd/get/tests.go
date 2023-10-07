@@ -90,6 +90,7 @@ func listTestsWS(workspaceId int) {
 			testId := responseObjectListTests.Result[i].Id
 			testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
 			testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
+			// This is because there are epoch values as "0", it converts to a time on 1970s, so we want to condition that here:
 			if testLastRunEp1 != 0 {
 				testLastRun := time.Unix(testLastRunEp, 0)
 				testLastRunSp := fmt.Sprint(testLastRun)
@@ -105,9 +106,7 @@ func listTestsWS(workspaceId int) {
 		errorMessage := responseObjectListTests.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-
 }
-
 func listTestsWSraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
@@ -135,7 +134,8 @@ func listTestsWSProject(workspaceId, projectId int) {
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	projectIdStr := strconv.Itoa(projectId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?workspaceId="+workspaceIdStr+"&projectId="+projectIdStr+"&limit=0", nil)
+	fmt.Println("This is prjects filter")
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr+"&workspaceId="+workspaceIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,6 +159,7 @@ func listTestsWSProject(workspaceId, projectId int) {
 			testId := responseObjectListTests.Result[i].Id
 			testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
 			testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
+			// This is because there are epoch values as "0", it converts to a time on 1970s, so we want to condition that here:
 			if testLastRunEp1 != 0 {
 				testLastRun := time.Unix(testLastRunEp, 0)
 				testLastRunSp := fmt.Sprint(testLastRun)
@@ -174,7 +175,6 @@ func listTestsWSProject(workspaceId, projectId int) {
 		errorMessage := responseObjectListTests.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-
 }
 func listTestsWSProjectraw(workspaceId, projectId int) {
 	apiId, apiSecret := Getapikeys()
