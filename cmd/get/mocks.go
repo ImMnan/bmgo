@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// transactionsCmd represents the transactions command
+// mocksCmd represents the transactions command
 var mocksCmd = &cobra.Command{
 	Use:   "mocks",
 	Short: "Get all mock services in a workspace Or within a service",
