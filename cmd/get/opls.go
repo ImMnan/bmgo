@@ -69,9 +69,10 @@ type oplsResult struct {
 	WorkspacesId     []int `json:"workspacesId"`
 }
 type ships struct {
-	Id    string `json:"id"`
-	Name  string `json:"name"`
-	State string `json:"state"`
+	Id            string `json:"id"`
+	Name          string `json:"name"`
+	State         string `json:"state"`
+	LastHeartBeat int    `json:"lastHeartBeat"`
 }
 
 func getOpls(accountId int) {
@@ -167,7 +168,7 @@ func getOplsWS(workspaceId int) {
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", bodyText)
-	fmt.Printf("\n%-25s %-20s %-10s %-10s %-10s %-10s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "CAP")
+	fmt.Printf("\n%-25s %-25s %-7s %-7s %-7s %-5s \n", "HARBOUR ID", "NAME", "TPE", "EPA", "AGENTS", "WORKSPACES")
 	var responseBodyWsOpls oplsResponse
 	json.Unmarshal(bodyText, &responseBodyWsOpls)
 	if responseBodyWsOpls.Error.Code == 0 {
@@ -176,14 +177,20 @@ func getOplsWS(workspaceId int) {
 			oplName := responseBodyWsOpls.Result[i].Name
 			threadsPerEngine := responseBodyWsOpls.Result[i].ThreadsPerEngine
 			enginePerAgent := responseBodyWsOpls.Result[i].Slots
-			fmt.Printf("\n%-25s %-20s %-10v %-10v %-10v %-10v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyWsOpls.Result[i].ShipsId), (threadsPerEngine * enginePerAgent * len(responseBodyWsOpls.Result[i].ShipsId)))
+			totalWorkspaces := []int{}
+			for wd := 0; wd < len(responseBodyWsOpls.Result[i].WorkspacesId); wd++ {
+				workspaceList := responseBodyWsOpls.Result[i].WorkspacesId[wd]
+				totalWorkspaces = append(totalWorkspaces, workspaceList)
+			}
+			totalWorkspacesDup := removeDuplicateValuesInt(totalWorkspaces)
+			fmt.Printf("\n%-25s %-25s %-7v %-7v %-7v %-5v", harbourID, oplName, threadsPerEngine, enginePerAgent, len(responseBodyWsOpls.Result[i].ShipsId), totalWorkspacesDup)
 		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 		fmt.Printf("%-20s %-20s\n", "NAME", "FUNCTIONALITIES SUPPORTED")
 		for i := 0; i < len(responseBodyWsOpls.Result); i++ {
 			oplName := responseBodyWsOpls.Result[i].Name
 			functAgent := responseBodyWsOpls.Result[i].FuncIds
-			fmt.Printf("\n%-20s %-5s", oplName, functAgent)
+			fmt.Printf("\n%-20s %-5s\n", oplName, functAgent)
 		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NAME", "SHIP NAME", "SHIP ID", "STATE")
