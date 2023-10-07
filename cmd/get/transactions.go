@@ -47,7 +47,7 @@ var transactionsCmd = &cobra.Command{
 
 func init() {
 	GetCmd.AddCommand(transactionsCmd)
-	transactionsCmd.Flags().Int("serviceid", 0, "Provide a service Id")
+	transactionsCmd.Flags().Int("serviceid", 0, "Provide a service Id to filter the results")
 }
 
 type transactionsResponse struct {
@@ -66,7 +66,7 @@ func getTransactionsWs(workspaceId int) {
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	//	serviceId := serviceIdPrompt()
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions", nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?limit=-1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func getTransactionsWsraw(workspaceId int) {
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	//	serviceId := serviceIdPrompt()
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions", nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?limit=-1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -126,7 +126,7 @@ func getTransactionsService(workspaceId, serviceId int) {
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	serviceIdStr := strconv.Itoa(serviceId)
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr, nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr+"&limit=-1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -166,7 +166,7 @@ func getTransactionsServiceraw(workspaceId, serviceId int) {
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	serviceIdStr := strconv.Itoa(serviceId)
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr, nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr+"&limit=-1", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
