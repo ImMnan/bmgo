@@ -61,6 +61,7 @@ type listMultiTestsResult struct {
 	Id                 int         `json:"id"`
 	LastRunTime        int         `json:"lastRunTime"`
 	TestsForExecutions []scenarios `json:"testsForExecutions"`
+	ProjectId          int         `json:"projectId"`
 }
 type scenarios struct {
 	TestId int `json:"testId"`
@@ -88,12 +89,13 @@ func listMultiTestsWS(workspaceId int) {
 	var responseObjectListMultiTests ListMultiTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListMultiTests)
 	if responseObjectListMultiTests.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-10s %-20s %-15s\n", "TEST ID", "SCENARIOS", "LAST RUN", "TEST NAME")
+		fmt.Printf("\n%-10s %-10s %-20s %-10s %-10s\n", "TEST ID", "SCENARIOS", "LAST RUN", "PROJECT", "TEST NAME")
 		for i := 0; i < len(responseObjectListMultiTests.Result); i++ {
 			testName := responseObjectListMultiTests.Result[i].Name
 			testId := responseObjectListMultiTests.Result[i].Id
 			testLastRunEp1 := responseObjectListMultiTests.Result[i].LastRunTime
 			testLastRunEp := int64(responseObjectListMultiTests.Result[i].LastRunTime)
+			testProjectId := responseObjectListMultiTests.Result[i].ProjectId
 			totalscenarios := []int{}
 			for s := 0; s < len(responseObjectListMultiTests.Result[i].TestsForExecutions); s++ {
 				scenario := responseObjectListMultiTests.Result[i].TestsForExecutions[s].TestId
@@ -103,10 +105,10 @@ func listMultiTestsWS(workspaceId int) {
 			if testLastRunEp1 != 0 {
 				testLastRun := time.Unix(testLastRunEp, 0)
 				testLastRunSp := fmt.Sprint(testLastRun)
-				fmt.Printf("\n%-10v %-10v %-20s %-15s", testId, len(totalscenarios), testLastRunSp[0:16], testName)
+				fmt.Printf("\n%-10v %-10v %-20s %-10d %-10s", testId, len(totalscenarios), testLastRunSp[0:16], testProjectId, testName)
 			} else {
 				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-10v %-20d %-15s", testId, len(totalscenarios), testLastRun, testName)
+				fmt.Printf("\n%-10v %-10v %-20d %-10d %-10s", testId, len(totalscenarios), testLastRun, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")
@@ -160,12 +162,13 @@ func listMultiTestsWSProject(projectId int) {
 	var responseObjectListMultiTests ListMultiTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListMultiTests)
 	if responseObjectListMultiTests.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+		fmt.Printf("\n%-10s %-10s %-20s %-10s %-10s\n", "TEST ID", "SCENARIOS", "LAST RUN", "PROJECT", "TEST NAME")
 		for i := 0; i < len(responseObjectListMultiTests.Result); i++ {
 			testName := responseObjectListMultiTests.Result[i].Name
 			testId := responseObjectListMultiTests.Result[i].Id
 			testLastRunEp1 := responseObjectListMultiTests.Result[i].LastRunTime
 			testLastRunEp := int64(responseObjectListMultiTests.Result[i].LastRunTime)
+			testProjectId := responseObjectListMultiTests.Result[i].ProjectId
 			totalscenarios := []int{}
 			for s := 0; s < len(responseObjectListMultiTests.Result[i].TestsForExecutions); s++ {
 				scenario := responseObjectListMultiTests.Result[i].TestsForExecutions[s].TestId
@@ -175,10 +178,10 @@ func listMultiTestsWSProject(projectId int) {
 			if testLastRunEp1 != 0 {
 				testLastRun := time.Unix(testLastRunEp, 0)
 				testLastRunSp := fmt.Sprint(testLastRun)
-				fmt.Printf("\n%-10v %-10v %-20s %-15s", testId, len(totalscenarios), testLastRunSp[0:16], testName)
+				fmt.Printf("\n%-10v %-10v %-20s %-10d %-10s", testId, len(totalscenarios), testLastRunSp[0:16], testProjectId, testName)
 			} else {
 				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-10v %-20d %-15s", testId, len(totalscenarios), testLastRun, testName)
+				fmt.Printf("\n%-10v %-10v %-20d %-10d %-10s", testId, len(totalscenarios), testLastRun, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")
