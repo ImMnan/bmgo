@@ -33,9 +33,9 @@ var testsCmd = &cobra.Command{
 
 		switch {
 		case workspaceId != 0 && projectId != 0 && rawOutput:
-			listTestsWSProjectraw(workspaceId, projectId)
+			listTestsWSProjectraw(projectId)
 		case workspaceId != 0 && projectId != 0:
-			listTestsWSProject(workspaceId, projectId)
+			listTestsWSProject(projectId)
 		case workspaceId != 0 && rawOutput:
 			listTestsWSraw(workspaceId)
 		case workspaceId != 0:
@@ -129,13 +129,11 @@ func listTestsWSraw(workspaceId int) {
 	fmt.Printf("%s\n", bodyText)
 }
 
-func listTestsWSProject(workspaceId, projectId int) {
+func listTestsWSProject(projectId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
 	projectIdStr := strconv.Itoa(projectId)
-	fmt.Println("This is prjects filter")
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr+"&workspaceId="+workspaceIdStr+"&limit=0", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,12 +174,11 @@ func listTestsWSProject(workspaceId, projectId int) {
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
-func listTestsWSProjectraw(workspaceId, projectId int) {
+func listTestsWSProjectraw(projectId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
 	projectIdStr := strconv.Itoa(projectId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?workspaceId="+workspaceIdStr+"&projectId="+projectIdStr+"&limit=0", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
