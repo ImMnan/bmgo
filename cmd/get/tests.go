@@ -60,6 +60,7 @@ type listTestsResult struct {
 	Name        string `json:"name"`
 	Id          int    `json:"id"`
 	LastRunTime int    `json:"lastRunTime"`
+	ProjectId   int    `json:"projectId"`
 }
 
 func listTestsWS(workspaceId int) {
@@ -84,20 +85,21 @@ func listTestsWS(workspaceId int) {
 	var responseObjectListTests ListTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListTests)
 	if responseObjectListTests.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+		fmt.Printf("\n%-10s %-20s %-10s %-15s\n", "TEST ID", "LAST RUN", "PROJECT", "TEST NAME")
 		for i := 0; i < len(responseObjectListTests.Result); i++ {
 			testName := responseObjectListTests.Result[i].Name
 			testId := responseObjectListTests.Result[i].Id
 			testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
+			testProjectId := responseObjectListTests.Result[i].ProjectId
 			testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
 			// This is because there are epoch values as "0", it converts to a time on 1970s, so we want to condition that here:
 			if testLastRunEp1 != 0 {
 				testLastRun := time.Unix(testLastRunEp, 0)
 				testLastRunSp := fmt.Sprint(testLastRun)
-				fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
+				fmt.Printf("\n%-10v %-20s %-10d %-15s", testId, testLastRunSp[0:16], testProjectId, testName)
 			} else {
 				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
+				fmt.Printf("\n%-10v %-20v %-10d %-15s", testId, testLastRun, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")
