@@ -30,6 +30,21 @@ func init() {
 	mastersCmd.Flags().Int("tid", 0, "Provide the test ID to list masters")
 }
 
+type mastersResponse struct {
+	Result []mastersResult `json:"result"`
+	Error  errorResult     `json:"error"`
+}
+
+type mastersResult struct {
+	Id        string   `json:"id"`
+	Name      string   `json:"name"`
+	Created   int      `json:"created"`
+	Ended     int      `json:"ended"`
+	Locations []string `json:"locations"`
+	SessionId []string `jsone:"sessionsId"`
+	ProjectId int      `json:"projectId"`
+}
+
 func getMasters(testId int) {
 	apiId, apiSecret := Getapikeys()
 	testIdStr := strconv.Itoa(testId)
