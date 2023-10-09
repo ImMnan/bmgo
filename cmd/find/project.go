@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -23,9 +24,14 @@ var projectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		projectId, _ := cmd.Flags().GetInt("pid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
+
 		if projectId != 0 && rawOutput {
 			findProjectraw(projectId)
 		} else if projectId != 0 {
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go listTestsProject(projectId, &wg)
+			wg.Wait()
 			findProject(projectId)
 		} else {
 			fmt.Println("\nPlease provide a valid Project ID to find the Project")
@@ -78,19 +84,21 @@ func findProject(projectId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObjectProject ProjectResponse
 	json.Unmarshal(bodyText, &responseObjectProject)
-	fmt.Printf("\n%-20s %-15s %-15s\n", "PROJECT NAME", "WORKSPACE", "CREATED")
+	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+	fmt.Printf("%-25s %-10s %-15s\n", "PROJECT NAME", "WORKSPACE", "CREATED")
 	projectName := responseObjectProject.Result.Name
 	projectWorkspace := responseObjectProject.Result.WorkspaceId
 	projectCreatedEp := int64(responseObjectProject.Result.Created)
-	projectCreated := time.Unix(projectCreatedEp, 0)
-	fmt.Printf("%-20s %-15v %-15v\n", projectName, projectWorkspace, projectCreated)
-	listTestsProject(projectId)
+	projectCreatedStr := fmt.Sprint(time.Unix(projectCreatedEp, 0))
+	fmt.Printf("%-25s %-10v %-15v", projectName, projectWorkspace, projectCreatedStr[0:16])
+	fmt.Println("\n-")
 }
-func listTestsProject(projectId int) {
+func listTestsProject(projectId int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	projectIdStr := strconv.Itoa(projectId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/tests?projectId="+projectIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,10 +113,9 @@ func listTestsProject(projectId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
 	var responseObjectListTests ListTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListTests)
-	fmt.Printf("%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+	fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
 	for i := 0; i < len(responseObjectListTests.Result); i++ {
 		testName := responseObjectListTests.Result[i].Name
 		testId := responseObjectListTests.Result[i].Id
@@ -123,7 +130,6 @@ func listTestsProject(projectId int) {
 			fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
 		}
 	}
-	fmt.Println("\n-")
 }
 
 func findProjectraw(projectId int) {

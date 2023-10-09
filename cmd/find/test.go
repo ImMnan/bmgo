@@ -49,9 +49,25 @@ type findTestsResult struct {
 	LastRunTime        int                       `json:"lastRunTime"`
 	OverrideExecutions []overrideExecutionsArray `json:"overrideExecutions"`
 	ProjectId          int                       `json:"projectId"`
+	Configuration      testConfig                `json:"configuration"`
 }
 type overrideExecutionsArray struct {
-	Executor string `json:"executor"`
+	Executor    string `json:"executor"`
+	Concurrency int    `json:"concurrency"`
+	RampUp      string `json:"rampUp"`
+	HoldFor     string `json:"holdFor"`
+}
+type testConfig struct {
+	DedicatedIpsEnabled      bool        `json:"dedicatedIpsEnabled"`
+	DesignatedJmeterVersions []string    `json:"designatedJmeterVersions"`
+	EnableLoadConfiguration  bool        `json:"enableLoadConfiguration"`
+	Plugins                  testPlugins `json:"plugins"`
+}
+type testPlugins struct {
+	Jmeter jmeterVersion `json:"jmeter"`
+}
+type jmeterVersion struct {
+	Version string `json:"version"`
 }
 
 func findTest(testId int) {
@@ -80,21 +96,32 @@ func findTest(testId int) {
 	testLastRunEp1 := responseObjectTest.Result.LastRunTime
 	testProjectId := responseObjectTest.Result.ProjectId
 	testLastRunEp := int64(responseObjectTest.Result.LastRunTime)
-	var testExecutor string
+	testDip := responseObjectTest.Result.Configuration.DedicatedIpsEnabled
+	testLoadConfig := responseObjectTest.Result.Configuration.EnableLoadConfiguration
+	JmeterVersion := responseObjectTest.Result.Configuration.Plugins.Jmeter.Version
 
+	var testExecutor, testRampUp, testHoldFor string
+	var testConcurrency int
 	fmt.Println("\n---------------------------------------------------------------------------------------------")
 	fmt.Printf("%-10v %-20s %-10s %-10s\n", "TEST ID", "LAST RUN", "PROJECT", "EXECUTOR")
 	for i := 0; i < len(responseObjectTest.Result.OverrideExecutions); i++ {
 		testExecutor = responseObjectTest.Result.OverrideExecutions[i].Executor
+		testConcurrency = responseObjectTest.Result.OverrideExecutions[i].Concurrency
+		testRampUp = responseObjectTest.Result.OverrideExecutions[i].RampUp
+		testHoldFor = responseObjectTest.Result.OverrideExecutions[i].HoldFor
 	}
 	if testLastRunEp1 != 0 {
 		testLastRun := time.Unix(testLastRunEp, 0)
 		testLastRunSp := fmt.Sprint(testLastRun)
-		fmt.Printf("%-10v %-20s %-10d %-10s\n\n", testId, testLastRunSp[0:16], testProjectId, testExecutor)
+		fmt.Printf("%-10v %-20s %-10d %-10s\n", testId, testLastRunSp[0:16], testProjectId, testExecutor)
 	} else {
 		testLastRun := testLastRunEp1
-		fmt.Printf("%-10v %-20v %-10d %-10s\n\n", testId, testLastRun, testProjectId, testExecutor)
+		fmt.Printf("%-10v %-20v %-10d %-10s\n", testId, testLastRun, testProjectId, testExecutor)
 	}
+	fmt.Println("\n---------------------------------------------------------------------------------------------")
+	fmt.Printf("%-10v %-10s %-10s %-10s %-10s %-10s\n", "VUs", "RAMPUP", "HOLD", "JMETER", "BM-LOAD", "DIP")
+	fmt.Printf("%-10v %-10s %-10s %-10s %-10t %-10t", testConcurrency, testRampUp, testHoldFor, JmeterVersion, testLoadConfig, testDip)
+	fmt.Println("\n-")
 }
 func findTestraw(testId int) {
 	testIdStr := strconv.Itoa(testId)
