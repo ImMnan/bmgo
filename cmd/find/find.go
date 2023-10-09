@@ -4,8 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package find
 
 import (
+	"errors"
+	"fmt"
 	"log"
+	"os"
 
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,4 +50,23 @@ func Getapikeys() (string, string) {
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
+}
+func promtHid() string {
+	validate := func(input string) error {
+		if len(input) <= 20 {
+			return errors.New("invalid crone")
+		}
+		return nil
+	}
+	prompt := promptui.Prompt{
+		Label:       "Provide Harbour Id: ",
+		HideEntered: true,
+		Validate:    validate,
+	}
+	resultHid, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		os.Exit(1)
+	}
+	return resultHid
 }
