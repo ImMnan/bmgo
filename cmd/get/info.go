@@ -18,7 +18,7 @@ import (
 // accountCmd represents the account command
 var infoCmd = &cobra.Command{
 	Use:   "info",
-	Short: "Get details about the account, use with other sub-commands to get specific/detailed info",
+	Short: "Get details about the account or workspace",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		rawOutput, _ := cmd.Flags().GetBool("raw")
