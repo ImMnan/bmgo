@@ -98,8 +98,7 @@ func listTestsWS(workspaceId int) {
 				testLastRunSp := fmt.Sprint(testLastRun)
 				fmt.Printf("\n%-10v %-20s %-10d %-15s", testId, testLastRunSp[0:16], testProjectId, testName)
 			} else {
-				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-20v %-10d %-15s", testId, testLastRun, testProjectId, testName)
+				fmt.Printf("\n%-10v %-20v %-10d %-15s", testId, testLastRunEp1, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")
@@ -166,8 +165,7 @@ func listTestsWSProject(projectId int) {
 				testLastRunSp := fmt.Sprint(testLastRun)
 				fmt.Printf("\n%-10v %-20s %-10d %-15s", testId, testLastRunSp[0:16], testProjectId, testName)
 			} else {
-				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-20v %-10d %-15s", testId, testLastRun, testProjectId, testName)
+				fmt.Printf("\n%-10v %-20v %-10d %-15s", testId, testLastRunEp1, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")

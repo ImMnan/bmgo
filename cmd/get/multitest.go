@@ -180,8 +180,7 @@ func listMultiTestsWSProject(projectId int) {
 				testLastRunSp := fmt.Sprint(testLastRun)
 				fmt.Printf("\n%-10v %-10v %-20s %-10d %-10s", testId, len(totalscenarios), testLastRunSp[0:16], testProjectId, testName)
 			} else {
-				testLastRun := testLastRunEp1
-				fmt.Printf("\n%-10v %-10v %-20d %-10d %-10s", testId, len(totalscenarios), testLastRun, testProjectId, testName)
+				fmt.Printf("\n%-10v %-10v %-20d %-10d %-10s", testId, len(totalscenarios), testLastRunEp1, testProjectId, testName)
 			}
 		}
 		fmt.Println("\n-")
