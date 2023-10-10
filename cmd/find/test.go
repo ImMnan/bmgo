@@ -42,6 +42,7 @@ func init() {
 
 type FindTestsResponse struct {
 	Result findTestsResult `json:"result"`
+	Error  errorResult     `json:"error"`
 }
 type findTestsResult struct {
 	Name               string                    `json:"name"`
@@ -91,37 +92,42 @@ func findTest(testId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObjectTest FindTestsResponse
 	json.Unmarshal(bodyText, &responseObjectTest)
-	testName := responseObjectTest.Result.Name
-	fmt.Printf("\nTEST NAME: %s", testName)
-	testLastRunEp1 := responseObjectTest.Result.LastRunTime
-	testProjectId := responseObjectTest.Result.ProjectId
-	testLastRunEp := int64(responseObjectTest.Result.LastRunTime)
-	testDip := responseObjectTest.Result.Configuration.DedicatedIpsEnabled
-	testLoadConfig := responseObjectTest.Result.Configuration.EnableLoadConfiguration
-	JmeterVersion := responseObjectTest.Result.Configuration.Plugins.Jmeter.Version
-
-	var testExecutor, testRampUp, testHoldFor string
-	var testConcurrency int
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-10v %-20s %-10s %-10s\n", "TEST ID", "LAST RUN", "PROJECT", "EXECUTOR")
-	for i := 0; i < len(responseObjectTest.Result.OverrideExecutions); i++ {
-		testExecutor = responseObjectTest.Result.OverrideExecutions[i].Executor
-		testConcurrency = responseObjectTest.Result.OverrideExecutions[i].Concurrency
-		testRampUp = responseObjectTest.Result.OverrideExecutions[i].RampUp
-		testHoldFor = responseObjectTest.Result.OverrideExecutions[i].HoldFor
-	}
-	if testLastRunEp1 != 0 {
-		testLastRun := time.Unix(testLastRunEp, 0)
-		testLastRunSp := fmt.Sprint(testLastRun)
-		fmt.Printf("%-10v %-20s %-10d %-10s\n", testId, testLastRunSp[0:16], testProjectId, testExecutor)
+	if responseObjectTest.Error.Code == 0 {
+		testName := responseObjectTest.Result.Name
+		fmt.Printf("\nTEST NAME: %s", testName)
+		testLastRunEp1 := responseObjectTest.Result.LastRunTime
+		testProjectId := responseObjectTest.Result.ProjectId
+		testLastRunEp := int64(responseObjectTest.Result.LastRunTime)
+		testDip := responseObjectTest.Result.Configuration.DedicatedIpsEnabled
+		testLoadConfig := responseObjectTest.Result.Configuration.EnableLoadConfiguration
+		JmeterVersion := responseObjectTest.Result.Configuration.Plugins.Jmeter.Version
+		var testExecutor, testRampUp, testHoldFor string
+		var testConcurrency int
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-10v %-20s %-10s %-10s\n", "TEST ID", "LAST RUN", "PROJECT", "EXECUTOR")
+		for i := 0; i < len(responseObjectTest.Result.OverrideExecutions); i++ {
+			testExecutor = responseObjectTest.Result.OverrideExecutions[i].Executor
+			testConcurrency = responseObjectTest.Result.OverrideExecutions[i].Concurrency
+			testRampUp = responseObjectTest.Result.OverrideExecutions[i].RampUp
+			testHoldFor = responseObjectTest.Result.OverrideExecutions[i].HoldFor
+		}
+		if testLastRunEp1 != 0 {
+			testLastRun := time.Unix(testLastRunEp, 0)
+			testLastRunSp := fmt.Sprint(testLastRun)
+			fmt.Printf("%-10v %-20s %-10d %-10s\n", testId, testLastRunSp[0:16], testProjectId, testExecutor)
+		} else {
+			testLastRun := testLastRunEp1
+			fmt.Printf("%-10v %-20v %-10d %-10s\n", testId, testLastRun, testProjectId, testExecutor)
+		}
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-10v %-10s %-10s %-10s %-10s %-10s\n", "VUs", "RAMPUP", "HOLD", "JMETER", "BM-LOAD", "DIP")
+		fmt.Printf("%-10v %-10s %-10s %-10s %-10t %-10t", testConcurrency, testRampUp, testHoldFor, JmeterVersion, testLoadConfig, testDip)
+		fmt.Println("\n-")
 	} else {
-		testLastRun := testLastRunEp1
-		fmt.Printf("%-10v %-20v %-10d %-10s\n", testId, testLastRun, testProjectId, testExecutor)
+		errorCode := responseObjectTest.Error.Code
+		errorMessage := responseObjectTest.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-10v %-10s %-10s %-10s %-10s %-10s\n", "VUs", "RAMPUP", "HOLD", "JMETER", "BM-LOAD", "DIP")
-	fmt.Printf("%-10v %-10s %-10s %-10s %-10t %-10t", testConcurrency, testRampUp, testHoldFor, JmeterVersion, testLoadConfig, testDip)
-	fmt.Println("\n-")
 }
 func findTestraw(testId int) {
 	testIdStr := strconv.Itoa(testId)

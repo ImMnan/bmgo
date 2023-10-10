@@ -41,6 +41,7 @@ func init() {
 
 type agentResponse struct {
 	Result agentResult `json:"result"`
+	Error  errorResult `json:"error"`
 }
 type agentResult struct {
 	Name          string   `json:"name"`
@@ -90,36 +91,42 @@ func findAgent(agentId string) {
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", bodyText)
-	fmt.Printf("\n%-20s %-8s %-20s %-10s\n", "NAME", "STATE", "LAST HEART_BEAT", "CRANE")
 	var responseBodyAgent agentResponse
 	json.Unmarshal(bodyText, &responseBodyAgent)
-	agentName := responseBodyAgent.Result.Name
-	agentState := responseBodyAgent.Result.State
-	agentHbEp := int64(responseBodyAgent.Result.LastHeartBeat)
-	agentHbEpStr := fmt.Sprint(time.Unix(agentHbEp, 0))
-	craneVersion := responseBodyAgent.Result.Crane
-	fmt.Printf("%-20s %-8v %-20v %-10v\n", agentName, agentState, agentHbEpStr[0:16], craneVersion)
+	if responseBodyAgent.Error.Code == 0 {
+		fmt.Printf("\n%-20s %-8s %-20s %-10s\n", "NAME", "STATE", "LAST HEART_BEAT", "CRANE")
+		agentName := responseBodyAgent.Result.Name
+		agentState := responseBodyAgent.Result.State
+		agentHbEp := int64(responseBodyAgent.Result.LastHeartBeat)
+		agentHbEpStr := fmt.Sprint(time.Unix(agentHbEp, 0))
+		craneVersion := responseBodyAgent.Result.Crane
+		fmt.Printf("%-20s %-8v %-20v %-10v\n", agentName, agentState, agentHbEpStr[0:16], craneVersion)
 
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	agentPlatform := []string{}
-	for p := 0; p < len(responseBodyAgent.Result.HostInfo.Platform); p++ {
-		agentPlatformArr := responseBodyAgent.Result.HostInfo.Platform[p]
-		agentPlatform = append(agentPlatform, agentPlatformArr)
-	}
-	agentDiskSpace := responseBodyAgent.Result.HostInfo.DiskSpace.Root.FreeSpace
-	agentDiskPercent := responseBodyAgent.Result.HostInfo.DiskSpace.Root.FreePercent
-	agentType := responseBodyAgent.Result.HostInfo.ContainerManager.Type
-	agentMemory := responseBodyAgent.Result.HostInfo.ContainerManager.Info.Memory
-	agentCpu := responseBodyAgent.Result.HostInfo.ContainerManager.Info.Cpus
-	agentOs := responseBodyAgent.Result.HostInfo.ContainerManager.Info.OperatingSystem
-	if agentType == "DockerManager" {
-		fmt.Printf("%-15s %-10s %-8v %-15s %-10s %-8s %-10s\n", "PLATFORM", "DISK(GiB)", "DISK(%)", "TYPE", "MEM(GiB)", "CPU", "OS")
-		fmt.Printf("%-5s  %-10d %-8v %-15s %-10d %-8d %-10v", agentPlatform[1:], agentDiskSpace/1e+9, int(agentDiskPercent), agentType, agentMemory/1e+9, agentCpu, agentOs)
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		agentPlatform := []string{}
+		for p := 0; p < len(responseBodyAgent.Result.HostInfo.Platform); p++ {
+			agentPlatformArr := responseBodyAgent.Result.HostInfo.Platform[p]
+			agentPlatform = append(agentPlatform, agentPlatformArr)
+		}
+		agentDiskSpace := responseBodyAgent.Result.HostInfo.DiskSpace.Root.FreeSpace
+		agentDiskPercent := responseBodyAgent.Result.HostInfo.DiskSpace.Root.FreePercent
+		agentType := responseBodyAgent.Result.HostInfo.ContainerManager.Type
+		agentMemory := responseBodyAgent.Result.HostInfo.ContainerManager.Info.Memory
+		agentCpu := responseBodyAgent.Result.HostInfo.ContainerManager.Info.Cpus
+		agentOs := responseBodyAgent.Result.HostInfo.ContainerManager.Info.OperatingSystem
+		if agentType == "DockerManager" {
+			fmt.Printf("%-15s %-10s %-8v %-15s %-10s %-8s %-10s\n", "PLATFORM", "DISK(GiB)", "DISK(%)", "TYPE", "MEM(GiB)", "CPU", "OS")
+			fmt.Printf("%-5s  %-10d %-8v %-15s %-10d %-8d %-10v", agentPlatform[1:], agentDiskSpace/1e+9, int(agentDiskPercent), agentType, agentMemory/1e+9, agentCpu, agentOs)
+		} else {
+			fmt.Printf("%-15s %-10s %-8v %-15s\n", "PLATFORM", "DISK(GiB)", "DISK(%)", "TYPE")
+			fmt.Printf("%-5s  %-10d %-8v %-15s", agentPlatform[1:], agentDiskSpace/1e+9, int(agentDiskPercent), agentType)
+		}
+		fmt.Println("\n-")
 	} else {
-		fmt.Printf("%-15s %-10s %-8v %-15s\n", "PLATFORM", "DISK(GiB)", "DISK(%)", "TYPE")
-		fmt.Printf("%-5s  %-10d %-8v %-15s", agentPlatform[1:], agentDiskSpace/1e+9, int(agentDiskPercent), agentType)
+		errorCode := responseBodyAgent.Error.Code
+		errorMessage := responseBodyAgent.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func findAgentraw(agentId string) {
 	apiId, apiSecret := Getapikeys()

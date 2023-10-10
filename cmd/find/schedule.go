@@ -42,6 +42,7 @@ func init() {
 
 type findshedulesResponse struct {
 	Result findscheduleResult `json:"result"`
+	Error  errorResult        `json:"error"`
 }
 type findscheduleResult struct {
 	TestId         int    `json:"testId"`
@@ -72,26 +73,32 @@ func findSchedule(scheduleId string) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyFindShedules findshedulesResponse
 	json.Unmarshal(bodyText, &responseBodyFindShedules)
-	fmt.Printf("\n%-10s %-10s %-10s %-20s %-40s", "TEST", "OWNER", "ENABLED", "CREATED ON", "CRON")
-	scheduleTest := responseBodyFindShedules.Result.TestId
-	sheduleOwn := responseBodyFindShedules.Result.CreatedById
-	sheduleEnabled := responseBodyFindShedules.Result.Enabled
-	sheduleCron := responseBodyFindShedules.Result.Cron
-	cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-	sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
-	sheduleCreatedEp := int64(responseBodyFindShedules.Result.Created)
-	sheduleCreated := time.Unix(sheduleCreatedEp, 0)
-	sheduleCreatedStr := fmt.Sprint(sheduleCreated)
+	if responseBodyFindShedules.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-10s %-10s %-20s %-40s", "TEST", "OWNER", "ENABLED", "CREATED ON", "CRON")
+		scheduleTest := responseBodyFindShedules.Result.TestId
+		sheduleOwn := responseBodyFindShedules.Result.CreatedById
+		sheduleEnabled := responseBodyFindShedules.Result.Enabled
+		sheduleCron := responseBodyFindShedules.Result.Cron
+		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+		sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
+		sheduleCreatedEp := int64(responseBodyFindShedules.Result.Created)
+		sheduleCreated := time.Unix(sheduleCreatedEp, 0)
+		sheduleCreatedStr := fmt.Sprint(sheduleCreated)
 
-	fmt.Printf("\n%-10v %-10v %-10t %-20s %-40s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Println("List of upcomming test runs\n-")
-	for i := 0; i < len(responseBodyFindShedules.Result.NextExecutions); i++ {
-		nextRunsEp := int64(responseBodyFindShedules.Result.NextExecutions[i])
-		nextRun := time.Unix(nextRunsEp, 0)
-		fmt.Println(nextRun)
+		fmt.Printf("\n%-10v %-10v %-10t %-20s %-40s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Println("List of upcomming test runs\n-")
+		for i := 0; i < len(responseBodyFindShedules.Result.NextExecutions); i++ {
+			nextRunsEp := int64(responseBodyFindShedules.Result.NextExecutions[i])
+			nextRun := time.Unix(nextRunsEp, 0)
+			fmt.Println(nextRun)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyFindShedules.Error.Code
+		errorMessage := responseBodyFindShedules.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 func findScheduleraw(scheduleId string) {
 	apiId, apiSecret := Getapikeys()

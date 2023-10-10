@@ -48,6 +48,7 @@ func init() {
 
 type ProjectResponse struct {
 	Result projectResult `json:"result"`
+	Error  errorResult   `json:"error"`
 }
 type projectResult struct {
 	Name        string `json:"name"`
@@ -56,6 +57,7 @@ type projectResult struct {
 }
 type ListTestsResponse struct {
 	Result []listTestsResult `json:"result"`
+	Error  errorResult       `json:"error"`
 }
 type listTestsResult struct {
 	Name        string `json:"name"`
@@ -84,14 +86,20 @@ func findProject(projectId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseObjectProject ProjectResponse
 	json.Unmarshal(bodyText, &responseObjectProject)
-	fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-25s %-10s %-15s\n", "PROJECT NAME", "WORKSPACE", "CREATED")
-	projectName := responseObjectProject.Result.Name
-	projectWorkspace := responseObjectProject.Result.WorkspaceId
-	projectCreatedEp := int64(responseObjectProject.Result.Created)
-	projectCreatedStr := fmt.Sprint(time.Unix(projectCreatedEp, 0))
-	fmt.Printf("%-25s %-10v %-15v", projectName, projectWorkspace, projectCreatedStr[0:16])
-	fmt.Println("\n-")
+	if responseObjectProject.Error.Code == 0 {
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-25s %-10s %-15s\n", "PROJECT NAME", "WORKSPACE", "CREATED")
+		projectName := responseObjectProject.Result.Name
+		projectWorkspace := responseObjectProject.Result.WorkspaceId
+		projectCreatedEp := int64(responseObjectProject.Result.Created)
+		projectCreatedStr := fmt.Sprint(time.Unix(projectCreatedEp, 0))
+		fmt.Printf("%-25s %-10v %-15v", projectName, projectWorkspace, projectCreatedStr[0:16])
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseObjectProject.Error.Code
+		errorMessage := responseObjectProject.Error.Message
+		fmt.Printf("Error code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 func listTestsProject(projectId int, wg *sync.WaitGroup) {
 	defer wg.Done()
@@ -115,20 +123,26 @@ func listTestsProject(projectId int, wg *sync.WaitGroup) {
 	}
 	var responseObjectListTests ListTestsResponse
 	json.Unmarshal(bodyText, &responseObjectListTests)
-	fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
-	for i := 0; i < len(responseObjectListTests.Result); i++ {
-		testName := responseObjectListTests.Result[i].Name
-		testId := responseObjectListTests.Result[i].Id
-		testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
-		testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
-		if testLastRunEp1 != 0 {
-			testLastRun := time.Unix(testLastRunEp, 0)
-			testLastRunSp := fmt.Sprint(testLastRun)
-			fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
-		} else {
-			testLastRun := testLastRunEp1
-			fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
+	if responseObjectListTests.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-20s %-15s\n", "TEST ID", "LAST RUN", "TEST NAME")
+		for i := 0; i < len(responseObjectListTests.Result); i++ {
+			testName := responseObjectListTests.Result[i].Name
+			testId := responseObjectListTests.Result[i].Id
+			testLastRunEp1 := responseObjectListTests.Result[i].LastRunTime
+			testLastRunEp := int64(responseObjectListTests.Result[i].LastRunTime)
+			if testLastRunEp1 != 0 {
+				testLastRun := time.Unix(testLastRunEp, 0)
+				testLastRunSp := fmt.Sprint(testLastRun)
+				fmt.Printf("\n%-10v %-20s %-15s", testId, testLastRunSp[0:16], testName)
+			} else {
+				testLastRun := testLastRunEp1
+				fmt.Printf("\n%-10v %-20v %-15s", testId, testLastRun, testName)
+			}
 		}
+	} else {
+		errorCode := responseObjectListTests.Error.Code
+		errorMessage := responseObjectListTests.Error.Message
+		fmt.Printf("Error code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
 

@@ -39,7 +39,8 @@ func init() {
 }
 
 type oplResponse struct {
-	Result oplResult `json:"result"`
+	Result oplResult   `json:"result"`
+	Error  errorResult `json:"error"`
 }
 type oplResult struct {
 	Name             string   `json:"name"`
@@ -75,31 +76,37 @@ func findOpl(harbourId string) {
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", bodyText)
-	fmt.Printf("\n%-20s %-7s %-7s %-7s %-10s %-5s\n", "NAME", "TPE", "EPA", "AGENTS", "ACCOUNT", "WORKSPACES")
 	var responseBodyOpl oplResponse
 	json.Unmarshal(bodyText, &responseBodyOpl)
-	oplName := responseBodyOpl.Result.Name
-	threadsPerEngine := responseBodyOpl.Result.ThreadsPerEngine
-	enginePerAgent := responseBodyOpl.Result.Slots
-	oplAccountId := responseBodyOpl.Result.AccountId
-	oplWorkspaceId := responseBodyOpl.Result.WorkspacesId
-	fmt.Printf("%-20s %-7v %-7v %-7v %-10v %-5v\n", oplName, threadsPerEngine, enginePerAgent, len(responseBodyOpl.Result.ShipsId), oplAccountId, oplWorkspaceId)
+	if responseBodyOpl.Error.Code == 0 {
+		fmt.Printf("\n%-20s %-7s %-7s %-7s %-10s %-5s\n", "NAME", "TPE", "EPA", "AGENTS", "ACCOUNT", "WORKSPACES")
+		oplName := responseBodyOpl.Result.Name
+		threadsPerEngine := responseBodyOpl.Result.ThreadsPerEngine
+		enginePerAgent := responseBodyOpl.Result.Slots
+		oplAccountId := responseBodyOpl.Result.AccountId
+		oplWorkspaceId := responseBodyOpl.Result.WorkspacesId
+		fmt.Printf("%-20s %-7v %-7v %-7v %-10v %-5v\n", oplName, threadsPerEngine, enginePerAgent, len(responseBodyOpl.Result.ShipsId), oplAccountId, oplWorkspaceId)
 
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
-	for i := 0; i < len(responseBodyOpl.Result.FuncIds); i++ {
-		oplfunctionalities := responseBodyOpl.Result.FuncIds[i]
-		fmt.Printf("%-30v\n", oplfunctionalities)
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
+		for i := 0; i < len(responseBodyOpl.Result.FuncIds); i++ {
+			oplfunctionalities := responseBodyOpl.Result.FuncIds[i]
+			fmt.Printf("%-30v\n", oplfunctionalities)
+		}
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-20s %-20s %-25s %-10s\n", "HARBOUR NAME", "SHIP NAME", "SHIP ID", "STATE")
+		for f := 0; f < len(responseBodyOpl.Result.Ships); f++ {
+			shipId := responseBodyOpl.Result.Ships[f].Id
+			shipName := responseBodyOpl.Result.Ships[f].Name
+			shipStatus := responseBodyOpl.Result.Ships[f].State
+			fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyOpl.Error.Code
+		errorMessage := responseBodyOpl.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-20s %-20s %-25s %-10s\n", "HARBOUR NAME", "SHIP NAME", "SHIP ID", "STATE")
-	for f := 0; f < len(responseBodyOpl.Result.Ships); f++ {
-		shipId := responseBodyOpl.Result.Ships[f].Id
-		shipName := responseBodyOpl.Result.Ships[f].Name
-		shipStatus := responseBodyOpl.Result.Ships[f].State
-		fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
-	}
-	fmt.Println("\n-")
 }
 func findOplraw(harbourId string) {
 	apiId, apiSecret := Getapikeys()
