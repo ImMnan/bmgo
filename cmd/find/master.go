@@ -21,9 +21,16 @@ var masterCmd = &cobra.Command{
 	Short: "Find Master details",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("master called")
 		masterId, _ := cmd.Flags().GetInt("mid")
-		findMaster(masterId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if masterId != 0 && rawOutput {
+			findMasterraw(masterId)
+		} else if masterId != 0 {
+			findMaster(masterId)
+		} else {
+			fmt.Println("\nPlease provide a valid master ID to find the master")
+			fmt.Println("[bmgo find master --mid <Master id>")
+		}
 	},
 }
 
@@ -47,6 +54,7 @@ type mastersResult struct {
 	ProjectId    int                `json:"projectId"`
 	RunnerUserId int                `json:"runnerUserId"`
 	Executions   []masterExecutions `json:"executions"`
+	TestId       int                `json:"testId"`
 }
 type masterExecutions struct {
 	Concurrency int    `json:"concurrency"`
@@ -77,8 +85,9 @@ func findMaster(masterId int) {
 	var responseObjectMaster mastersResponse
 	json.Unmarshal(bodyText, &responseObjectMaster)
 	if responseObjectMaster.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-8s %-10s %-10s %-15s %-15s\n", "MASTER", "STATUS", "RUN_BY", "PROJECT", "START", "END")
+		fmt.Printf("\n%-10s %-8s %-10s %-10s %-15s %-15s ", "TEST", "STATUS", "RUN_BY", "PROJECT", "START", "END")
 		masterId := responseObjectMaster.Result.Id
+		masterTestId := responseObjectMaster.Result.TestId
 		masterStatus := responseObjectMaster.Result.Status
 		masterProject := responseObjectMaster.Result.ProjectId
 		masterCreatedEp := int64(responseObjectMaster.Result.Created)
@@ -87,11 +96,20 @@ func findMaster(masterId int) {
 		if masterCreatedEp != 0 && masterEndEp != 0 {
 			masterCreatedStr := fmt.Sprint(time.Unix(masterCreatedEp, 0))
 			masterEndStr := fmt.Sprint(time.Unix(masterEndEp, 0))
-			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15s %-15s", masterId, masterStatus, masterRunner, masterProject, masterCreatedStr[2:16], masterEndStr[5:16])
+			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15s %-15s", masterTestId, masterStatus, masterRunner, masterProject, masterCreatedStr[2:16], masterEndStr[5:16])
 		} else {
-			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15d %-15d", masterId, masterStatus, masterRunner, masterProject, masterCreatedEp, masterEndEp)
+			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15d %-15d", masterTestId, masterStatus, masterRunner, masterProject, masterCreatedEp, masterEndEp)
 		}
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-15s %-10s %-10s %-10s", "EXECUTOR", "VUs", "RAMP_UP", "HOLD_FOR")
 
+		for e := 0; e < len(responseObjectMaster.Result.Executions); e++ {
+			masterConcurrency := responseObjectMaster.Result.Executions[e].Concurrency
+			masterExecutor := responseObjectMaster.Result.Executions[e].Executor
+			masterRampUp := responseObjectMaster.Result.Executions[e].Rampup
+			masterHoldFor := responseObjectMaster.Result.Executions[e].HoldFor
+			fmt.Printf("\n%-15s %-10d %-10s %-10s", masterExecutor, masterConcurrency, masterRampUp, masterHoldFor)
+		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 		totalLocations := []string{}
 		for l := 0; l < len(responseObjectMaster.Result.Locations); l++ {
@@ -103,11 +121,31 @@ func findMaster(masterId int) {
 			sessions := responseObjectMaster.Result.SessionId[rv]
 			totalSessions = append(totalSessions, sessions)
 		}
-		fmt.Printf("MASTER: %d\nLOCATIONS: %s\nSESSIONS:  %s\n\n", masterId, totalLocations, totalSessions)
+		fmt.Printf("MASTER:    %d\nLOCATIONS: %s\nSESSIONS:  %s\n\n", masterId, totalLocations, totalSessions)
 
 	} else {
 		errorCode := responseObjectMaster.Error.Code
 		errorMessage := responseObjectMaster.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
+}
+func findMasterraw(masterId int) {
+	apiId, apiSecret := Getapikeys()
+	masterIdStr := strconv.Itoa(masterId)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters/"+masterIdStr, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
