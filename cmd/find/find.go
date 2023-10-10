@@ -51,7 +51,6 @@ func Getapikeys() (string, string) {
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
-<<<<<<< Updated upstream
 func promtHid() string {
 	validate := func(input string) error {
 		if len(input) <= 20 {
@@ -71,10 +70,8 @@ func promtHid() string {
 	}
 	return resultHid
 }
-=======
 
 type errorResult struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
->>>>>>> Stashed changes
 }
