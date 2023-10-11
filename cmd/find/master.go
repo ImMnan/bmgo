@@ -116,13 +116,14 @@ func findMaster(masterId int) {
 			locations := responseObjectMaster.Result.Locations[l]
 			totalLocations = append(totalLocations, locations)
 		}
-		totalSessions := []string{}
+		fmt.Printf("MASTER:    %d\nLOCATIONS: %s\n", masterId, totalLocations)
+		//totalSessions := []string{}
 		for rv := 0; rv < len(responseObjectMaster.Result.SessionId); rv++ {
-			sessions := responseObjectMaster.Result.SessionId[rv]
-			totalSessions = append(totalSessions, sessions)
+			sessionsId := responseObjectMaster.Result.SessionId[rv]
+			fmt.Printf("\nSESSION ID [%d]: %s", rv, sessionsId)
+			//	totalSessions = append(totalSessions, sessions)
 		}
-		fmt.Printf("MASTER:    %d\nLOCATIONS: %s\nSESSIONS:  %s\n\n", masterId, totalLocations, totalSessions)
-
+		fmt.Println("\n-")
 	} else {
 		errorCode := responseObjectMaster.Error.Code
 		errorMessage := responseObjectMaster.Error.Message
