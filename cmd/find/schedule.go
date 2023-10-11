@@ -21,7 +21,7 @@ var scheduleCmd = &cobra.Command{
 	Short: "Find details about the specific schedule",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		scheduleId, _ := cmd.Flags().GetString("sid")
+		scheduleId, _ := cmd.Flags().GetString("schedule")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if scheduleId != "" && rawOutput {
 			findScheduleraw(scheduleId)
@@ -36,8 +36,8 @@ var scheduleCmd = &cobra.Command{
 
 func init() {
 	FindCmd.AddCommand(scheduleCmd)
-	scheduleCmd.Flags().String("sid", "", "Provide the Schedule ID")
-	scheduleCmd.MarkFlagRequired("sid")
+	scheduleCmd.Flags().String("schedule", "", "Provide the Schedule ID")
+	scheduleCmd.MarkFlagRequired("schedule")
 }
 
 type findshedulesResponse struct {
