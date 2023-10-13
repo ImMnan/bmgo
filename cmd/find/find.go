@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -51,6 +52,12 @@ func Getapikeys() (string, string) {
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
+
+type errorResult struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 func promtHid() string {
 	validate := func(input string) error {
 		if len(input) <= 20 {
@@ -70,8 +77,23 @@ func promtHid() string {
 	}
 	return resultHid
 }
-
-type errorResult struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+func workspaceIdPrompt() string {
+	validate := func(input string) error {
+		_, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			return errors.New("invalid workspace")
+		}
+		return nil
+	}
+	prompt := promptui.Prompt{
+		Label:       "Provide Workspace Id: ",
+		HideEntered: true,
+		Validate:    validate,
+	}
+	resultWsId, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		os.Exit(1)
+	}
+	return resultWsId
 }

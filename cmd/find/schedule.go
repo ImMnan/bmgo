@@ -29,15 +29,15 @@ var scheduleCmd = &cobra.Command{
 			findSchedule(scheduleId)
 		} else {
 			fmt.Println("\nPlease provide a correct Schedule ID to find the Schedule")
-			fmt.Println("[bmgo find schedule --sid <schedule ID>")
+			fmt.Println("[bmgo find schedule --scheduleid <schedule ID>")
 		}
 	},
 }
 
 func init() {
 	FindCmd.AddCommand(scheduleCmd)
-	scheduleCmd.Flags().String("schedule", "", "Provide the Schedule ID")
-	scheduleCmd.MarkFlagRequired("schedule")
+	scheduleCmd.Flags().String("scheduleid", "", "Provide the Schedule ID")
+	scheduleCmd.MarkFlagRequired("scheduleid")
 }
 
 type findshedulesResponse struct {
