@@ -21,14 +21,15 @@ var GetCmd = &cobra.Command{
 }
 
 func init() {
-	GetCmd.PersistentFlags().IntP("accountid", "a", 0, " [REQUIRED] Provide Account ID to add a resource to")
-	GetCmd.PersistentFlags().IntP("workspaceid", "w", 0, " [REQUIRED] Provide Workspace ID to add a resource to")
+	GetCmd.PersistentFlags().IntP("accountid", "a", 0, "Provide Account ID to list a resources within an account")
+	GetCmd.PersistentFlags().IntP("workspaceid", "w", 0, "Provide Workspace ID to list a resource within a workspace")
 	GetCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
-	GetCmd.PersistentFlags().Bool("ac", false, "Use default account Id (defaults.yaml)")
-	GetCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (defaults.yaml)")
+	GetCmd.PersistentFlags().Bool("ac", false, "Use default account Id (bmConfig.yaml)")
+	GetCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
+	GetCmd.PersistentFlags().StringP("teamid", "t", "", "[#] Provide Team UID to list resources within a team")
+	GetCmd.PersistentFlags().Bool("tm", false, "Use default team UId (bmConfig.yaml)")
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -54,6 +55,19 @@ func Getapikeys() (string, string) {
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
+}
+func GetPersonalAccessToken() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err, "\nPlease add your Blazemeter configurations to bmConfig.yaml file in your home directory")
+	}
+	pat := vp.GetString("pat")
+	return pat
 }
 
 // Getting default account Id in case user uses --ac
@@ -84,6 +98,19 @@ func defaultWorkspace() int {
 	}
 	workspaceId := vp.GetInt("workspaceId")
 	return workspaceId
+}
+func defaultTeam() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	teamId := vp.GetString("teamId")
+	return teamId
 }
 
 // Helper functions added here
