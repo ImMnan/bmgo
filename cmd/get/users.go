@@ -22,7 +22,9 @@ var usersCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
+		tm, _ := cmd.Flags().GetBool("tm")
 		var accountId, workspaceId int
+		var teamId string
 		if ac {
 			accountId = defaultAccount()
 		} else {
@@ -32,6 +34,11 @@ var usersCmd = &cobra.Command{
 			workspaceId = defaultWorkspace()
 		} else {
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
+		if tm {
+			teamId = defaultTeam()
+		} else {
+			teamId, _ = cmd.Flags().GetString("teamid")
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		disabledUsers, _ := cmd.Flags().GetBool("disabled")
@@ -44,6 +51,8 @@ var usersCmd = &cobra.Command{
 			getUsersWSraw(workspaceId)
 		} else if (accountId != 0) && (workspaceId == 0) && rawOutput {
 			getUsersAraw(accountId)
+		} else if (accountId == 0) && (workspaceId == 0) && (teamId != "") && rawOutput {
+			getUsersTmraw(teamId)
 		} else if (workspaceId != 0) && (accountId == 0) && disabledUsers {
 			getUsersWSDis(workspaceId)
 		} else if (accountId != 0) && (workspaceId == 0) && disabledUsers {
@@ -53,8 +62,8 @@ var usersCmd = &cobra.Command{
 		} else if (accountId != 0) && (workspaceId == 0) {
 			getUsersA(accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
-			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
+			fmt.Println("\nPlease provide a correct workspace Id or Account Id or Team Id  to get the info")
+			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...] OR [bmgo get -t <team_id>...]")
 		}
 	},
 }
@@ -305,6 +314,26 @@ func getUsersWSrawDis(workspaceId int) {
 		log.Fatal(err)
 	}
 	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+func getUsersTmraw(teamId string) {
+	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/people", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", Bearer)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
