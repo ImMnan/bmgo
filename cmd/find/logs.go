@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/savioxavier/termlink"
 	"github.com/spf13/cobra"
@@ -21,13 +22,28 @@ var logsCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		sessionId, _ := cmd.Flags().GetString("sid")
-		findlogSession(sessionId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		mockId, _ := cmd.Flags().GetInt("mockid")
+		switch {
+		case sessionId != "" && mockId == 0 && rawOutput:
+			findlogSessionraw(sessionId)
+		case sessionId != "" && mockId == 0:
+			findlogSession(sessionId)
+		case sessionId == "" && mockId != 0 && rawOutput:
+			findlogMockservice(mockId)
+		case sessionId == "" && mockId != 0:
+			findlogMockservice(mockId)
+		default:
+			fmt.Println("\nPlease provide a correct session ID or mock service Id  to find the logs")
+			fmt.Println("[bmgo find schedule --scheduleid <schedule ID>")
+		}
 	},
 }
 
 func init() {
 	FindCmd.AddCommand(logsCmd)
 	logsCmd.Flags().String("sid", "", "Provide session Id to pull logs for")
+	logsCmd.Flags().Int("mockid", 0, "Provide the mock service id")
 }
 
 type findLogsResponse struct {
@@ -88,4 +104,47 @@ func findlogSession(sessionId string) {
 		errorMessage := responseObjectLogs.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
+}
+func findlogSessionraw(sessionId string) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/sessions/"+sessionId+"/reports/logs", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+func findlogMockservice(mockId int) {
+	workspaceIdStr := workspaceIdPrompt()
+	mockIdStr := strconv.Itoa(mockId)
+	fmt.Println(workspaceIdStr, mockIdStr)
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/1294894/service-mocks/119057/log?limit=50", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("accept", "application/json;charset=UTF-8")
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
