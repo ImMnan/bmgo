@@ -61,6 +61,7 @@ type masterExecutions struct {
 	HoldFor     string `json:"holdFor"`
 	Rampup      string `json:"rampUp"`
 	Executor    string `json:"executor"`
+	TestId      int    `json:"testId"`
 }
 
 func findMaster(masterId int) {
@@ -101,14 +102,15 @@ func findMaster(masterId int) {
 			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15d %-15d", masterTestId, masterStatus, masterRunner, masterProject, masterCreatedEp, masterEndEp)
 		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-		fmt.Printf("%-15s %-10s %-10s %-10s", "EXECUTOR", "VUs", "RAMP_UP", "HOLD_FOR")
+		fmt.Printf("%-15s %-10s %-10s %-10s %-10s", "EXECUTOR", "VUs", "RAMP_UP", "HOLD_FOR", "TEST SCENARIO")
 
 		for e := 0; e < len(responseObjectMaster.Result.Executions); e++ {
 			masterConcurrency := responseObjectMaster.Result.Executions[e].Concurrency
 			masterExecutor := responseObjectMaster.Result.Executions[e].Executor
 			masterRampUp := responseObjectMaster.Result.Executions[e].Rampup
 			masterHoldFor := responseObjectMaster.Result.Executions[e].HoldFor
-			fmt.Printf("\n%-15s %-10d %-10s %-10s", masterExecutor, masterConcurrency, masterRampUp, masterHoldFor)
+			masterTestId := responseObjectMaster.Result.Executions[e].TestId
+			fmt.Printf("\n%-15s %-10d %-10s %-10s %-10d", masterExecutor, masterConcurrency, masterRampUp, masterHoldFor, masterTestId)
 		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 		totalLocations := []string{}

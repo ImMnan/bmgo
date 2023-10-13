@@ -39,6 +39,7 @@ func init() {
 type errorResult struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
 // Getting the API Keys

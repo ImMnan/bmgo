@@ -53,6 +53,8 @@ var usersCmd = &cobra.Command{
 			getUsersAraw(accountId)
 		} else if (accountId == 0) && (workspaceId == 0) && (teamId != "") && rawOutput {
 			getUsersTmraw(teamId)
+		} else if (accountId == 0) && (workspaceId == 0) && (teamId != "") && !rawOutput {
+			getUsersTm(teamId)
 		} else if (workspaceId != 0) && (accountId == 0) && disabledUsers {
 			getUsersWSDis(workspaceId)
 		} else if (accountId != 0) && (workspaceId == 0) && disabledUsers {
@@ -75,6 +77,7 @@ func init() {
 
 type usersResponse struct {
 	Result []usersResult `json:"result"`
+	Data   []usersData   `json:"data"`
 	Error  errorResult   `json:"error"`
 }
 
@@ -84,6 +87,13 @@ type usersResult struct {
 	DisplayName string   `json:"displayName"`
 	Enabled     bool     `json:"enabled"`
 	Roles       []string `json:"roles"`
+}
+type usersData struct {
+	Uuid       string `json:"uuid"`
+	Email      string `json:"email"`
+	Role_name  string `json:"role_name"`
+	Created_at string `json:"created_at"`
+	Name       string `json:"name"`
 }
 
 func getUsersA(accountId int) {
@@ -324,6 +334,44 @@ func getUsersWSrawDis(workspaceId int) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", bodyText)
+}
+
+func getUsersTm(teamId string) {
+	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/people", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", Bearer)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("%s\n", bodyText)
+	var responseBodyTmUsers usersResponse
+	json.Unmarshal(bodyText, &responseBodyTmUsers)
+	if responseBodyTmUsers.Error.Status == 0 {
+		fmt.Printf("\n%-38s %-14s %-28s %-10s\n", "UUID", "ROLES", "NAME", "EMAIL")
+		for i := 0; i < len(responseBodyTmUsers.Data); i++ {
+			userIdTm := responseBodyTmUsers.Data[i].Uuid
+			userNameTm := responseBodyTmUsers.Data[i].Name
+			userEmailTm := responseBodyTmUsers.Data[i].Email
+			userRoleTm := responseBodyTmUsers.Data[i].Role_name
+			//	userCreatedTm := responseBodyTmUsers.Data[i].Created_at
+			fmt.Printf("\n%-38s %-14s %-28s %-10s", userIdTm, userRoleTm, userNameTm, userEmailTm)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyTmUsers.Error.Status
+		errorMessage := responseBodyTmUsers.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 
 func getUsersTmraw(teamId string) {

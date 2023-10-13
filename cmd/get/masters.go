@@ -18,10 +18,9 @@ import (
 // mastersCmd represents the masters command
 var mastersCmd = &cobra.Command{
 	Use:   "masters",
-	Short: "A brief description of your command",
+	Short: "Get masters for a test",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("masters called")
 		testId, _ := cmd.Flags().GetInt("tid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if testId != 0 && rawOutput {
