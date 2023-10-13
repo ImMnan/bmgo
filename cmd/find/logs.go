@@ -65,15 +65,20 @@ func findlogSession(sessionId string) {
 	var responseObjectLogs findLogsResponse
 	json.Unmarshal(bodyText, &responseObjectLogs)
 	if responseObjectLogs.Error.Code == 0 {
-		//	logsDataUrl := responseObjectLogs.Result.DataUrl
+		dataUrl := responseObjectLogs.Result.DataUrl
+		fmt.Printf("DataUrl: %s\n", dataUrl)
+		var logsFileName, logsDataUrl string
 		for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
-			logsFileName := responseObjectLogs.Result.Data[i].Filename
-			logsDataUrl := responseObjectLogs.Result.Data[i].DataUrl
+
 			if !termlink.SupportsHyperlinks() {
 				//	fmt.Printf("\n%-20s %-20s", logsFileName, logsDataUrl)
+				logsFileName = responseObjectLogs.Result.Data[i].Filename
+				logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
 				fmt.Printf("\nFile name: %s\n", logsFileName)
 				fmt.Println(logsDataUrl)
 			} else {
+				logsFileName = responseObjectLogs.Result.Data[i].Filename
+				logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
 				fmt.Println("\nDOWNLOAD LINKS: ", termlink.Link(logsFileName, logsDataUrl))
 			}
 		}
