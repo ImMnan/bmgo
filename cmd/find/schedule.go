@@ -21,7 +21,7 @@ var scheduleCmd = &cobra.Command{
 	Short: "Find details about the specific schedule",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		scheduleId, _ := cmd.Flags().GetString("schedule")
+		scheduleId, _ := cmd.Flags().GetString("scheduleid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if scheduleId != "" && rawOutput {
 			findScheduleraw(scheduleId)
