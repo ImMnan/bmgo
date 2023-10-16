@@ -39,8 +39,8 @@ var transactionsCmd = &cobra.Command{
 		case workspaceId != 0 && serviceId != 0:
 			getTransactionsService(workspaceId, serviceId)
 		default:
-			fmt.Println("\nPlease provide a valid Workspace ID &+OR Service id to get list of transactions")
-			fmt.Println("[bmgo get -w <workspace id>...")
+			fmt.Println("Please provide a valid Workspace ID &+OR Service id to get list of transactions")
+			fmt.Println("[bmgo get -w <workspace id>...\n-")
 		}
 	},
 }

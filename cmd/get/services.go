@@ -33,8 +33,8 @@ var servicesCmd = &cobra.Command{
 		} else if workspaceId != 0 {
 			getServicesWs(workspaceId)
 		} else {
-			fmt.Println("\nPlease provide a valid Workspace ID to get list of tests")
-			fmt.Println("[bmgo get -w <workspace id>...")
+			fmt.Println("Please provide a valid Workspace ID to get list of tests")
+			fmt.Println("[bmgo get -w <workspace id>...\n-")
 		}
 	},
 }

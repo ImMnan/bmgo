@@ -45,8 +45,8 @@ var schedulesCmd = &cobra.Command{
 		case (accountId == 0) && (workspaceId != 0) && !rawOutput:
 			getShedulesWs(workspaceId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
-			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
+			fmt.Println("Please provide a correct workspace Id or Account Id to get the info")
+			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]\n-")
 		}
 	},
 }

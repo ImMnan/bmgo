@@ -45,7 +45,7 @@ var projectsCmd = &cobra.Command{
 		case workspaceId != 0 && accountId == 0 && !rawOutput:
 			getProjectsWs(workspaceId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id")
+			fmt.Println("Please provide a correct workspace Id or Account Id")
 			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]\n-")
 		}
 	},
