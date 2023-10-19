@@ -43,6 +43,7 @@ func init() {
 
 type addFolderResponse struct {
 	Result addfolderResult `json:"result"`
+	Error  errorResult     `json:"error"`
 }
 type addfolderResult struct {
 	Id   string `json:"id"`
@@ -74,11 +75,17 @@ func addSharedfolder(folderName string, workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddFolder addFolderResponse
 	json.Unmarshal(bodyText, &responseBodyAddFolder)
-	folderIdres := responseBodyAddFolder.Result.Id
-	folderNameres := responseBodyAddFolder.Result.Name
-	fmt.Printf("\n%-30s %-15s", "Folder ID", "NAME")
-	fmt.Printf("\n%-30s %-15s", folderIdres, folderNameres)
-	fmt.Println("\n-")
+	if responseBodyAddFolder.Error.Code == 0 {
+		folderIdres := responseBodyAddFolder.Result.Id
+		folderNameres := responseBodyAddFolder.Result.Name
+		fmt.Printf("\n%-30s %-15s", "Folder ID", "NAME")
+		fmt.Printf("\n%-30s %-15s", folderIdres, folderNameres)
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAddFolder.Error.Code
+		errorMessage := responseBodyAddFolder.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 func addSharedfolderraw(folderName string, workspaceId int) {
 	apiId, apiSecret := Getapikeys()

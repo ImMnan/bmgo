@@ -42,6 +42,7 @@ func init() {
 
 type addShedulesResponse struct {
 	Result addScheduleResult `json:"result"`
+	Error  errorResult       `json:"error"`
 }
 type addScheduleResult struct {
 	TestId      int    `json:"testId"`
@@ -76,18 +77,24 @@ func addSchedule(testId int) {
 	}
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddShedules addShedulesResponse
-	json.Unmarshal(bodyText, &responseBodyAddShedules)
-	fmt.Printf("\n%-28s %-10s %-20s %-40s", "SCHEDULE ID", "ENABLED", "NEXT RUN", "CRON")
-	scheduleId := responseBodyAddShedules.Result.Id
-	//sheduleOwn := responseBodyAddShedules.Result.CreatedById
-	sheduleCron := responseBodyAddShedules.Result.Cron
-	cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-	sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
-	scheduleEnabled := responseBodyAddShedules.Result.Enabled
-	sheduleNextrunEP := int64(responseBodyAddShedules.Result.Created)
-	sheduleNextRun := time.Unix(sheduleNextrunEP, 0)
-	sheduleNextRunStr := fmt.Sprint(sheduleNextRun)
-	fmt.Printf("\n%-28s %-10t %-20s %-40s\n\n", scheduleId, scheduleEnabled, sheduleNextRunStr[0:16], *sheduleCronStr)
+	if responseBodyAddShedules.Error.Code == 0 {
+		json.Unmarshal(bodyText, &responseBodyAddShedules)
+		fmt.Printf("\n%-28s %-10s %-20s %-40s", "SCHEDULE ID", "ENABLED", "NEXT RUN", "CRON")
+		scheduleId := responseBodyAddShedules.Result.Id
+		//sheduleOwn := responseBodyAddShedules.Result.CreatedById
+		sheduleCron := responseBodyAddShedules.Result.Cron
+		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+		sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
+		scheduleEnabled := responseBodyAddShedules.Result.Enabled
+		sheduleNextrunEP := int64(responseBodyAddShedules.Result.Created)
+		sheduleNextRun := time.Unix(sheduleNextrunEP, 0)
+		sheduleNextRunStr := fmt.Sprint(sheduleNextRun)
+		fmt.Printf("\n%-28s %-10t %-20s %-40s\n\n", scheduleId, scheduleEnabled, sheduleNextRunStr[0:16], *sheduleCronStr)
+	} else {
+		errorCode := responseBodyAddShedules.Error.Code
+		errorMessage := responseBodyAddShedules.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 func addScheduleraw(testId int) {
 	apiId, apiSecret := Getapikeys()

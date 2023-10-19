@@ -18,7 +18,7 @@ import (
 // userCmd represents the user command
 var userCmd = &cobra.Command{
 	Use:   "user",
-	Short: "Get details about the user",
+	Short: "Add user to the account or workspace",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		//	fmt.Println("user add called")
@@ -51,6 +51,7 @@ func init() {
 
 type addUsersResponse struct {
 	Result []addusersResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 type addusersResult struct {
 	Id           string   `json:"id"`
@@ -87,16 +88,23 @@ func addUserByUidWs(userId, workspaceId int) {
 	}
 	var responseBodyWsAddUser addUsersResponse
 	json.Unmarshal(bodyText, &responseBodyWsAddUser)
-	totalRoles := []string{}
-	fmt.Printf("\n%-20s %-30s %-5s", "NAME", "EMAIL", "ROLES")
-	for i := 0; i < len(responseBodyWsAddUser.Result); i++ {
-		userName := responseBodyWsAddUser.Result[i].DisplayName
-		userEmail := responseBodyWsAddUser.Result[i].Email
-		for r := 0; r < len(responseBodyWsAddUser.Result[i].Roles); r++ {
-			arr := responseBodyWsAddUser.Result[i].Roles[r]
-			totalRoles = append(totalRoles, arr)
+	if responseBodyWsAddUser.Error.Code == 0 {
+
+		totalRoles := []string{}
+		fmt.Printf("\n%-20s %-30s %-5s", "NAME", "EMAIL", "ROLES")
+		for i := 0; i < len(responseBodyWsAddUser.Result); i++ {
+			userName := responseBodyWsAddUser.Result[i].DisplayName
+			userEmail := responseBodyWsAddUser.Result[i].Email
+			for r := 0; r < len(responseBodyWsAddUser.Result[i].Roles); r++ {
+				arr := responseBodyWsAddUser.Result[i].Roles[r]
+				totalRoles = append(totalRoles, arr)
+			}
+			fmt.Printf("\n%-20s %-30s %-5s\n", userName, userEmail, totalRoles)
 		}
-		fmt.Printf("\n%-20s %-30s %-5s\n", userName, userEmail, totalRoles)
+	} else {
+		errorCode := responseBodyWsAddUser.Error.Code
+		errorMessage := responseBodyWsAddUser.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
 func addUserByUidWsraw(userId, workspaceId int) {
@@ -150,18 +158,24 @@ func addUserByEmailA(emailId string, accountId int) {
 	}
 	var responseBodyInviteUser addUsersResponse
 	json.Unmarshal(bodyText, &responseBodyInviteUser)
-	totalWsinvited := []int{}
-	fmt.Printf("\n%-25s %-30s %-15s %-5s\n", "INVITE_ID", "INVITEE", "ACCOUNT", "WORKSPACE")
-	for i := 0; i < len(responseBodyInviteUser.Result); i++ {
-		inviteId := responseBodyInviteUser.Result[i].Id
-		invitee := responseBodyInviteUser.Result[i].InviteeEmail
-		invitedAccount := responseBodyInviteUser.Result[i].AccountId
+	if responseBodyInviteUser.Error.Code == 0 {
+		totalWsinvited := []int{}
+		fmt.Printf("\n%-25s %-30s %-15s %-5s\n", "INVITE_ID", "INVITEE", "ACCOUNT", "WORKSPACE")
+		for i := 0; i < len(responseBodyInviteUser.Result); i++ {
+			inviteId := responseBodyInviteUser.Result[i].Id
+			invitee := responseBodyInviteUser.Result[i].InviteeEmail
+			invitedAccount := responseBodyInviteUser.Result[i].AccountId
 
-		for w := 0; w < len(responseBodyInviteUser.Result[i].WorkspacesId); w++ {
-			wsIdarr := responseBodyInviteUser.Result[i].WorkspacesId[w]
-			totalWsinvited = append(totalWsinvited, wsIdarr)
+			for w := 0; w < len(responseBodyInviteUser.Result[i].WorkspacesId); w++ {
+				wsIdarr := responseBodyInviteUser.Result[i].WorkspacesId[w]
+				totalWsinvited = append(totalWsinvited, wsIdarr)
+			}
+			fmt.Printf("%-25s %-30s %-15v %-5v\n", inviteId, invitee, invitedAccount, totalWsinvited)
 		}
-		fmt.Printf("%-25s %-30s %-15v %-5v\n", inviteId, invitee, invitedAccount, totalWsinvited)
+	} else {
+		errorCode := responseBodyInviteUser.Error.Code
+		errorMessage := responseBodyInviteUser.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
 func addUserByEmailAraw(emailId string, accountId int) {

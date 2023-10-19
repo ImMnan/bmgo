@@ -42,7 +42,8 @@ func init() {
 }
 
 type oplResponse struct {
-	Result oplResult `json:"result"`
+	Result oplResult   `json:"result"`
+	Error  errorResult `json:"error"`
 }
 type oplResult struct {
 	Id               string   `json:"id"`
@@ -83,20 +84,26 @@ func addOpl(accountId int, oplName string) {
 	fmt.Printf("\n%-27s %-15s %-7s %-7s %-10s %-5s\n", "ID", "NAME", "TPE", "EPA", "ACCOUNT", "WORKSPACES")
 	var responseBodyAddOpl oplResponse
 	json.Unmarshal(bodyText, &responseBodyAddOpl)
-	threadsPerEngine := responseBodyAddOpl.Result.ThreadsPerEngine
-	enginePerAgent := responseBodyAddOpl.Result.Slots
-	oplAccountId := responseBodyAddOpl.Result.AccountId
-	oplWorkspaceId := responseBodyAddOpl.Result.WorkspacesId
-	oplHarbourId := responseBodyAddOpl.Result.Id
-	fmt.Printf("%-27v %-15s %-7v %-7v %-10v %-5v\n", oplHarbourId, oplName, threadsPerEngine, enginePerAgent, oplAccountId, oplWorkspaceId)
+	if responseBodyAddOpl.Error.Code == 0 {
+		threadsPerEngine := responseBodyAddOpl.Result.ThreadsPerEngine
+		enginePerAgent := responseBodyAddOpl.Result.Slots
+		oplAccountId := responseBodyAddOpl.Result.AccountId
+		oplWorkspaceId := responseBodyAddOpl.Result.WorkspacesId
+		oplHarbourId := responseBodyAddOpl.Result.Id
+		fmt.Printf("%-27v %-15s %-7v %-7v %-10v %-5v\n", oplHarbourId, oplName, threadsPerEngine, enginePerAgent, oplAccountId, oplWorkspaceId)
 
-	fmt.Println("\n---------------------------------------------------------------------------------------------")
-	fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
-	for i := 0; i < len(responseBodyAddOpl.Result.FuncIds); i++ {
-		oplfunctionalities := responseBodyAddOpl.Result.FuncIds[i]
-		fmt.Printf("%-30v\n", oplfunctionalities)
+		fmt.Println("\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
+		for i := 0; i < len(responseBodyAddOpl.Result.FuncIds); i++ {
+			oplfunctionalities := responseBodyAddOpl.Result.FuncIds[i]
+			fmt.Printf("%-30v\n", oplfunctionalities)
+		}
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAddOpl.Error.Code
+		errorMessage := responseBodyAddOpl.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Println("\n-")
 }
 
 func addOplraw(accountId int, oplName string) {

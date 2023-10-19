@@ -43,6 +43,7 @@ func init() {
 
 type addProjectResponse struct {
 	Result addProjectResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 type addProjectResult struct {
 	Id   int    `json:"id"`
@@ -75,11 +76,17 @@ func addProject(projectName string, workspaceId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddProject addProjectResponse
 	json.Unmarshal(bodyText, &responseBodyAddProject)
-	projectIdres := responseBodyAddProject.Result.Id
-	projectNameres := responseBodyAddProject.Result.Name
-	fmt.Printf("\n%-15s %-15s", "PROJECT ID", "NAME")
-	fmt.Printf("\n%-15v %-15s", projectIdres, projectNameres)
-	fmt.Println("\n-")
+	if responseBodyAddProject.Error.Code == 0 {
+		projectIdres := responseBodyAddProject.Result.Id
+		projectNameres := responseBodyAddProject.Result.Name
+		fmt.Printf("\n%-15s %-15s", "PROJECT ID", "NAME")
+		fmt.Printf("\n%-15v %-15s", projectIdres, projectNameres)
+		fmt.Println("\n-")
+	} else {
+		errorCode := responseBodyAddProject.Error.Code
+		errorMessage := responseBodyAddProject.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 func addProjectraw(projectName string, workspaceId int) {
 	apiId, apiSecret := Getapikeys()

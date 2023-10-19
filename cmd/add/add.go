@@ -38,6 +38,12 @@ func init() {
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
+type errorResult struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Status  int    `json:"status"`
+}
+
 func Getapikeys() (string, string) {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")

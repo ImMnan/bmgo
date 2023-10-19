@@ -42,6 +42,7 @@ func init() {
 
 type addWorkspaceResponse struct {
 	Result addWorkspaceResult `json:"result"`
+	Error  errorResult        `json:"error"`
 }
 type addWorkspaceResult struct {
 	Id      int    `json:"id"`
@@ -72,12 +73,18 @@ func addWorkspace(workspaceName string, accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyAddWorkspace addWorkspaceResponse
 	json.Unmarshal(bodyText, &responseBodyAddWorkspace)
-	wsName := responseBodyAddWorkspace.Result.Name
-	wsEnabled := responseBodyAddWorkspace.Result.Enabled
-	wsId := responseBodyAddWorkspace.Result.Id
+	if responseBodyAddWorkspace.Error.Code == 0 {
+		wsName := responseBodyAddWorkspace.Result.Name
+		wsEnabled := responseBodyAddWorkspace.Result.Enabled
+		wsId := responseBodyAddWorkspace.Result.Id
 
-	fmt.Printf("\n%-10s %-20s %-10s", "ID", "NAME", "ENABLED")
-	fmt.Printf("\n%-10v %-20s %-10t\n\n", wsId, wsName, wsEnabled)
+		fmt.Printf("\n%-10s %-20s %-10s", "ID", "NAME", "ENABLED")
+		fmt.Printf("\n%-10v %-20s %-10t\n\n", wsId, wsName, wsEnabled)
+	} else {
+		errorCode := responseBodyAddWorkspace.Error.Code
+		errorMessage := responseBodyAddWorkspace.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
 func addWorkspaceraw(workspaceName string, accountId int) {
 	apiId, apiSecret := Getapikeys()
