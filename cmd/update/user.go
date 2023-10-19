@@ -49,6 +49,7 @@ func init() {
 
 type updateUserResponse struct {
 	Result updateUserResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 type updateUserResult struct {
 	Email   string   `json:"email"`
@@ -86,14 +87,21 @@ func updateUserA(userId, accountId int) {
 	var responseBodyUpdateUserA updateUserResponse
 	var userRoleA string
 	json.Unmarshal(bodyText, &responseBodyUpdateUserA)
-	userEmailA := responseBodyUpdateUserA.Result.Email
-	userTypeA := responseBodyUpdateUserA.Result.Type
-	userStatusA := responseBodyUpdateUserA.Result.Enabled
-	fmt.Printf("\n%-25s %-12s %-10s %-10s", "EMAIL", "TYPE", "ENABLE", "ROLE")
-	for i := 0; i < len(responseBodyUpdateUserA.Result.Roles); i++ {
-		userRoleA = responseBodyUpdateUserA.Result.Roles[i]
+	if responseBodyUpdateUserA.Error.Code == 0 {
+
+		userEmailA := responseBodyUpdateUserA.Result.Email
+		userTypeA := responseBodyUpdateUserA.Result.Type
+		userStatusA := responseBodyUpdateUserA.Result.Enabled
+		fmt.Printf("\n%-25s %-12s %-10s %-10s", "EMAIL", "TYPE", "ENABLE", "ROLE")
+		for i := 0; i < len(responseBodyUpdateUserA.Result.Roles); i++ {
+			userRoleA = responseBodyUpdateUserA.Result.Roles[i]
+		}
+		fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailA, userTypeA, userStatusA, userRoleA)
+	} else {
+		errorCode := responseBodyUpdateUserA.Error.Code
+		errorMessage := responseBodyUpdateUserA.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailA, userTypeA, userStatusA, userRoleA)
 }
 func updateUserAraw(userId, accountId int) {
 	apiId, apiSecret := Getapikeys()
@@ -151,15 +159,23 @@ func updateUserWs(userId, workspaceId int) {
 	var responseBodyUpdateUserWs updateUserResponse
 	var userRoleWs string
 	json.Unmarshal(bodyText, &responseBodyUpdateUserWs)
-	userEmailWs := responseBodyUpdateUserWs.Result.Email
-	userTypeWs := responseBodyUpdateUserWs.Result.Type
-	userStatusWs := responseBodyUpdateUserWs.Result.Enabled
-	fmt.Printf("\n%-25s %-12s %-10s %-10s", "EMAIL", "TYPE", "ENABLE", "ROLE")
-	for i := 0; i < len(responseBodyUpdateUserWs.Result.Roles); i++ {
-		userRoleWs = responseBodyUpdateUserWs.Result.Roles[i]
+	if responseBodyUpdateUserWs.Error.Code == 0 {
+
+		userEmailWs := responseBodyUpdateUserWs.Result.Email
+		userTypeWs := responseBodyUpdateUserWs.Result.Type
+		userStatusWs := responseBodyUpdateUserWs.Result.Enabled
+		fmt.Printf("\n%-25s %-12s %-10s %-10s", "EMAIL", "TYPE", "ENABLE", "ROLE")
+		for i := 0; i < len(responseBodyUpdateUserWs.Result.Roles); i++ {
+			userRoleWs = responseBodyUpdateUserWs.Result.Roles[i]
+		}
+		fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailWs, userTypeWs, userStatusWs, userRoleWs)
+	} else {
+		errorCode := responseBodyUpdateUserWs.Error.Code
+		errorMessage := responseBodyUpdateUserWs.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-	fmt.Printf("\n%-25s %-12s %-10t %-10s\n\n", userEmailWs, userTypeWs, userStatusWs, userRoleWs)
 }
+
 func updateUserWsraw(userId, workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()

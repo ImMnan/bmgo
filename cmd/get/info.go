@@ -84,6 +84,7 @@ type plan struct {
 
 func getAccountId(accountId int) {
 	apiId, apiSecret := Getapikeys()
+
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr, nil)
@@ -108,6 +109,7 @@ func getAccountId(accountId int) {
 		ownerEmail := responseObject.Result.Owner.Email
 		workspaceCount := responseObject.Result.WorkspacesCount
 		memberCount := responseObject.Result.MembersCount
+
 		accountPlanId := responseObject.Result.Plan.Id
 		//	accountPlanName := responseObject.Result.Plan.Name
 		accountReportRet := responseObject.Result.Plan.ReportRetention
@@ -120,15 +122,17 @@ func getAccountId(accountId int) {
 		fmt.Printf("%-25s %-35s %-15d %-10d\n", accountName, ownerEmail, workspaceCount, memberCount)
 
 		fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
+
 		fmt.Printf("\n%-35s %-10s %-10s %-10s %-20s\n", "PLAN ID", "CREDITS", "REP RET.", "TPE", "EXPIRATION")
 		fmt.Printf("%-35s %-10v %-10d %-10d %-20v\n", accountPlanId, accountCredits, accountReportRet, accountThreadsPE, expirationTimeStr[0:16])
+
 		cloudProviders := []string{}
 		for i := 0; i < len(responseObject.Result.CloudProviders); i++ {
 			cloudProlist := responseObject.Result.CloudProviders[i]
 			cloudProviders = append(cloudProviders, cloudProlist)
 		}
 		fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
-		fmt.Printf("\nSupported cloud providers: %v \n\n", cloudProviders)
+		fmt.Printf("\nSupported cloud providers: %v", cloudProviders)
 	} else {
 		errorCode := responseObject.Error.Code
 		errorMessage := responseObject.Error.Message
@@ -196,8 +200,10 @@ func getWorkspace(workspaceId int) {
 		members := responseObjectWS.Result.MembersCount
 		accountId := responseObjectWS.Result.AccountId
 		enabled := responseObjectWS.Result.Enabled
-		fmt.Printf("\n%-25s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
-		fmt.Printf("%-25s %-10d %-10d %-10t\n\n", workspaceName, accountId, members, enabled)
+
+		fmt.Printf("\n%-30s %-10s %-10s %-10s\n", "NAME", "ACCOUNT", "MEMBERS", "ENABLED")
+		fmt.Printf("%-30s %-10d %-10d %-10t\n", workspaceName, accountId, members, enabled)
+		fmt.Printf("\n------------------------------------------------------------------------------------------------------------")
 	} else {
 		errorCode := responseObjectWS.Error.Code
 		errorMessage := responseObjectWS.Error.Message

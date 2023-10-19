@@ -40,8 +40,9 @@ func init() {
 	scheduleCmd.Flags().String("sid", "", "Provide the schedule ID to modify")
 }
 
-type updateshedulesResponse struct {
+type updateschedulesResponse struct {
 	Result updatescheduleResult `json:"result"`
+	Error  errorResult          `json:"error"`
 }
 type updatescheduleResult struct {
 	TestId  int    `json:"testId"`
@@ -71,20 +72,27 @@ func updateSchedule(scheduleId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyUpdateShedules updateshedulesResponse
-	json.Unmarshal(bodyText, &responseBodyUpdateShedules)
+	var responseBodyUpdateSchedules updateschedulesResponse
+	json.Unmarshal(bodyText, &responseBodyUpdateSchedules)
 	fmt.Printf("\n%-10s %-10s %-20s %-40s", "TEST", "ENABLED", "CREATED ON", "CRON")
-	scheduleTest := responseBodyUpdateShedules.Result.TestId
-	sheduleEnabled := responseBodyUpdateShedules.Result.Enabled
-	sheduleCron := responseBodyUpdateShedules.Result.Cron
-	cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-	sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
+	if responseBodyUpdateSchedules.Error.Code == 0 {
+		scheduleTest := responseBodyUpdateSchedules.Result.TestId
+		sheduleEnabled := responseBodyUpdateSchedules.Result.Enabled
+		sheduleCron := responseBodyUpdateSchedules.Result.Cron
+		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+		sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
 
-	sheduleCreatedEp := int64(responseBodyUpdateShedules.Result.Created)
-	sheduleCreated := time.Unix(sheduleCreatedEp, 0)
-	sheduleCreatedStr := fmt.Sprint(sheduleCreated)
-	fmt.Printf("\n%-10v %-10t %-20s %-40s\n\n", scheduleTest, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
+		sheduleCreatedEp := int64(responseBodyUpdateSchedules.Result.Created)
+		sheduleCreated := time.Unix(sheduleCreatedEp, 0)
+		sheduleCreatedStr := fmt.Sprint(sheduleCreated)
+		fmt.Printf("\n%-10v %-10t %-20s %-40s\n\n", scheduleTest, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
+	} else {
+		errorCode := responseBodyUpdateSchedules.Error.Code
+		errorMessage := responseBodyUpdateSchedules.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
+
 func updateScheduleraw(scheduleId string) {
 	apiId, apiSecret := Getapikeys()
 	status := isEnabledPromt()
