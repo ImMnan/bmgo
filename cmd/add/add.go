@@ -176,17 +176,9 @@ func userRoleSelectorWs() string {
 
 // Prompt to user for workspace ids
 func workspaceIdPrompt() string {
-	validate := func(input string) error {
-		_, err := strconv.ParseFloat(input, 64)
-		if err != nil {
-			return errors.New("invalid workspace")
-		}
-		return nil
-	}
 	prompt := promptui.Prompt{
-		Label:       "Provide Workspace/s-[Array supported]",
+		Label:       "Provide Workspace/s[separated by commas]",
 		HideEntered: true,
-		Validate:    validate,
 	}
 	resultWsId, err := prompt.Run()
 	if err != nil {

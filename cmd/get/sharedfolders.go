@@ -75,14 +75,18 @@ func getSharedFolderWs(workspaceId int) {
 	var responseBodyWsSfolders sfolderResponseWS
 	json.Unmarshal(bodyText, &responseBodyWsSfolders)
 	if responseBodyWsSfolders.Error.Code == 0 {
-		fmt.Printf("\n%-25s %-25s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
+		fmt.Printf("\n%-25s %-25s %-18s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
 		for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
 			sFolderId := responseBodyWsSfolders.Result[i].Id
 			sFolderName := responseBodyWsSfolders.Result[i].Name
 			sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
 			sFHidden := responseBodyWsSfolders.Result[i].Hidden
-			epochCreated := time.Unix(sFolderCreated, 0)
-			fmt.Printf("\n%-25s %-25s %-32v %-10t", sFolderId, sFolderName, epochCreated, sFHidden)
+			epochCreatedStr := fmt.Sprint(time.Unix(sFolderCreated, 0))
+			if len(sFolderName) > 22 {
+				fmt.Printf("\n%-25s %-25s %-18v %-10t", sFolderId, sFolderName[0:23], epochCreatedStr[0:16], sFHidden)
+			} else {
+				fmt.Printf("\n%-25s %-25s %-18v %-10t", sFolderId, sFolderName, epochCreatedStr[0:16], sFHidden)
+			}
 		}
 		fmt.Println("\n-")
 	} else {
