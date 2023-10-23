@@ -56,6 +56,8 @@ type mockResult struct {
 	HttpsEndpoint string             `json:"httpsEndpoint"`
 	Created       int                `json:"created"`
 	Badges        []processingAction `json:"badges"`
+	HarbourId     string             `json:"harborId"`
+	CreatedBy     string             `json:"createdBy"`
 }
 
 type processingAction struct {
@@ -93,6 +95,7 @@ func findMock(mockId, workspaceId int) {
 	var responseObjectMockservice findmockResponse
 	json.Unmarshal(bodyText, &responseObjectMockservice)
 	if responseObjectMockservice.Error == "" {
+		mockCreatedBy := responseObjectMockservice.Result.CreatedBy
 		mockName := responseObjectMockservice.Result.Name
 		serviceName := responseObjectMockservice.Result.ServiceName
 		serviceId := responseObjectMockservice.Result.ServiceId
@@ -103,11 +106,13 @@ func findMock(mockId, workspaceId int) {
 		mockHttpsEndpoint := responseObjectMockservice.Result.HttpsEndpoint
 		mockShipId := responseObjectMockservice.Result.ShipId
 		mockLocation := responseObjectMockservice.Result.Location
+		mockHarbour := responseObjectMockservice.Result.HarbourId
 		//	fmt.Printf("Name: %s\nService Name: %s   Service ID: %d\n", mockName, serviceName, serviceId)
-		fmt.Printf("\n%-30s %-10s %-18s %-10s %-10s\n", "MOCK NAME", "STATUS", "CREATED", "SERVICE", "SERVICE NAME")
-		fmt.Printf("%-30s %-10s %-18s %-10d %-10s\n", mockName, mockStatus, mockCreatedStr[0:16], serviceId, serviceName)
+		fmt.Printf("NAME: %v\n", mockName)
+		fmt.Printf("\n%-35s %-10s %-18s %-10s %-10s\n", "CREATED BY", "STATUS", "CREATED", "SERVICE", "SERVICE NAME")
+		fmt.Printf("%-35s %-10s %-18s %-10d %-10s\n", mockCreatedBy, mockStatus, mockCreatedStr[0:16], serviceId, serviceName)
 		fmt.Printf("\nHTTP ENDPOINT: %s\nHTTPS ENDPOINT: %s", mockHttpEndpoint, mockHttpsEndpoint)
-		fmt.Printf("\nLOCATION: %s\nAGENT: %s", mockLocation, mockShipId)
+		fmt.Printf("\nLOCATION: %s\nHARBOUR: %s\nAGENT: %s", mockLocation, mockHarbour, mockShipId)
 		fmt.Println("\n-")
 	} else {
 		fmt.Printf("Error code: %v\n", responseObjectMockservice.Error)
