@@ -22,24 +22,35 @@ var agentsCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
+		tm, _ := cmd.Flags().GetBool("tm")
+		var teamId string
 		var workspaceId int
 		if ws {
 			workspaceId = defaultWorkspace()
 		} else {
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
+		if tm {
+			teamId = defaultTeam()
+		} else {
+			teamId, _ = cmd.Flags().GetString("teamid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		harbourId, _ := cmd.Flags().GetString("hid")
 		switch {
-		case workspaceId == 0 && harbourId != "" && rawOutput:
+		case workspaceId == 0 && harbourId != "" && teamId == "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId != "" && rawOutput:
+		case workspaceId != 0 && harbourId != "" && teamId == "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId == "" && rawOutput:
+		case workspaceId != 0 && harbourId == "" && teamId == "" && rawOutput:
 			getAgentsWsraw(workspaceId)
-		case workspaceId != 0 && harbourId == "":
+		case workspaceId == 0 && harbourId == "" && teamId != "" && rawOutput:
+			getAgentsTm(teamId)
+		case workspaceId != 0 && harbourId == "" && teamId == "":
 			getAgentsWs(workspaceId)
-		case workspaceId != 0 && harbourId != "":
+		case workspaceId == 0 && harbourId == "" && teamId != "":
+			getAgentsTm(teamId)
+		case workspaceId != 0 && harbourId != "" && teamId == "":
 			getAgentsOpl(workspaceId, harbourId)
 		default:
 			fmt.Println("\nPlease provide a correct workspace Id or Harbour Id to get the agents list")
@@ -182,6 +193,26 @@ func getAgentsWsraw(workspaceId int) {
 		log.Fatal(err)
 	}
 	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+func getAgentsTm(teamId string) {
+	bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", bearer)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
