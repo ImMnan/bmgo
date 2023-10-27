@@ -22,9 +22,20 @@ var userCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		userId, _ := cmd.Flags().GetInt("uid")
-		accountId, _ := cmd.Flags().GetInt("accountid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		switch {
 		case (workspaceId != 0) && (accountId == 0) && rawOutput:
 			updateUserWsraw(userId, workspaceId)
@@ -175,7 +186,6 @@ func updateUserWs(userId, workspaceId int) {
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
-
 func updateUserWsraw(userId, workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()
