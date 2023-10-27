@@ -35,6 +35,11 @@ var oplCmd = &cobra.Command{
 			updateOplAddWs(workspaceId, harbourId)
 		case workspaceId != 0 && harbourId != "" && removeWs:
 			updateOplRemWs(workspaceId, harbourId)
+		case workspaceId != 0 && harbourId != "":
+			fmt.Println("Please provide the --add or --remove flag to update the Private location")
+		default:
+			fmt.Println("Please provide the correct workspace Id or Harbour Id to update the Private location")
+			fmt.Println("[bmgo update -w <workspace ID> opl --hid <harbour Id>] OR [bmgo update --ws opl --hid <harbour Id>]\n-")
 		}
 	},
 }
