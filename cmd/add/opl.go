@@ -18,7 +18,10 @@ import (
 var oplCmd = &cobra.Command{
 	Use:   "opl",
 	Short: "Add Private location in account",
-	Long:  ``,
+	Long: `Private Location is your on-premise environment. When you create a private location, you are creating a private-location object configured with specific parameters. Once you have created a private location, you will get a harborId, the unique identifier for a private location. Add private location to your account using this command, also you can assign this to multiple workspaces, just provide the list of workspaces separated by commas when bmgo promts you. You will be prompted to provide list of workspaces, also engines per agent and threads per engine. So make sure you provide the right configuration in the prompt.
+	
+	For example: [bmgo add -a <account id> opl --name <private location name>]
+	For default: [bmgo add --ac opl --name <private location name>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		var accountId int
@@ -35,8 +38,7 @@ var oplCmd = &cobra.Command{
 		case accountId != 0:
 			addOpl(accountId, oplName)
 		default:
-			fmt.Println("\nPlease provide a correct Account Id & Private location Name")
-			fmt.Println("[bmgo add -a <account id> opl --name <private location name>]\n[bmgo add --ac opl --name <private location name>]")
+			cmd.Help()
 		}
 	},
 }

@@ -18,7 +18,9 @@ import (
 var agentCmd = &cobra.Command{
 	Use:   "agent",
 	Short: "Add agent into an OPL/Private location",
-	Long:  ``,
+	Long: `Use this command to create an agent, you will need to know the harborId under which the agent needs adding. The output will have agent ID/Ship Id, you will want to save the shipId from the command output.
+	
+	For example: [bmgo add agent --hid <harbour id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -27,8 +29,7 @@ var agentCmd = &cobra.Command{
 		} else if harbourId != "" {
 			addAgent(harbourId)
 		} else {
-			fmt.Println("\nPlease provide a correct Harbour ID to add agent")
-			fmt.Println("[bmgo add agent --hid <harbour id>]")
+			cmd.Help()
 		}
 	},
 }

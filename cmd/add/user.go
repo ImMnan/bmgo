@@ -19,7 +19,10 @@ import (
 var userCmd = &cobra.Command{
 	Use:   "user",
 	Short: "Add user to the account or workspace",
-	Long:  `.`,
+	Long: `Add users to workspace using the User Id, considering the user is already in the same account. Also add users to an account by inviting the user via email address, in this case user is not part of Blazemeter. 
+	
+	For example: [bmgo add -a <account_id> user <user email>] OR [bmgo add -w <workspace_id> --uid <user id>]
+	For default: [bmgo add --ac user <user email>] OR [bmgo add --ws --uid <user id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		//	fmt.Println("user add called")
 		ac, _ := cmd.Flags().GetBool("ac")
@@ -48,8 +51,7 @@ var userCmd = &cobra.Command{
 		case (workspaceId != 0) && (accountId == 0) && !rawOutput:
 			addUserByUidWs(userId, workspaceId)
 		default:
-			fmt.Println("Please provide a correct User Id or Email id to add user")
-			fmt.Println("[bmgo add -a <account_id> user <user email>] OR [bmgo add -w <workspace_id> --uid <user id>]\n[bmgo add --ac users <user email>] OR [bmgo add --ws user --uid <user id>]")
+			cmd.Help()
 		}
 	},
 }

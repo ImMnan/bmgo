@@ -19,7 +19,10 @@ import (
 var AddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Use Add command for Adding resources to Blazemeter",
-	Long:  ``,
+	Long: `Use Add command to add/create resources in your Blazemeter account. Use --help throughout subcommands to get an idea of how these commands are structured, though they are all straight forward. Add command has a lot of prompts from the bmgo, so make sure you have the information handy to respond to these prompts
+	
+	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
+	The file can be in working DIR or in $HOME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -29,6 +32,8 @@ func init() {
 	AddCmd.PersistentFlags().IntP("accountid", "a", 0, " Provide Account ID to add a resource to")
 	AddCmd.PersistentFlags().IntP("workspaceid", "w", 0, " Provide Workspace ID to add a resource to")
 	AddCmd.PersistentFlags().BoolP("raw", "r", false, "[OPTIONAL] If set, the output will be raw json")
+	AddCmd.PersistentFlags().Bool("ac", false, "Use default account Id (bmConfig.yaml)")
+	AddCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")

@@ -18,7 +18,10 @@ import (
 var sharedfolderCmd = &cobra.Command{
 	Use:   "sharedfolder",
 	Short: "Add shared folder into workspace",
-	Long:  `.`,
+	Long: `If you have files that are used across multiple tests, then using shared folders will reduce the need to re-upload files every time. For more information on what shared folders are and when to use them go to help.blazemeter.com Add shared folder into your existing workspace by specifying the name of the shared folder. Add a shared folder to your existing workspace using this command. 
+	
+	For example: [bmgo add -w <workspace id> sharedfolder --name <folder name>]
+	For default: [bmgo add --ws sharedfolder --name <folder name>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -35,8 +38,7 @@ var sharedfolderCmd = &cobra.Command{
 		case (workspaceId != 0) && (folderName != ""):
 			addSharedfolder(folderName, workspaceId)
 		default:
-			fmt.Println("\nPlease provide a correct Workspace Id & Project Name")
-			fmt.Println("[bmgo add -w <workspace id> project --name <project name>]\n[bmgo add --ws project --name <project name>]")
+			cmd.Help()
 		}
 	},
 }

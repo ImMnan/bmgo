@@ -18,7 +18,10 @@ import (
 var workspaceCmd = &cobra.Command{
 	Use:   "workspace",
 	Short: "Add workspace to an account",
-	Long:  ``,
+	Long: `Add a new workspace into your existing account using this command, just specify the name of the workspace. Workspace Id for the newly created workspace is returned in the output.
+	
+	For example: [bmgo add -a <account_id> workspace --name <workspace name>]
+	For default: [bmgo add --ac workspace --name <workspace name>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		var accountId int
@@ -34,8 +37,7 @@ var workspaceCmd = &cobra.Command{
 		} else if accountId != 0 {
 			addWorkspace(workspaceName, accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct Account Id and workspace name to add workspace to")
-			fmt.Println("[bmgo add -a <account_id> workspace --name <workspace name>]\n[bmgo add --ac workspace --name <workspace name>]")
+			cmd.Help()
 		}
 	},
 }

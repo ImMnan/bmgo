@@ -20,7 +20,9 @@ import (
 var scheduleCmd = &cobra.Command{
 	Use:   "schedule",
 	Short: "Add new schedule",
-	Long:  ``,
+	Long: `The test scheduler command will allow you to assign a cron schedule to your test to have it run on a schedule. You can read more about this feature at help.blazemeter.com. Add a schedule to your test using this command with the help of a cron expression. You will be prompted to provide the cron expression when the command is run.
+	
+	For example: [bmgo add schedule --tid <test id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -29,8 +31,7 @@ var scheduleCmd = &cobra.Command{
 		} else if testId != 0 {
 			addSchedule(testId)
 		} else {
-			fmt.Println("\nPlease provide a correct Test ID to add a schedule to")
-			fmt.Println("[bmgo add schedule --tid <test id>]")
+			cmd.Help()
 		}
 	},
 }

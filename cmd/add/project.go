@@ -18,7 +18,10 @@ import (
 var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Add Project into workspace",
-	Long:  `.`,
+	Long: `Projects are designed to organize tests and reports and track usage within a Workspace. A Test and all of its Reports belong to a Project. You can add a project using this command to an existing workspace.
+	
+	For example: [bmgo add -w <workspace id> project --name <project name>]
+	For default: [bmgo add --ws project --name <project name>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -35,8 +38,7 @@ var projectCmd = &cobra.Command{
 		case (workspaceId != 0) && (projectName != ""):
 			addProject(projectName, workspaceId)
 		default:
-			fmt.Println("\nPlease provide a correct Workspace Id & Project Name")
-			fmt.Println("[bmgo add -w <workspace id> project --name <project name>]\n[bmgo add --ws project --name <project name>]")
+			cmd.Help()
 		}
 	},
 }
