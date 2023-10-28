@@ -48,7 +48,7 @@ var userCmd = &cobra.Command{
 		case (workspaceId != 0) && (accountId == 0) && !rawOutput:
 			addUserByUidWs(userId, workspaceId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to add user")
+			fmt.Println("Please provide a correct User Id or Email id to add user")
 			fmt.Println("[bmgo add -a <account_id> user <user email>] OR [bmgo add -w <workspace_id> --uid <user id>]\n[bmgo add --ac users <user email>] OR [bmgo add --ws user --uid <user id>]")
 		}
 	},
