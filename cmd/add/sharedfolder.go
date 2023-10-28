@@ -20,7 +20,13 @@ var sharedfolderCmd = &cobra.Command{
 	Short: "Add shared folder into workspace",
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var workspaceId int
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		folderName, _ := cmd.Flags().GetString("name")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
@@ -30,7 +36,7 @@ var sharedfolderCmd = &cobra.Command{
 			addSharedfolder(folderName, workspaceId)
 		default:
 			fmt.Println("\nPlease provide a correct Workspace Id & Project Name")
-			fmt.Println("[bmgo add -w <workspace id> project --name <project name>]\n-")
+			fmt.Println("[bmgo add -w <workspace id> project --name <project name>]\n[bmgo add --ws project --name <project name>]")
 		}
 	},
 }

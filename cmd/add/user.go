@@ -22,10 +22,21 @@ var userCmd = &cobra.Command{
 	Long:  `.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		//	fmt.Println("user add called")
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var accountId, workspaceId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		userId, _ := cmd.Flags().GetInt("uid")
 		emailId, _ := cmd.Flags().GetString("email")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
-		accountId, _ := cmd.Flags().GetInt("accountid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
 		case (workspaceId == 0) && (accountId != 0) && (emailId != "") && rawOutput:
@@ -38,15 +49,15 @@ var userCmd = &cobra.Command{
 			addUserByUidWs(userId, workspaceId)
 		default:
 			fmt.Println("\nPlease provide a correct workspace Id or Account Id to add user")
-			fmt.Println("[bmgo add -a <account_id>...] OR [bmgo add -w <workspace_id>...]")
+			fmt.Println("[bmgo add -a <account_id> user <user email>] OR [bmgo add -w <workspace_id> --uid <user id>]\n[bmgo add --ac users <user email>] OR [bmgo add --ws user --uid <user id>]")
 		}
 	},
 }
 
 func init() {
 	AddCmd.AddCommand(userCmd)
-	userCmd.Flags().Int("uid", 0, "User ID for the user")
-	userCmd.Flags().String("email", "", "Enter the Email ID of the user invited!")
+	userCmd.Flags().Int("uid", 0, "User ID for the user [for workspace]")
+	userCmd.Flags().String("email", "", "Enter the Email ID of the user to be invited [for account]")
 }
 
 type addUsersResponse struct {

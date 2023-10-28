@@ -20,7 +20,13 @@ var oplCmd = &cobra.Command{
 	Short: "Add Private location in account",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		accountId, _ := cmd.Flags().GetInt("accountid")
+		ac, _ := cmd.Flags().GetBool("ac")
+		var accountId int
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
 		oplName, _ := cmd.Flags().GetString("name")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
@@ -30,7 +36,7 @@ var oplCmd = &cobra.Command{
 			addOpl(accountId, oplName)
 		default:
 			fmt.Println("\nPlease provide a correct Account Id & Private location Name")
-			fmt.Println("[bmgo add -a <account id> opl --name <private location name>]\n-")
+			fmt.Println("[bmgo add -a <account id> opl --name <private location name>]\n[bmgo add --ac opl --name <private location name>]")
 		}
 	},
 }
