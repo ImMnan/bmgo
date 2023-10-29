@@ -19,7 +19,7 @@ import (
 var invitationsCmd = &cobra.Command{
 	Use:   "invitations",
 	Short: "Get a list of pending invitations within your account",
-	Long:  ``,
+	Long:  `Use this command to list existing invitations for the account, only outputs the pending ones`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		var accountId int
@@ -38,7 +38,6 @@ func init() {
 
 type invitesResponse struct {
 	Result []invitesResult `json:"result"`
-	Error  errorResult     `json:"error"`
 }
 type invitesResult struct {
 	Id              string   `json:"id"`
@@ -70,35 +69,29 @@ func getInvitations(accountId int) {
 	//fmt.Printf("%s\n", bodyText)
 	var responseBodyInvites invitesResponse
 	json.Unmarshal(bodyText, &responseBodyInvites)
-	if responseBodyInvites.Error.Code == 0 {
-		totalWsNames := []string{}
-		totalARoles := []string{}
-		//totalWsRoles := []string{}
-		fmt.Printf("\n%-25s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "AC_ROLE", "WORKSPACE/S & ROLES")
-		for i := 0; i < len(responseBodyInvites.Result); i++ {
-			accountName := responseBodyInvites.Result[i].AccountName
-			userEmail := responseBodyInvites.Result[i].InviteeEmail
+	totalWsNames := []string{}
+	totalARoles := []string{}
+	//totalWsRoles := []string{}
+	fmt.Printf("\n%-25s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "AC_ROLE", "WORKSPACE/S & ROLES")
+	for i := 0; i < len(responseBodyInvites.Result); i++ {
+		accountName := responseBodyInvites.Result[i].AccountName
+		userEmail := responseBodyInvites.Result[i].InviteeEmail
 
-			for w := 0; w < len(responseBodyInvites.Result[i].WorkspaceNames); w++ {
-				arr := responseBodyInvites.Result[i].WorkspaceNames[w]
-				totalWsNames = append(totalWsNames, arr)
-			}
-			for ar := 0; ar < len(responseBodyInvites.Result[i].AccountRoles); ar++ {
-				arr1 := responseBodyInvites.Result[i].AccountRoles[ar]
-				totalARoles = append(totalARoles, arr1)
-			}
-			for wr := 0; wr < len(responseBodyInvites.Result[i].WorkspacesRoles); wr++ {
-				arr2 := responseBodyInvites.Result[i].WorkspacesRoles[wr]
-				totalWsNames = append(totalWsNames, arr2)
-			}
-			result1 := strings.Join(totalARoles, ",")
-			fmt.Printf("\n%-25s %-20s %-10s %-5s\n", userEmail, accountName, result1, totalWsNames)
+		for w := 0; w < len(responseBodyInvites.Result[i].WorkspaceNames); w++ {
+			arr := responseBodyInvites.Result[i].WorkspaceNames[w]
+			totalWsNames = append(totalWsNames, arr)
 		}
-		fmt.Println("\n-")
-	} else {
-		errorCode := responseBodyInvites.Error.Code
-		errorMessage := responseBodyInvites.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
-	}
+		for ar := 0; ar < len(responseBodyInvites.Result[i].AccountRoles); ar++ {
+			arr1 := responseBodyInvites.Result[i].AccountRoles[ar]
+			totalARoles = append(totalARoles, arr1)
+		}
+		for wr := 0; wr < len(responseBodyInvites.Result[i].WorkspacesRoles); wr++ {
+			arr2 := responseBodyInvites.Result[i].WorkspacesRoles[wr]
+			totalWsNames = append(totalWsNames, arr2)
+		}
+		result1 := strings.Join(totalARoles, ",")
 
+		fmt.Printf("\n%-25s %-20s %-10s %-5s\n", userEmail, accountName, result1, totalWsNames)
+	}
+	fmt.Println("\n-")
 }

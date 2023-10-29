@@ -16,8 +16,11 @@ import (
 // integrationsCmd represents the integrations command
 var integrationsCmd = &cobra.Command{
 	Use:   "integrations",
-	Short: "Get list of integrations in a team",
-	Long:  `.`,
+	Short: "[>]Get list of integrations in a team",
+	Long: `Use this command to list integrations for your Runscope/Api-Monitoring team. This is a Runscope only command. Ouputs integration Id, type, etc.
+	
+	For example: [bmgo get -t <team_uuid> integrations]
+	For default: [bmgo get --tm integrations]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tm, _ := cmd.Flags().GetBool("tm")
 		var teamId string
@@ -32,8 +35,7 @@ var integrationsCmd = &cobra.Command{
 		} else if !rawOutput {
 			getIntegrationsTm(teamId)
 		} else {
-			fmt.Println("\nPlease provide a correct team UUID to list integrations")
-			fmt.Println("[bmgo get -t <team_uuid> integrations] OR [bmgo get --tm integrations]")
+			cmd.Help()
 		}
 
 	},

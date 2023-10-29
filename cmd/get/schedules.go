@@ -18,8 +18,13 @@ import (
 // schedulesCmd represents the schedules command
 var schedulesCmd = &cobra.Command{
 	Use:   "schedules",
-	Short: "Get a list of schedules in the account",
-	Long:  ``,
+	Short: "Get a list of schedules in the account or workspace",
+	Long: `Use the command to list Schedules within a specified workspace or account. Tests can be scheduled to run on frequencies up to every minute. One or more schedules can be configured per test. The output includes Schedule ID, Test ID, Cron, etc.
+
+	For example: [bmgo get -w <workspace id> schedules] OR
+	             [bmgo get -a <account id> schedules]
+	For default: [bmgo get --ws schedules] OR 
+	             [bmgo get --ac schedules]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
@@ -45,8 +50,7 @@ var schedulesCmd = &cobra.Command{
 		case (accountId == 0) && (workspaceId != 0) && !rawOutput:
 			getShedulesWs(workspaceId)
 		default:
-			fmt.Println("Please provide a correct workspace Id or Account Id to get the info")
-			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]\n-")
+			cmd.Help()
 		}
 	},
 }

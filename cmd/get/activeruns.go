@@ -17,7 +17,10 @@ import (
 var activerunsCmd = &cobra.Command{
 	Use:   "activeruns",
 	Short: "Get active tests for a workspace",
-	Long:  ``,
+	Long: `List active test runs in the workspace.
+	
+	For example: bmgo get -w <workspace Id> activeruns
+	For default: bmgo get --wsactiveruns`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var workspaceId int
 		ws, _ := cmd.Flags().GetBool("ws")
@@ -32,8 +35,7 @@ var activerunsCmd = &cobra.Command{
 		} else if workspaceId != 0 {
 			getActiveruns(workspaceId)
 		} else {
-			fmt.Println("\nPlease provide a valid workspace ID to get list of active tests in a workspace")
-			fmt.Println("[bmgo get -w <workspace Id>")
+			cmd.Help()
 		}
 	},
 }

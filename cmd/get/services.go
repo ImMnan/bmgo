@@ -18,7 +18,10 @@ import (
 var servicesCmd = &cobra.Command{
 	Use:   "services",
 	Short: "Get services [for Mock service] within workspace",
-	Long:  ``,
+	Long: `Use the command to list Services within a specified workspace. Within BlazeMeter, a Service is a logical grouping of Transactions. These Transactions can be anything, but typically, a Service is a grouping of Transactions that are related to a specific live service. The output includes service ID, Name, etc. 
+
+	For example: [bmgo get -w <workspace id> services] OR
+	For default: [bmgo get --ws services]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -33,8 +36,7 @@ var servicesCmd = &cobra.Command{
 		} else if workspaceId != 0 {
 			getServicesWs(workspaceId)
 		} else {
-			fmt.Println("Please provide a valid Workspace ID to get list of tests")
-			fmt.Println("[bmgo get -w <workspace id>...\n-")
+			cmd.Help()
 		}
 	},
 }

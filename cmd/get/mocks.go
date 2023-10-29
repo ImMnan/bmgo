@@ -18,7 +18,12 @@ import (
 var mocksCmd = &cobra.Command{
 	Use:   "mocks",
 	Short: "Get all mock services in a workspace Or within a service",
-	Long:  ``,
+	Long: `Use the command to list the mock services within a specified workspace. A Mock Service is filled with a collection of Transactions, typically a subset of the Transactions in a Service. The output included Mock service ID, its NAME, SERVICE Name etc. The output can be further filtered by specifying a service by using the --serviceid flag.
+	
+	For example: [bmgo get -w <workspace id> mocks] OR 
+	             [bmgo get -w <workspace id> mocks --serviceid <service id>
+	For default: [bmgo get --ws mocks] OR 
+	             [bmgo get --ws mocks --serviceid <service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -39,8 +44,7 @@ var mocksCmd = &cobra.Command{
 		case workspaceId != 0 && serviceId != 0:
 			getMocksService(workspaceId, serviceId)
 		default:
-			fmt.Println("\nPlease provide a valid Workspace ID &+OR Service id to get list of transactions")
-			fmt.Println("[bmgo get -w <workspace id>...")
+			cmd.Help()
 		}
 	},
 }

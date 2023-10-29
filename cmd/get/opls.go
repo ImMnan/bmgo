@@ -18,7 +18,12 @@ import (
 var oplsCmd = &cobra.Command{
 	Use:   "opls",
 	Short: "Get a list of Private locations in the account",
-	Long:  `.`,
+	Long: `Use the command to list Private locations within a specified workspace or account. Private locations are the on-premise solution when you need to test applications or create Mock Services behind a firewall. The output includes Private location NAME, ID, FUNCTIONALITIES, Agents, etc.
+
+	For example: [bmgo get -w <workspace id> opls] OR 
+	             [bmgo get -a <account id> opls]
+	For default: [bmgo get --ws opls] OR 
+	             [bmgo get --ac projects]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
@@ -43,8 +48,7 @@ var oplsCmd = &cobra.Command{
 		} else if (accountId != 0) && (workspaceId == 0) {
 			getOpls(accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to get the info")
-			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...]")
+			cmd.Help()
 		}
 	},
 }

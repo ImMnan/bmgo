@@ -18,7 +18,12 @@ import (
 var usageCmd = &cobra.Command{
 	Use:   "usage",
 	Short: "Get Usage report for an account",
-	Long:  ``,
+	Long: `Use the command to get CSV based output of the account usage report by specifying the account Id. BlazeMeter Usage Reports provide metrics about the utilization of BlazeMeter in your organization. These metrics include high-level utilization data that is available either in graphs or JSON payloads, aggregated daily. You can also download detailed (per-test) utilization data in CSV format using this command. You will need to specify the From data and To data of this report & bmgo will output the report for specified period in CSV. The output can be copied to a csv file by using append function as the output is CSV, it is dificult to read through the terminal.  
+
+	For example: [bmgo get -a <account id> usage --from YYYY/MM/DD --to YYYY/MM/DD] OR
+                 [bmgo get -a <account id> usage --from YYYY/MM/DD --to YYYY/MM/DD > usage.csv]
+	For default: [bmgo get --ac usage --from YYYY/MM/DD --to YYYY/MM/DD] OR
+	             [bmgo get --ac usage --from YYYY/MM/DD --to YYYY/MM/DD > usage.csv]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		var accountId int
@@ -33,8 +38,7 @@ var usageCmd = &cobra.Command{
 		case fromDate != "" && toDate != "":
 			getUsage(accountId, fromDate, toDate)
 		default:
-			fmt.Println("\nPlease provide a correct account Id, from data & to date to get the report")
-			fmt.Println("[bmgo get -a <account_id> usage --from YYYY-MM-DD --to YYYY-MM-DD] OR [bmgo get --ac <account_id> usage --from YYYY-MM-DD --to YYYY-MM-DD")
+			cmd.Help()
 		}
 	},
 }

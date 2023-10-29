@@ -19,7 +19,12 @@ import (
 var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "Get details about the account or workspace",
-	Long:  `.`,
+	Long: `Use this command to get information about a workspace or an account. The command lists number of users, plan details, owners, status, etc. 
+	
+	For example: [bmgo get -a <account_id> info] OR 
+	             [bmgo get -w <workspace_id> info]
+	For default: [bmgo get --ac info] OR 
+	             [bmgo get --ws info]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		ac, _ := cmd.Flags().GetBool("ac")

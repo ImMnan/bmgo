@@ -19,7 +19,9 @@ import (
 var mastersCmd = &cobra.Command{
 	Use:   "masters",
 	Short: "Get masters for a test",
-	Long:  ``,
+	Long: `Use the command to list masters/test runs for a specific test, use the test ID to list the masters for the test. The command outputs STATUS, START TIME, END TIME, etc. for the lister masters.
+	
+	For example: bmgo get masters --tid <test id>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -28,8 +30,7 @@ var mastersCmd = &cobra.Command{
 		} else if testId != 0 {
 			getMasters(testId)
 		} else {
-			fmt.Println("\nPlease provide a valid Test ID to get list of Masters")
-			fmt.Println("[bmgo get masters --tid <test id>")
+			cmd.Help()
 		}
 	},
 }

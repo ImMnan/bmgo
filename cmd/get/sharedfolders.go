@@ -19,7 +19,10 @@ import (
 var sharedfoldersCmd = &cobra.Command{
 	Use:   "sharedfolders",
 	Short: "Get details of shared folders within workspace",
-	Long:  ``,
+	Long: `Use the command to list Shared folders within a specified workspace. You can use the same files across multiple tests. Upload the files to Shared Folders and include the folders in as many tests as you like. The output includes service ID, Name, etc.
+
+	For example: [bmgo get -w <workspace id> sharedfolders] OR
+	For default: [bmgo get --ws sharedfolders]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -29,10 +32,12 @@ var sharedfoldersCmd = &cobra.Command{
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
 		rawrawOutput, _ := cmd.Flags().GetBool("raw")
-		if rawrawOutput {
+		if workspaceId != 0 && rawrawOutput {
 			getSharedFolderWsRaw(workspaceId)
-		} else {
+		} else if workspaceId != 0 {
 			getSharedFolderWs(workspaceId)
+		} else {
+			cmd.Help()
 		}
 	},
 }
@@ -75,18 +80,14 @@ func getSharedFolderWs(workspaceId int) {
 	var responseBodyWsSfolders sfolderResponseWS
 	json.Unmarshal(bodyText, &responseBodyWsSfolders)
 	if responseBodyWsSfolders.Error.Code == 0 {
-		fmt.Printf("\n%-25s %-25s %-18s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
+		fmt.Printf("\n%-25s %-25s %-32s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
 		for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
 			sFolderId := responseBodyWsSfolders.Result[i].Id
 			sFolderName := responseBodyWsSfolders.Result[i].Name
 			sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
 			sFHidden := responseBodyWsSfolders.Result[i].Hidden
-			epochCreatedStr := fmt.Sprint(time.Unix(sFolderCreated, 0))
-			if len(sFolderName) > 22 {
-				fmt.Printf("\n%-25s %-25s %-18v %-10t", sFolderId, sFolderName[0:23], epochCreatedStr[0:16], sFHidden)
-			} else {
-				fmt.Printf("\n%-25s %-25s %-18v %-10t", sFolderId, sFolderName, epochCreatedStr[0:16], sFHidden)
-			}
+			epochCreated := time.Unix(sFolderCreated, 0)
+			fmt.Printf("\n%-25s %-25s %-32v %-10t", sFolderId, sFolderName, epochCreated, sFHidden)
 		}
 		fmt.Println("\n-")
 	} else {

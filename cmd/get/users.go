@@ -18,7 +18,19 @@ import (
 var usersCmd = &cobra.Command{
 	Use:   "users",
 	Short: "Get a list of users part of the account",
-	Long:  ``,
+	Long: `Use the command to list Users within a specified account, team (API monitoring), or a workspace. The output includes User ID, Name, Roles, Email, etc. The output can be further filtered by switching disabled flag as true to only display disabled users, --disabled.
+	
+	For example: [bmgo get -w <workspace id> users] OR
+	             [bmgo get -a <account id> users] OR
+		     [bmgo get -t <team id> users] OR
+	             [bmgo get -w <workspace id> users --disabled] OR
+	             [bmgo get -a <account id> users --disabled]
+
+    For default: [bmgo get --ws users] OR
+	             [bmgo get --ac users] OR 
+	             [bmgo get --tm users] OR
+	             [bmgo get --ws users --disabled] OR
+	             [bmgo get --ac users --disabled]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
@@ -64,8 +76,7 @@ var usersCmd = &cobra.Command{
 		} else if (accountId != 0) && (workspaceId == 0) {
 			getUsersA(accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id or Team Id  to get the info")
-			fmt.Println("[bmgo get -a <account_id>...] OR [bmgo get -w <workspace_id>...] OR [bmgo get -t <team_id>...]")
+			cmd.Help()
 		}
 	},
 }

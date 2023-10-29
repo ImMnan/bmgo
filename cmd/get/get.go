@@ -14,7 +14,10 @@ import (
 var GetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Use get command for listing the information",
-	Long:  `This is a get subcommad for listing info, related to account info, workspaces, users, invitation etc.`,
+	Long: `Use get command to list resources in your Blazemeter account. Use --help throughout subcommands to get an idea of how these commands are structured. Navigate to help.blazemeter.com for detailed info about these resources. 
+	
+	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
+	The file can be in working DIR or in $HOME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

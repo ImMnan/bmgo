@@ -19,7 +19,12 @@ import (
 var testsCmd = &cobra.Command{
 	Use:   "tests",
 	Short: "Get list of tests",
-	Long:  ``,
+	Long: `Use the command to list Tests within a specified workspace. The output includes Test ID, Name, Project Id, etc. The output can be further filtered by specifying a project id by using the --pid flag.
+
+	For example: [bmgo get -w <workspace id> tests] OR
+	             [bmgo get -w <workspace id> tests --pid <project id>]
+	For default: [bmgo get --ws tests] OR 
+	             [bmgo get --ws tests --pid <project id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -41,8 +46,7 @@ var testsCmd = &cobra.Command{
 		case workspaceId != 0:
 			listTestsWS(workspaceId)
 		default:
-			fmt.Println("\nPlease provide a valid Workspace ID to get list of tests")
-			fmt.Println("[bmgo get -w <workspace id>...")
+			cmd.Help()
 		}
 	},
 }

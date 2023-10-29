@@ -19,7 +19,9 @@ import (
 var workspacesCmd = &cobra.Command{
 	Use:   "workspaces",
 	Short: "Get a list of workspaces in the account",
-	Long:  ``,
+	Long: `Use the command to list workspaced within a specified account. The output includes workspace ID, Name, Members Count, etc.
+	For example: [bmgo get -a <account id> workspaces]
+	For default: [bmgo get --ac workspaces]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		var accountId int
@@ -35,8 +37,6 @@ var workspacesCmd = &cobra.Command{
 		} else if accountId != 0 {
 			getWorkspaces(accountId)
 		} else {
-			fmt.Println("\nPlease provide a correct workspace Id")
-			fmt.Println("[bmgo get -w <workspace_id>...]")
 			cmd.Help()
 		}
 	},

@@ -18,7 +18,12 @@ import (
 var transactionsCmd = &cobra.Command{
 	Use:   "transactions",
 	Short: "Get all transactions in a workspace > within a service",
-	Long:  ``,
+	Long: `Use the command to list Transactions within a specified workspace. A Transaction is a request/response pair that is associated with a given Service. The output includes transactions ID, Name, Service Id, etc. The output can be further filtered by specifying a service id by using the --serviceid flag.
+
+	For example: [bmgo get -w <workspace id> transactions] OR
+	             [bmgo get -w <workspace id> transactions --serviceid <service id>]
+	For default: [bmgo get --ws transactions] OR 
+	             [bmgo get --ws transactions --serviceid <service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -39,8 +44,7 @@ var transactionsCmd = &cobra.Command{
 		case workspaceId != 0 && serviceId != 0:
 			getTransactionsService(workspaceId, serviceId)
 		default:
-			fmt.Println("Please provide a valid Workspace ID &+OR Service id to get list of transactions")
-			fmt.Println("[bmgo get -w <workspace id>...\n-")
+			cmd.Help()
 		}
 	},
 }

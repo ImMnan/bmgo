@@ -19,42 +19,34 @@ import (
 var agentsCmd = &cobra.Command{
 	Use:   "agents",
 	Short: "Get agents within a private location",
-	Long:  ``,
+	Long: `The command returns a list of created agents, you will need to provide a workspace id or a harborId to run the command. any server on which you install our agent is an agent within a Private location. These are your load generators. Formerly known as a 'ship'. The command returns a list of agents within a workspace or within a harborId id specified.  Outputs "SHIP ID", "STATE", etc.
+	
+	For example: [bmgo get agents <harbour_id>...] OR 
+	             [bmgo get -w <workspace_id> agents]
+	For default: [bmgo get --ws agents]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
-		tm, _ := cmd.Flags().GetBool("tm")
-		var teamId string
 		var workspaceId int
 		if ws {
 			workspaceId = defaultWorkspace()
 		} else {
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
-		if tm {
-			teamId = defaultTeam()
-		} else {
-			teamId, _ = cmd.Flags().GetString("teamid")
-		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		harbourId, _ := cmd.Flags().GetString("hid")
 		switch {
-		case workspaceId == 0 && harbourId != "" && teamId == "" && rawOutput:
+		case workspaceId == 0 && harbourId != "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId != "" && teamId == "" && rawOutput:
+		case workspaceId != 0 && harbourId != "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId == "" && teamId == "" && rawOutput:
+		case workspaceId != 0 && harbourId == "" && rawOutput:
 			getAgentsWsraw(workspaceId)
-		case workspaceId == 0 && harbourId == "" && teamId != "" && rawOutput:
-			getAgentsTm(teamId)
-		case workspaceId != 0 && harbourId == "" && teamId == "":
+		case workspaceId != 0 && harbourId == "":
 			getAgentsWs(workspaceId)
-		case workspaceId == 0 && harbourId == "" && teamId != "":
-			getAgentsTm(teamId)
-		case workspaceId != 0 && harbourId != "" && teamId == "":
+		case workspaceId != 0 && harbourId != "":
 			getAgentsOpl(workspaceId, harbourId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Harbour Id to get the agents list")
-			fmt.Println("[bmgo get agents <harbour_id>...] OR [bmgo get -w <workspace_id> agents]")
+			cmd.Help()
 		}
 	},
 }
@@ -193,26 +185,6 @@ func getAgentsWsraw(workspaceId int) {
 		log.Fatal(err)
 	}
 	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-func getAgentsTm(teamId string) {
-	bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", bearer)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
