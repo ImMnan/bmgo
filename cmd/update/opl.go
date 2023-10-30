@@ -18,7 +18,10 @@ import (
 var oplCmd = &cobra.Command{
 	Use:   "opl",
 	Short: "Update OPL- Add or Remove workspace from private location",
-	Long:  ``,
+	Long: `Use the command to update Private locations, we can share private location with other workspaces or remove a workspace from Private location. To add or remove a workspace to your private location, you will need to know the harborId and the worksapceId that needs to be added or removed. Use the flag --add or --remove to add or remove the specified workspace from the private location.
+
+	For example: [bmgo update -w <workspace ID> opl --hid <harbour Id> --add]
+	For default: [bmgo update --ws opl --hid <harbour Id> --remove]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -38,8 +41,7 @@ var oplCmd = &cobra.Command{
 		case workspaceId != 0 && harbourId != "":
 			fmt.Println("Please provide the --add or --remove flag to update the Private location")
 		default:
-			fmt.Println("Please provide the correct workspace Id or Harbour Id to update the Private location")
-			fmt.Println("[bmgo update -w <workspace ID> opl --hid <harbour Id>] OR [bmgo update --ws opl --hid <harbour Id>]\n-")
+			cmd.Help()
 		}
 	},
 }

@@ -19,7 +19,12 @@ import (
 var userCmd = &cobra.Command{
 	Use:   "user",
 	Short: "Update users in Account or Workspace",
-	Long:  ``,
+	Long: `Use the command to update user entry, we can either enable or disable the user or make changes to the user-roles within a workspace or account level. To update the user, you will need the user Id & use the flag --accountid or --workspaceid to make changes to specific level.
+
+	For example: [bmgo update -a <account_id> user --uid <user Id>] OR 
+                 [bmgo update -w <workspace_id> user --uid <user Id>] 
+	For default: [bmgo update --ac user --uid <user Id>] OR 
+                 [bmgo update --ws user --uid <user Id>] `,
 	Run: func(cmd *cobra.Command, args []string) {
 		userId, _ := cmd.Flags().GetInt("uid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -46,8 +51,7 @@ var userCmd = &cobra.Command{
 		case (workspaceId == 0) && (accountId != 0) && !rawOutput:
 			updateUserA(userId, accountId)
 		default:
-			fmt.Println("\nPlease provide a correct workspace Id or Account Id to update the user")
-			fmt.Println("[bmgo update -a <account_id> user --uid <user Id>] OR [bmgo update -w <workspace_id> user --uid <user Id>]")
+			cmd.Help()
 		}
 	},
 }
@@ -186,6 +190,7 @@ func updateUserWs(userId, workspaceId int) {
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
+
 func updateUserWsraw(userId, workspaceId int) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	apiId, apiSecret := Getapikeys()

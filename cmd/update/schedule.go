@@ -20,7 +20,9 @@ import (
 var scheduleCmd = &cobra.Command{
 	Use:   "schedule",
 	Short: "Enable or Disable Schedule",
-	Long:  ``,
+	Long: `Use the command to update Schedule for the test, we can either enable or disable the schedule for the test using this command. To update the schedule, you will need to know the schedule Id of the schedule. Use the flag --sid followed by the schedule Id to update it.
+
+	For example: [bmgo update schedule --sid <schedule ID>] `,
 	Run: func(cmd *cobra.Command, args []string) {
 		scheduleId, _ := cmd.Flags().GetString("sid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -29,8 +31,7 @@ var scheduleCmd = &cobra.Command{
 		} else if scheduleId != "" {
 			updateSchedule(scheduleId)
 		} else {
-			fmt.Println("\nPlease provide a correct Schedule ID to update the Schedule")
-			fmt.Println("[bmgo update schedule --sid <schedule ID>")
+			cmd.Help()
 		}
 	},
 }

@@ -17,7 +17,10 @@ import (
 var UpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Use update command to modify exisiting resources in Blazemeter",
-	Long:  ``,
+	Long: `Use update command to update resources in your Blazemeter account, there is very limited action a user can perform, but you use --help throughout subcommands to get an idea of how these commands are structured. Navigate to help.blazemeter.com for detailed info about these resources. 
+	
+	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
+	The file can be in working DIR or in $HOME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
