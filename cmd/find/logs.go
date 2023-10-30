@@ -19,7 +19,9 @@ import (
 var logsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "Find and download logs",
-	Long:  ``,
+	Long: `
+	For example: [bmgo find logs --sid <Session ID>] OR
+	             [bmgo find logs --mockid <Mock service ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		sessionId, _ := cmd.Flags().GetString("sid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -34,8 +36,7 @@ var logsCmd = &cobra.Command{
 		case sessionId == "" && mockId != 0:
 			findlogMockservice(mockId)
 		default:
-			fmt.Println("\nPlease provide a correct session ID or mock service Id  to find the logs")
-			fmt.Println("[bmgo find schedule --scheduleid <schedule ID>")
+			cmd.Help()
 		}
 	},
 }

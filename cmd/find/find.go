@@ -52,6 +52,19 @@ func Getapikeys() (string, string) {
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
+func defaultWorkspace() int {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	workspaceId := vp.GetInt("workspaceId")
+	return workspaceId
+}
 
 type errorResult struct {
 	Code    int    `json:"code"`

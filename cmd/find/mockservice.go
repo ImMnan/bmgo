@@ -19,18 +19,25 @@ import (
 var mockserviceCmd = &cobra.Command{
 	Use:   "mockservice",
 	Short: "Find mockservice details",
-	Long:  ``,
+	Long: `
+	For example: [bmgo find -w <workspace Id> mockservice --mockid <Mock Service id>] OR 
+	For default: [bmgo find --ws mockservice --mockid <Mock Service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		mockId, _ := cmd.Flags().GetInt("mockid")
-		workspaceId, _ := cmd.Flags().GetInt("workspaceid")
+		ws, _ := cmd.Flags().GetBool("ws")
+		var workspaceId int
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		if mockId != 0 && rawOutput {
 			findMockraw(mockId, workspaceId)
 		} else if mockId != 0 {
 			findMock(mockId, workspaceId)
 		} else {
-			fmt.Println("\nPlease provide a valid Mock ID to find the Test")
-			fmt.Println("[bmgo find mockservice --mockid <Mock Service id> OR bmgo find -w <workspace Id> mockservice --mockid <Mock Service id>")
+			cmd.Help()
 		}
 	},
 }

@@ -19,7 +19,8 @@ import (
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Find test details",
-	Long:  ``,
+	Long: `
+	For example: [bmgo find test --tid <Test id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -28,8 +29,7 @@ var testCmd = &cobra.Command{
 		} else if testId != 0 {
 			findTest(testId)
 		} else {
-			fmt.Println("\nPlease provide a valid Test ID to find the Test")
-			fmt.Println("[bmgo find test --tid <Test id>")
+			cmd.Help()
 		}
 	},
 }

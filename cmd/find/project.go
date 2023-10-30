@@ -20,7 +20,8 @@ import (
 var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Find Project using Project ID",
-	Long:  `.`,
+	Long: `
+	For example: [bmgo find project --pid <Project id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		projectId, _ := cmd.Flags().GetInt("pid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -34,8 +35,7 @@ var projectCmd = &cobra.Command{
 			wg.Wait()
 			findProject(projectId)
 		} else {
-			fmt.Println("\nPlease provide a valid Project ID to find the Project")
-			fmt.Println("[bmgo find project --pid <Project id>")
+			cmd.Help()
 		}
 	},
 }

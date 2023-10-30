@@ -17,7 +17,8 @@ import (
 var oplCmd = &cobra.Command{
 	Use:   "opl",
 	Short: "Find details about the Private location",
-	Long:  `.`,
+	Long: `
+	For example: [bmgo find opl --hid <harbour ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -26,8 +27,7 @@ var oplCmd = &cobra.Command{
 		} else if harbourId != "" {
 			findOpl(harbourId)
 		} else {
-			fmt.Println("\nPlease provide a correct Harbour ID to find the Private Location - OPL")
-			fmt.Println("[bmgo find opl --hid <harbour ID>")
+			cmd.Help()
 		}
 	},
 }

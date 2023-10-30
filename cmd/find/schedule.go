@@ -19,7 +19,8 @@ import (
 var scheduleCmd = &cobra.Command{
 	Use:   "schedule",
 	Short: "Find details about the specific schedule",
-	Long:  `.`,
+	Long: `
+	For example: [bmgo find schedule --scheduleid <schedule ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		scheduleId, _ := cmd.Flags().GetString("scheduleid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
@@ -28,8 +29,7 @@ var scheduleCmd = &cobra.Command{
 		} else if scheduleId != "" {
 			findSchedule(scheduleId)
 		} else {
-			fmt.Println("\nPlease provide a correct Schedule ID to find the Schedule")
-			fmt.Println("[bmgo find schedule --scheduleid <schedule ID>")
+			cmd.Help()
 		}
 	},
 }
