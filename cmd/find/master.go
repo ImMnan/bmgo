@@ -15,27 +15,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// testCmd represents the test command
-var mockserviceCmd = &cobra.Command{
-	Use:   "mockservice",
-	Short: "Find mockservice details",
+// masterCmd represents the master command
+var masterCmd = &cobra.Command{
+	Use:   "master",
+	Short: "Find Master details",
 	Long: `
-	For example: [bmgo find -w <workspace Id> mockservice --mockid <Mock Service id>] OR 
-	For default: [bmgo find --ws mockservice --mockid <Mock Service id>]`,
+	For example: [bmgo find master --mid <Master id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
-		mockId, _ := cmd.Flags().GetInt("mockid")
-		ws, _ := cmd.Flags().GetBool("ws")
-		var workspaceId int
-		if ws {
-			workspaceId = defaultWorkspace()
-		} else {
-			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
-		}
+		masterId, _ := cmd.Flags().GetInt("mid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if mockId != 0 && rawOutput {
-			findMockraw(mockId, workspaceId)
-		} else if mockId != 0 {
-			findMock(mockId, workspaceId)
+		if masterId != 0 && rawOutput {
+			findMasterraw(masterId)
+		} else if masterId != 0 {
+			findMaster(masterId)
 		} else {
 			cmd.Help()
 		}
@@ -43,51 +35,43 @@ var mockserviceCmd = &cobra.Command{
 }
 
 func init() {
-	FindCmd.AddCommand(mockserviceCmd)
-	mockserviceCmd.Flags().Int("mockid", 0, "Provide a mock Id to find a test")
-	mockserviceCmd.MarkFlagRequired("mockid")
+	FindCmd.AddCommand(masterCmd)
+	masterCmd.Flags().Int("mid", 0, "Provide the Master Id")
 }
 
-type findmockResponse struct {
-	Result mockResult `json:"result"`
-	Error  string     `json:"error"`
-}
-type mockResult struct {
-	Name          string             `json:"name"`
-	ServiceId     int                `json:"serviceId"`
-	ServiceName   string             `json:"serviceName"`
-	Status        string             `json:"status"`
-	Location      string             `json:"locationName"`
-	ShipId        string             `json:"shipId"`
-	HttpEndpoint  string             `json:"httpEndpoint"`
-	HttpsEndpoint string             `json:"httpsEndpoint"`
-	Created       int                `json:"created"`
-	Badges        []processingAction `json:"badges"`
-	HarbourId     string             `json:"harborId"`
-	CreatedBy     string             `json:"createdBy"`
+type mastersResponse struct {
+	Result mastersResult `json:"result"`
+	Error  errorResult   `json:"error"`
 }
 
-type processingAction struct {
-	Webhook     string `json:"WEBHOOK"`
-	HttpCall    string `json:"HTTP_CALL"`
-	StateUpdate string `json:"STATE_UPDATE"`
+type mastersResult struct {
+	Id           int                `json:"id"`
+	Status       string             `json:"reportStatus"`
+	Created      int                `json:"created"`
+	Ended        int                `json:"ended"`
+	Locations    []string           `json:"locations"`
+	SessionId    []string           `json:"sessionsId"`
+	ProjectId    int                `json:"projectId"`
+	RunnerUserId int                `json:"runnerUserId"`
+	Executions   []masterExecutions `json:"executions"`
+	TestId       int                `json:"testId"`
+}
+type masterExecutions struct {
+	Concurrency int    `json:"concurrency"`
+	HoldFor     string `json:"holdFor"`
+	Rampup      string `json:"rampUp"`
+	Executor    string `json:"executor"`
+	TestId      int    `json:"testId"`
 }
 
-func findMock(mockId, workspaceId int) {
-	mockIdStr := strconv.Itoa(mockId)
+func findMaster(masterId int) {
 	apiId, apiSecret := Getapikeys()
+	masterIdStr := strconv.Itoa(masterId)
 	client := &http.Client{}
-	var workspaceIdStr string
-	if workspaceId == 0 {
-		workspaceIdStr = workspaceIdPrompt()
-	} else {
-		workspaceIdStr = strconv.Itoa(workspaceId)
-	}
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks/"+mockIdStr, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters/"+masterIdStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("accept", "application/json;charset=UTF-8")
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
 	if err != nil {
@@ -98,49 +82,64 @@ func findMock(mockId, workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseObjectMockservice findmockResponse
-	json.Unmarshal(bodyText, &responseObjectMockservice)
-	if responseObjectMockservice.Error == "" {
-		mockCreatedBy := responseObjectMockservice.Result.CreatedBy
-		mockName := responseObjectMockservice.Result.Name
-		serviceName := responseObjectMockservice.Result.ServiceName
-		serviceId := responseObjectMockservice.Result.ServiceId
-		mockStatus := responseObjectMockservice.Result.Status
-		mockCreated := int64(responseObjectMockservice.Result.Created)
-		mockCreatedStr := fmt.Sprint(time.Unix(mockCreated, 0))
-		mockHttpEndpoint := responseObjectMockservice.Result.HttpEndpoint
-		mockHttpsEndpoint := responseObjectMockservice.Result.HttpsEndpoint
-		mockShipId := responseObjectMockservice.Result.ShipId
-		mockLocation := responseObjectMockservice.Result.Location
-		mockHarbour := responseObjectMockservice.Result.HarbourId
-		//	fmt.Printf("Name: %s\nService Name: %s   Service ID: %d\n", mockName, serviceName, serviceId)
-		fmt.Printf("NAME: %v\n", mockName)
-		fmt.Printf("\n%-35s %-10s %-18s %-10s %-10s\n", "CREATED BY", "STATUS", "CREATED", "SERVICE", "SERVICE NAME")
-		fmt.Printf("%-35s %-10s %-18s %-10d %-10s\n", mockCreatedBy, mockStatus, mockCreatedStr[0:16], serviceId, serviceName)
-		fmt.Printf("\nHTTP ENDPOINT: %s\nHTTPS ENDPOINT: %s", mockHttpEndpoint, mockHttpsEndpoint)
-		fmt.Printf("\nLOCATION: %s\nHARBOUR: %s\nAGENT: %s", mockLocation, mockHarbour, mockShipId)
+	//fmt.Printf("%s\n", bodyText)
+	var responseObjectMaster mastersResponse
+	json.Unmarshal(bodyText, &responseObjectMaster)
+	if responseObjectMaster.Error.Code == 0 {
+		fmt.Printf("\n%-10s %-8s %-10s %-10s %-15s %-15s ", "TEST", "STATUS", "RUN_BY", "PROJECT", "START", "END")
+		masterId := responseObjectMaster.Result.Id
+		masterTestId := responseObjectMaster.Result.TestId
+		masterStatus := responseObjectMaster.Result.Status
+		masterProject := responseObjectMaster.Result.ProjectId
+		masterCreatedEp := int64(responseObjectMaster.Result.Created)
+		masterEndEp := int64(responseObjectMaster.Result.Ended)
+		masterRunner := responseObjectMaster.Result.RunnerUserId
+		if masterCreatedEp != 0 && masterEndEp != 0 {
+			masterCreatedStr := fmt.Sprint(time.Unix(masterCreatedEp, 0))
+			masterEndStr := fmt.Sprint(time.Unix(masterEndEp, 0))
+			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15s %-15s", masterTestId, masterStatus, masterRunner, masterProject, masterCreatedStr[2:16], masterEndStr[5:16])
+		} else {
+			fmt.Printf("\n%-10d %-8s %-10d %-10d %-15d %-15d", masterTestId, masterStatus, masterRunner, masterProject, masterCreatedEp, masterEndEp)
+		}
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		fmt.Printf("%-15s %-10s %-10s %-10s %-10s", "EXECUTOR", "VUs", "RAMP_UP", "HOLD_FOR", "TEST SCENARIO")
+
+		for e := 0; e < len(responseObjectMaster.Result.Executions); e++ {
+			masterConcurrency := responseObjectMaster.Result.Executions[e].Concurrency
+			masterExecutor := responseObjectMaster.Result.Executions[e].Executor
+			masterRampUp := responseObjectMaster.Result.Executions[e].Rampup
+			masterHoldFor := responseObjectMaster.Result.Executions[e].HoldFor
+			masterTestId := responseObjectMaster.Result.Executions[e].TestId
+			fmt.Printf("\n%-15s %-10d %-10s %-10s %-10d", masterExecutor, masterConcurrency, masterRampUp, masterHoldFor, masterTestId)
+		}
+		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
+		totalLocations := []string{}
+		for l := 0; l < len(responseObjectMaster.Result.Locations); l++ {
+			locations := responseObjectMaster.Result.Locations[l]
+			totalLocations = append(totalLocations, locations)
+		}
+		fmt.Printf("MASTER:    %d\nLOCATIONS: %s\n", masterId, totalLocations)
+		//totalSessions := []string{}
+		for rv := 0; rv < len(responseObjectMaster.Result.SessionId); rv++ {
+			sessionsId := responseObjectMaster.Result.SessionId[rv]
+			fmt.Printf("\nSESSION ID [%d]: %s", rv, sessionsId)
+			//	totalSessions = append(totalSessions, sessions)
+		}
 		fmt.Println("\n-")
 	} else {
-		fmt.Printf("Error code: %v\n", responseObjectMockservice.Error)
+		errorCode := responseObjectMaster.Error.Code
+		errorMessage := responseObjectMaster.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
 }
-
-func findMockraw(mockId, workspaceId int) {
-	mockIdStr := strconv.Itoa(mockId)
+func findMasterraw(masterId int) {
 	apiId, apiSecret := Getapikeys()
+	masterIdStr := strconv.Itoa(masterId)
 	client := &http.Client{}
-	var workspaceIdStr string
-	if workspaceId == 0 {
-		workspaceIdStr = workspaceIdPrompt()
-	} else {
-		workspaceIdStr = strconv.Itoa(workspaceId)
-	}
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks/"+mockIdStr, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters/"+masterIdStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	req.Header.Set("accept", "application/json;charset=UTF-8")
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// testCmd represents the test command
+// mockserviceCmd represents the test command
 var mockserviceCmd = &cobra.Command{
 	Use:   "mockservice",
 	Short: "Find mockservice details",
