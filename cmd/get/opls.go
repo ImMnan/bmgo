@@ -197,14 +197,14 @@ func getOplsWS(workspaceId int) {
 			fmt.Printf("\n%-20s %-5s\n", oplName, functAgent)
 		}
 		fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-		fmt.Printf("%-20s %-20s %-25s %-10s\n", "NAME", "SHIP NAME", "SHIP ID", "STATE")
+		fmt.Printf("%-30s %-27s %-8s %-10s\n", "NAME", "SHIP ID", "STATE", "SHIP NAME")
 		for i := 0; i < len(responseBodyWsOpls.Result); i++ {
 			oplName := responseBodyWsOpls.Result[i].Name
 			for f := 0; f < len(responseBodyWsOpls.Result[i].Ships); f++ {
 				shipId := responseBodyWsOpls.Result[i].Ships[f].Id
 				shipName := responseBodyWsOpls.Result[i].Ships[f].Name
 				shipStatus := responseBodyWsOpls.Result[i].Ships[f].State
-				fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+				fmt.Printf("\n%-30s %-27s %-8s %-10s", oplName, shipId, shipStatus, shipName)
 			}
 		}
 		fmt.Println("\n-")
