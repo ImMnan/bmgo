@@ -38,7 +38,7 @@ var scheduleCmd = &cobra.Command{
 
 func init() {
 	UpdateCmd.AddCommand(scheduleCmd)
-	scheduleCmd.Flags().String("sid", "", "Provide the schedule ID to modify")
+	scheduleCmd.Flags().String("scheduleid", "", "Provide the Schedule ID")
 }
 
 type updateschedulesResponse struct {
