@@ -130,14 +130,14 @@ func getUsersA(accountId int) {
 	var responseBodyAUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyAUsers)
 	if responseBodyAUsers.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		fmt.Printf("\n%-10s %-25s %-12s %-10s %-10s\n", "ID", "DISPLAY NAME", "ROLES", "ENABLED", "EMAIL")
 		//	rolesListTotal := []string{}
 		for i := 0; i < len(responseBodyAUsers.Result); i++ {
 			userIdWS := responseBodyAUsers.Result[i].Id
 			displayNameWS := responseBodyAUsers.Result[i].DisplayName
 			emailIdWS := responseBodyAUsers.Result[i].Email
 			enabledUserWS := responseBodyAUsers.Result[i].Enabled
-			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+			fmt.Printf("\n%-10v %-25s %-12s %-10t %-10s", userIdWS, displayNameWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS, emailIdWS)
 		}
 		fmt.Println("\n-")
 	} else {
@@ -191,14 +191,14 @@ func getUsersADis(accountId int) {
 	var responseBodyAUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyAUsers)
 	if responseBodyAUsers.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		fmt.Printf("\n%-10s %-25s %-12s %-10s %-10s\n", "ID", "DISPLAY NAME", "ROLES", "ENABLED", "EMAIL")
 		//	rolesListTotal := []string{}
 		for i := 0; i < len(responseBodyAUsers.Result); i++ {
 			userIdWS := responseBodyAUsers.Result[i].Id
 			displayNameWS := responseBodyAUsers.Result[i].DisplayName
 			emailIdWS := responseBodyAUsers.Result[i].Email
 			enabledUserWS := responseBodyAUsers.Result[i].Enabled
-			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS)
+			fmt.Printf("\n%-10v %-25s %-12s %-10t %-10s", userIdWS, displayNameWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS, emailIdWS)
 		}
 		fmt.Println("\n-")
 	} else {
@@ -251,14 +251,14 @@ func getUsersWS(workspaceId int) {
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
 	if responseBodyWsUsers.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		fmt.Printf("\n%-10s %-25s %-12s %-10s %-10s\n", "ID", "DISPLAY NAME", "ROLES", "ENABLED", "EMAIL")
 		//	rolesListTotal := []string{}
 		for i := 0; i < len(responseBodyWsUsers.Result); i++ {
 			userIdWS := responseBodyWsUsers.Result[i].Id
 			displayNameWS := responseBodyWsUsers.Result[i].DisplayName
 			emailIdWS := responseBodyWsUsers.Result[i].Email
 			enabledUserWS := responseBodyWsUsers.Result[i].Enabled
-			fmt.Printf("\n%-10v %-25s %-30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+			fmt.Printf("\n%-10v %-25s %-12s %-10t %-10s", userIdWS, displayNameWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS, emailIdWS)
 		}
 		fmt.Println("\n-")
 	} else {
@@ -310,13 +310,13 @@ func getUsersWSDis(workspaceId int) {
 	var responseBodyWsUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyWsUsers)
 	if responseBodyWsUsers.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-25s %-30s %-12s %-10s\n", "ID", "DISPLAY NAME", "EMAIL", "ROLES", "ENABLED")
+		fmt.Printf("\n%-10s %-25s %-12s %-10s %-10s\n", "ID", "DISPLAY NAME", "ROLES", "ENABLED", "EMAIL")
 		for i := 0; i < len(responseBodyWsUsers.Result); i++ {
 			userIdWS := responseBodyWsUsers.Result[i].Id
 			displayNameWS := responseBodyWsUsers.Result[i].DisplayName
 			emailIdWS := responseBodyWsUsers.Result[i].Email
 			enabledUserWS := responseBodyWsUsers.Result[i].Enabled
-			fmt.Printf("\n%-10v %-25s %30s %-12s %-10t", userIdWS, displayNameWS, emailIdWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS)
+			fmt.Printf("\n%-10v %-25s %-12s %-10t %-10s", userIdWS, displayNameWS, responseBodyWsUsers.Result[i].Roles[0], enabledUserWS, emailIdWS)
 		}
 		fmt.Println("\n-")
 	} else {

@@ -95,8 +95,8 @@ func getProjectsWs(workspaceId int) {
 		projectName := responseBodyProjectsWs.Result[i].Name
 		projectTests := responseBodyProjectsWs.Result[i].TestsCount
 		pCreatedEpoch := int64(responseBodyProjectsWs.Result[i].Created)
-		projectCreated := time.Unix(pCreatedEpoch, 0)
-		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+		projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
+		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated[0:10])
 	}
 	fmt.Println("\n-")
 }
@@ -141,14 +141,14 @@ func getProjectsA(accountId int) {
 	}
 	var responseBodyProjectsA projectsResponse
 	json.Unmarshal(bodyText, &responseBodyProjectsA)
-	fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
+	fmt.Printf("\n%-10s %-25s %-8s %-10s\n", "ID", "NAME", "TESTS", "CREATED")
 	for i := 0; i < len(responseBodyProjectsA.Result); i++ {
 		projectId := responseBodyProjectsA.Result[i].Id
 		projectName := responseBodyProjectsA.Result[i].Name
 		projectTests := responseBodyProjectsA.Result[i].TestsCount
 		pCreatedEpoch := int64(responseBodyProjectsA.Result[i].Created)
-		projectCreated := time.Unix(pCreatedEpoch, 0)
-		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated)
+		projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
+		fmt.Printf("\n%-10v %-25s %-8v %-10v", projectId, projectName, projectTests, projectCreated[0:10])
 	}
 	fmt.Println("\n-")
 }
