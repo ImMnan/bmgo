@@ -24,6 +24,7 @@ var logsCmd = &cobra.Command{
 	             [bmgo find logs --mockid <Mock service ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		sessionId, _ := cmd.Flags().GetString("sid")
+		masterId, _ := cmd.Flags().GetInt("mid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		mockId, _ := cmd.Flags().GetInt("mockid")
 		switch {
@@ -35,6 +36,8 @@ var logsCmd = &cobra.Command{
 			findlogMockservice(mockId)
 		case sessionId == "" && mockId != 0:
 			findlogMockservice(mockId)
+		case sessionId == "" && mockId == 0 && masterId != 0:
+			findMasterlogs(masterId)
 		default:
 			cmd.Help()
 		}
@@ -45,6 +48,7 @@ func init() {
 	FindCmd.AddCommand(logsCmd)
 	logsCmd.Flags().String("sid", "", "Provide session Id to pull logs for")
 	logsCmd.Flags().Int("mockid", 0, "Provide the mock service id")
+	logsCmd.Flags().Int("mid", 0, "Provide the master Id to get logs for all sessions")
 }
 
 type findLogsResponse struct {
@@ -83,7 +87,7 @@ func findlogSession(sessionId string) {
 	json.Unmarshal(bodyText, &responseObjectLogs)
 	if responseObjectLogs.Error.Code == 0 {
 		dataUrl := responseObjectLogs.Result.DataUrl
-		fmt.Printf("DataUrl: %s\n", dataUrl)
+		fmt.Printf("DataUrl: %s\n\n", dataUrl)
 		var logsFileName, logsDataUrl string
 		for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
 
@@ -96,7 +100,7 @@ func findlogSession(sessionId string) {
 			} else {
 				logsFileName = responseObjectLogs.Result.Data[i].Filename
 				logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-				fmt.Println("\nDOWNLOAD LINKS: ", termlink.Link(logsFileName, logsDataUrl))
+				fmt.Println("DOWNLOAD: ", termlink.Link(logsFileName, logsDataUrl))
 			}
 		}
 		fmt.Println("\n-")
@@ -148,4 +152,45 @@ func findlogMockservice(mockId int) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", bodyText)
+}
+
+func findMasterlogs(masterId int) {
+	apiId, apiSecret := Getapikeys()
+	masterIdStr := strconv.Itoa(masterId)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters/"+masterIdStr, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("%s\n", bodyText)
+	var responseObjectMaster mastersResponse
+	json.Unmarshal(bodyText, &responseObjectMaster)
+	if responseObjectMaster.Error.Code == 0 {
+		totalLocations := []string{}
+		for l := 0; l < len(responseObjectMaster.Result.Locations); l++ {
+			locations := responseObjectMaster.Result.Locations[l]
+			totalLocations = append(totalLocations, locations)
+		}
+		fmt.Printf("MASTER:    %d\nLOCATIONS: %s\n", masterId, totalLocations)
+		//totalSessions := []string{}
+		for rv := 0; rv < len(responseObjectMaster.Result.SessionId); rv++ {
+			sessionsId := responseObjectMaster.Result.SessionId[rv]
+			fmt.Printf("SESSION ID [%d]: %s\n", rv, sessionsId)
+			findlogSession(sessionsId)
+		}
+	} else {
+		errorCode := responseObjectMaster.Error.Code
+		errorMessage := responseObjectMaster.Error.Message
+		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+	}
 }
