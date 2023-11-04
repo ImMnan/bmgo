@@ -60,7 +60,7 @@ func getMasters(testId int) {
 	apiId, apiSecret := Getapikeys()
 	testIdStr := strconv.Itoa(testId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters?testId="+testIdStr+"&limit=25", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters?testId="+testIdStr+"&limit=50", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -120,7 +120,7 @@ func getMastersraw(testId int) {
 	apiId, apiSecret := Getapikeys()
 	testIdStr := strconv.Itoa(testId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters?testId="+testIdStr+"&limit=25", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters?testId="+testIdStr+"&limit=50", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -105,7 +105,7 @@ func getWorkspacesraw(accountId int) {
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces?accountId="+accountIdStr+"&limit=200", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces?accountId="+accountIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

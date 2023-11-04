@@ -21,9 +21,11 @@ var agentsCmd = &cobra.Command{
 	Short: "Get agents within a private location",
 	Long: `The command returns a list of created agents, you will need to provide a workspace id or a harborId to run the command. any server on which you install our agent is an agent within a Private location. These are your load generators. Formerly known as a 'ship'. The command returns a list of agents within a workspace or within a harborId id specified.  Outputs "SHIP ID", "STATE", etc.
 	
-	For example: [bmgo get agents <harbour_id>...] OR 
+	For example: [bmgo get -w <workspace id> agents --hid <harbour_id>] OR 
+	             [bmgo get agents <harbour_id> --raw]
 	             [bmgo get -w <workspace_id> agents]
-	For default: [bmgo get --ws agents]`,
+	For default: [bmgo get --ws agents]
+	             [bmgo get --ws agents --hid <harbour id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -56,6 +58,7 @@ func init() {
 	agentsCmd.Flags().String("hid", "", "Provide the harbour id")
 }
 
+// This function is because the API response for listing agents using harbour id is a struct & not a list/array to iterate over.
 func getAgentsOpl(workspaceId int, harbourId string) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
@@ -99,7 +102,7 @@ func getAgentsOpl(workspaceId int, harbourId string) {
 				}
 				fmt.Println("\n\n---------------------------------------------------------------------------------------------")
 			} else {
-				break
+				continue
 			}
 		}
 	} else {

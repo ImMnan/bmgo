@@ -59,7 +59,7 @@ func getServicesWs(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/services?limit=500&skip=0&sort=name", nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/services?limit=-1&skip=0&sort=name", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,7 +98,7 @@ func getServicesWsraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/services?limit=500&skip=0&sort=name", nil)
+	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/services?limit=-1&skip=0&sort=name", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

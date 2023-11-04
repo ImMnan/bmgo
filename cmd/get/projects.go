@@ -73,7 +73,7 @@ func getProjectsWs(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdstr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?workspaceId="+workspaceIdstr+"&limit=1000", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?workspaceId="+workspaceIdstr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func getProjectsWsraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdstr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?workspaceId="+workspaceIdstr+"&limit=1000", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?workspaceId="+workspaceIdstr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func getProjectsA(accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdstr := strconv.Itoa(accountId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?accountId="+accountIdstr+"&limit=1000", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?accountId="+accountIdstr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -156,7 +156,7 @@ func getProjectsAraw(accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdstr := strconv.Itoa(accountId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?accountId="+accountIdstr+"&limit=1000", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?accountId="+accountIdstr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

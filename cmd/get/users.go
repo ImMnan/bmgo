@@ -112,7 +112,7 @@ func getUsersA(accountId int) {
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1500&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -151,7 +151,7 @@ func getUsersAraw(accountId int) {
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1500&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,7 +173,7 @@ func getUsersADis(accountId int) {
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1500&enabled=false", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1000&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -212,7 +212,7 @@ func getUsersArawDis(accountId int) {
 
 	client := &http.Client{}
 	accountIdStr := strconv.Itoa(accountId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1500&enabled=false", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=1000&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -234,7 +234,7 @@ func getUsersWS(workspaceId int) {
 
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-1&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -271,7 +271,7 @@ func getUsersWSraw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=true", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-1&enabled=true", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -292,7 +292,7 @@ func getUsersWSDis(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=false", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-500&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -330,7 +330,7 @@ func getUsersWSrawDis(workspaceId int) {
 
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=1000&enabled=false", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=500&enabled=false", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

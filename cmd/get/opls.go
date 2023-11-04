@@ -83,7 +83,7 @@ func getOpls(accountId int) {
 	apiId, apiSecret := Getapikeys()
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?limit=100&accountId="+accountIdStr, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?limit=0&accountId="+accountIdStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func getOplsRaw(accountId int) {
 
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?limit=100&accountId="+accountIdStr, nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?limit=0&accountId="+accountIdStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -157,7 +157,7 @@ func getOplsWS(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=100", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -219,7 +219,7 @@ func getOplsWSRaw(workspaceId int) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=100", nil)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=0", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
