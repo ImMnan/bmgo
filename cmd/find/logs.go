@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/savioxavier/termlink"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -96,9 +97,14 @@ func downloadFileSessions(fileURL, fileName, sessionId string, wgDownload *sync.
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+	bar := progressbar.DefaultBytes(
+		resp.ContentLength,
+		"downloading",
+	)
+	io.Copy(io.MultiWriter(file, bar), resp.Body)
 	size, _ := io.Copy(file, resp.Body)
 	defer file.Close()
-	fmt.Printf("Downloaded %s with size %d\n", fileName, size)
+	fmt.Printf("Downloaded %s for session %s with size %d\n", fileName, sessionId, size)
 	defer wgDownload.Done()
 }
 func findlogSession(sessionId string, download bool) {
