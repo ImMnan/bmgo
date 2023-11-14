@@ -61,10 +61,20 @@ type ListTestsResponse struct {
 	Error  errorResult       `json:"error"`
 }
 type listTestsResult struct {
-	Name        string `json:"name"`
-	Id          int    `json:"id"`
-	LastRunTime int    `json:"lastRunTime"`
-	ProjectId   int    `json:"projectId"`
+	Name          string             `json:"name"`
+	Id            int                `json:"id"`
+	LastRunTime   int                `json:"lastRunTime"`
+	ProjectId     int                `json:"projectId"`
+	Configuration config             `json:"configuration"`
+	Executions    []executiondetails `json:"executions"`
+}
+type config struct {
+	DedicatedIpsEnabled     bool `json:"dedicatedIpsEnabled"`
+	EnableTestData          bool `json:"enableTestData"`
+	EnableLoadConfiguration bool `json:"enableLoadConfiguration"`
+}
+type executiondetails struct {
+	Locations string
 }
 
 func listTestsWS(workspaceId int) {
