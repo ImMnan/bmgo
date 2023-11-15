@@ -23,7 +23,7 @@ var mocksCmd = &cobra.Command{
 	For example: [bmgo get -w <workspace id> mocks] OR 
 	             [bmgo get -w <workspace id> mocks --serviceid <service id>
 	For default: [bmgo get --ws mocks] OR 
-	             [bmgo get --ws mocks --serviceid <service id>]`,
+	             [bmgo get --ws mocks --svc <service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -33,7 +33,7 @@ var mocksCmd = &cobra.Command{
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		serviceId, _ := cmd.Flags().GetInt("serviceid")
+		serviceId, _ := cmd.Flags().GetInt("svc")
 		switch {
 		case workspaceId != 0 && serviceId == 0 && rawOutput:
 			getMocksWsraw(workspaceId)
@@ -51,7 +51,7 @@ var mocksCmd = &cobra.Command{
 
 func init() {
 	GetCmd.AddCommand(mocksCmd)
-	mocksCmd.Flags().Int("serviceid", 0, "Provide a service Id")
+	mocksCmd.Flags().Int("svc", 0, "Provide a service Id")
 }
 
 type mocksResponse struct {

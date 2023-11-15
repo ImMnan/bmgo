@@ -23,7 +23,7 @@ var transactionsCmd = &cobra.Command{
 	For example: [bmgo get -w <workspace id> transactions] OR
 	             [bmgo get -w <workspace id> transactions --serviceid <service id>]
 	For default: [bmgo get --ws transactions] OR 
-	             [bmgo get --ws transactions --serviceid <service id>]`,
+	             [bmgo get --ws transactions --svc <service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
 		var workspaceId int
@@ -33,7 +33,7 @@ var transactionsCmd = &cobra.Command{
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		serviceId, _ := cmd.Flags().GetInt("serviceid")
+		serviceId, _ := cmd.Flags().GetInt("svc")
 		switch {
 		case (workspaceId != 0 || serviceId != 0) && rawOutput:
 			getTransactionsWsraw(workspaceId, serviceId)
@@ -47,7 +47,7 @@ var transactionsCmd = &cobra.Command{
 
 func init() {
 	GetCmd.AddCommand(transactionsCmd)
-	transactionsCmd.Flags().Int("serviceid", 0, "Provide a service Id to filter the results")
+	transactionsCmd.Flags().Int("svc", 0, "Provide a service Id to filter the results")
 }
 
 type transactionsResponse struct {
