@@ -35,14 +35,10 @@ var mocksCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		serviceId, _ := cmd.Flags().GetInt("svc")
 		switch {
-		case workspaceId != 0 && serviceId == 0 && rawOutput:
-			getMocksWsraw(workspaceId)
-		case workspaceId != 0 && serviceId != 0 && rawOutput:
-			getMocksServiceraw(workspaceId, serviceId)
-		case workspaceId != 0 && serviceId == 0:
-			getMocksWs(workspaceId)
-		case workspaceId != 0 && serviceId != 0:
-			getMocksService(workspaceId, serviceId)
+		case (workspaceId != 0 || serviceId != 0) && rawOutput:
+			getMocksWsraw(workspaceId, serviceId)
+		case (workspaceId != 0 || serviceId != 0) && !rawOutput:
+			getMocksWs(workspaceId, serviceId)
 		default:
 			cmd.Help()
 		}
@@ -65,14 +61,24 @@ type mockResult struct {
 	ServiceName string `json:"serviceName"`
 }
 
-func getMocksWs(workspaceId int) {
+func getMocksWs(workspaceId, serviceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	//	serviceId := serviceIdPrompt()
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks", nil)
-	if err != nil {
-		log.Fatal(err)
+	var req *http.Request
+	var err error
+	if serviceId != 0 {
+		serviceIdStr := strconv.Itoa(serviceId)
+		//	serviceId := serviceIdPrompt()
+		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks?serviceId="+serviceIdStr, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	req.Header.Set("accept", "*/*")
 	req.SetBasicAuth(apiId, apiSecret)
@@ -103,76 +109,24 @@ func getMocksWs(workspaceId int) {
 		fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
 	}
 }
-func getMocksWsraw(workspaceId int) {
+func getMocksWsraw(workspaceId, serviceId int) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
-	//	serviceId := serviceIdPrompt()
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("accept", "*/*")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-func getMocksService(workspaceId, serviceId int) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	serviceIdStr := strconv.Itoa(serviceId)
-	//	serviceId := serviceIdPrompt()
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks?serviceId="+serviceIdStr, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("accept", "*/*")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseBodyMocks mocksResponse
-	json.Unmarshal(bodyText, &responseBodyMocks)
-	if len(responseBodyMocks.Result) >= 1 {
-		fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
-		for i := 0; i < len(responseBodyMocks.Result); i++ {
-			mockId := responseBodyMocks.Result[i].Id
-			mockName := responseBodyMocks.Result[i].Name
-			serviceId := responseBodyMocks.Result[i].ServiceId
-			serviceName := responseBodyMocks.Result[i].ServiceName
-			fmt.Printf("\n%-10d %-35s %-10d %-15s", mockId, mockName, serviceId, serviceName)
+	var req *http.Request
+	var err error
+	if serviceId != 0 {
+		serviceIdStr := strconv.Itoa(serviceId)
+		//	serviceId := serviceIdPrompt()
+		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks?serviceId="+serviceIdStr, nil)
+		if err != nil {
+			log.Fatal(err)
 		}
-		fmt.Println("\n-")
 	} else {
-		errorCode := 404
-		fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v OR service %v\n\n", errorCode, workspaceId, serviceId)
-	}
-}
-func getMocksServiceraw(workspaceId, serviceId int) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	serviceIdStr := strconv.Itoa(serviceId)
-	req, err := http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks?serviceId="+serviceIdStr, nil)
-	if err != nil {
-		log.Fatal(err)
+		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	req.Header.Set("accept", "*/*")
 	req.SetBasicAuth(apiId, apiSecret)
