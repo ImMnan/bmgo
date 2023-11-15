@@ -20,7 +20,7 @@ import (
 var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Find Project using Project ID",
-	Long: `
+	Long: ` Use this command to find details about the specified project (--pid). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find project --pid <Project id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		projectId, _ := cmd.Flags().GetInt("pid")

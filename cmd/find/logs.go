@@ -22,8 +22,12 @@ import (
 var logsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "Find and download logs",
-	Long: `
-	For example: [bmgo find logs --sid <Session ID>] OR
+	Long: ` Use this command to find the logs for a specified session or list of sessions part of a master. Use --download or -d flag can be used to download the artifacts.zip automatically. Similarly, --raw -r flag is available too, however, it is only applicable for listing logs for a perticular session.
+	For example: [bmgo find logs --sid <Session ID>] OR 
+	             [bmgo find logs --sid <Session ID> --download]
+	             [bmgo find logs --mid <Master ID>] OR  
+				 [bmgo find logs --mid <Master ID> --download]
+
 	             [bmgo find logs --mockid <Mock service ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		sessionId, _ := cmd.Flags().GetString("sid")
@@ -33,15 +37,9 @@ var logsCmd = &cobra.Command{
 		download, _ := cmd.Flags().GetBool("download")
 
 		switch {
-		case sessionId != "" && mockId == 0 && rawOutput:
-			findlogSessionraw(sessionId)
-		case sessionId != "" && mockId == 0 && download:
-			findlogSessionraw(sessionId)
-		case sessionId != "" && mockId == 0:
-			findlogSession(sessionId, download)
-		case sessionId == "" && mockId != 0 && rawOutput:
-			findlogMockservice(mockId)
-		case sessionId == "" && mockId != 0:
+		case sessionId != "" && mockId == 0 && masterId == 0:
+			findlogSession(sessionId, download, rawOutput)
+		case sessionId == "" && mockId != 0 && masterId == 0:
 			findlogMockservice(mockId)
 		case sessionId == "" && mockId == 0 && masterId != 0:
 			var wg sync.WaitGroup
@@ -79,35 +77,7 @@ type dataList struct {
 	DataUrl  string `json:"dataUrl"`
 }
 
-func downloadFileSessions(fileURL, fileName, sessionId string, wgDownload *sync.WaitGroup) {
-	//Create blank file
-	file, err := os.Create(sessionId + fileName)
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := http.Client{
-		CheckRedirect: func(r *http.Request, via []*http.Request) error {
-			r.URL.Opaque = r.URL.Path
-			return nil
-		},
-	}
-	// Put content on file
-	resp, err := client.Get(fileURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bar := progressbar.DefaultBytes(
-		resp.ContentLength,
-		"downloading",
-	)
-	io.Copy(io.MultiWriter(file, bar), resp.Body)
-	size, _ := io.Copy(file, resp.Body)
-	defer file.Close()
-	fmt.Printf("Downloaded %s for session %s with size %d\n", fileName, sessionId, size)
-	defer wgDownload.Done()
-}
-func findlogSession(sessionId string, download bool) {
+func findlogSession(sessionId string, download, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/sessions/"+sessionId+"/reports/logs", nil)
@@ -124,65 +94,47 @@ func findlogSession(sessionId string, download bool) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseObjectLogs findLogsResponse
-	json.Unmarshal(bodyText, &responseObjectLogs)
-	if responseObjectLogs.Error.Code == 0 {
-		dataUrl := responseObjectLogs.Result.DataUrl
-		var logsFileName, logsDataUrl string
-		var wgDownload sync.WaitGroup
-		for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
-			if download {
-				fileName := responseObjectLogs.Result.Data[i].Filename
-				fileURL := responseObjectLogs.Result.Data[i].DataUrl
-				if fileName == "jmeter.log" || fileName == "bzt.log" {
-					continue
-				} else {
-					wgDownload.Add(1)
-					go downloadFileSessions(fileURL, fileName, sessionId, &wgDownload)
-				}
-			} else {
-				fmt.Printf("DataUrl: %s\n\n", dataUrl)
-				if !termlink.SupportsHyperlinks() {
-					//	fmt.Printf("\n%-20s %-20s", logsFileName, logsDataUrl)
-					logsFileName = responseObjectLogs.Result.Data[i].Filename
-					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-					fmt.Printf("\nFile name: %s\n", logsFileName)
-					fmt.Println(logsDataUrl)
-				} else {
-					logsFileName = responseObjectLogs.Result.Data[i].Filename
-					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-					fmt.Println("DOWNLOAD: ", termlink.Link(logsFileName, logsDataUrl))
-				}
-				fmt.Println("\n-")
-			}
-		}
-		wgDownload.Wait()
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseObjectLogs.Error.Code
-		errorMessage := responseObjectLogs.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseObjectLogs findLogsResponse
+		json.Unmarshal(bodyText, &responseObjectLogs)
+		if responseObjectLogs.Error.Code == 0 {
+			var logsFileName, logsDataUrl string
+			var wgDownload sync.WaitGroup
+			for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
+				if download {
+					fileName := responseObjectLogs.Result.Data[i].Filename
+					fileURL := responseObjectLogs.Result.Data[i].DataUrl
+					if fileName == "jmeter.log" || fileName == "bzt.log" {
+						continue
+					} else {
+						wgDownload.Add(1)
+						go downloadFileSessions(fileURL, fileName, sessionId, &wgDownload)
+					}
+				} else {
+					if !termlink.SupportsHyperlinks() {
+						//	fmt.Printf("\n%-20s %-20s", logsFileName, logsDataUrl)
+						logsFileName = responseObjectLogs.Result.Data[i].Filename
+						logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
+						fmt.Printf("\nFile name: %s\n", logsFileName)
+						fmt.Println(logsDataUrl)
+					} else {
+						logsFileName = responseObjectLogs.Result.Data[i].Filename
+						logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
+						fmt.Println("DOWNLOAD: ", termlink.Link(logsFileName, logsDataUrl))
+					}
+				}
+			}
+			wgDownload.Wait()
+		} else {
+			errorCode := responseObjectLogs.Error.Code
+			errorMessage := responseObjectLogs.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
 }
-func findlogSessionraw(sessionId string) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/sessions/"+sessionId+"/reports/logs", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
+
 func findlogMockservice(mockId int) {
 	workspaceIdStr := workspaceIdPrompt()
 	mockIdStr := strconv.Itoa(mockId)
@@ -308,4 +260,32 @@ func findlogSessionConcOutput(sessionId string, download bool, wgSession *sync.W
 		errorMessage := responseObjectLogs.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
+}
+func downloadFileSessions(fileURL, fileName, sessionId string, wgDownload *sync.WaitGroup) {
+	//Create blank file
+	file, err := os.Create(sessionId + fileName)
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := http.Client{
+		CheckRedirect: func(r *http.Request, via []*http.Request) error {
+			r.URL.Opaque = r.URL.Path
+			return nil
+		},
+	}
+	// Put content on file
+	resp, err := client.Get(fileURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bar := progressbar.DefaultBytes(
+		resp.ContentLength,
+		"downloading",
+	)
+	io.Copy(io.MultiWriter(file, bar), resp.Body)
+	size, _ := io.Copy(file, resp.Body)
+	defer file.Close()
+	fmt.Printf("Downloaded %s for session %s with size %d\n", fileName, sessionId, size)
+	defer wgDownload.Done()
 }

@@ -17,7 +17,7 @@ import (
 var oplCmd = &cobra.Command{
 	Use:   "opl",
 	Short: "Find details about the Private location",
-	Long: `
+	Long: `Use this command to find details about the specified private location (Harbour Id). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find opl --hid <harbour ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")

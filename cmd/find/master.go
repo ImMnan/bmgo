@@ -19,7 +19,7 @@ import (
 var masterCmd = &cobra.Command{
 	Use:   "master",
 	Short: "Find Master details",
-	Long: `
+	Long: ` Use this command to find details about the specified master (--mid). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find master --mid <Master id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		masterId, _ := cmd.Flags().GetInt("mid")

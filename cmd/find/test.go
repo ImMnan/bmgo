@@ -19,7 +19,7 @@ import (
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Find test details",
-	Long: `
+	Long: `Use this command to find details about the specified test (--tid). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find test --tid <Test id>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")

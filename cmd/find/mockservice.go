@@ -19,7 +19,7 @@ import (
 var mockserviceCmd = &cobra.Command{
 	Use:   "mockservice",
 	Short: "Find mockservice details",
-	Long: `
+	Long: ` Use this command to find details about the specofied mock service (--mockid) along with the workspace id it belongs to (--ws Or -w). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find -w <workspace Id> mockservice --mockid <Mock Service id>] OR 
 	For default: [bmgo find --ws mockservice --mockid <Mock Service id>]`,
 	Run: func(cmd *cobra.Command, args []string) {

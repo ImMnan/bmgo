@@ -19,7 +19,7 @@ import (
 var scheduleCmd = &cobra.Command{
 	Use:   "schedule",
 	Short: "Find details about the specific schedule",
-	Long: `
+	Long: `Use this command to find details about the specified schedule (--sheduleid). Global Flag --raw can be used for raw Json output. 
 	For example: [bmgo find schedule --scheduleid <schedule ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		scheduleId, _ := cmd.Flags().GetString("scheduleid")

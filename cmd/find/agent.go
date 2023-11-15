@@ -18,8 +18,8 @@ import (
 var agentCmd = &cobra.Command{
 	Use:   "agent",
 	Short: "Find details about the agent",
-	Long: `
-	For example: [bmgo find opl --hid <harbour ID>`,
+	Long: ` Use the command to find agents within a specified Private location (Harbour Id). Provide the agent id (Ship Id) to find the agent. Global Flag --raw can be used for raw Json output. 
+	For example: [bmgo find agent --aid <agent/ship ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		agentId, _ := cmd.Flags().GetString("aid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")

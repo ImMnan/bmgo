@@ -19,7 +19,10 @@ import (
 var FindCmd = &cobra.Command{
 	Use:   "find",
 	Short: "Use find command to free-search resources in Blazemeters",
-	Long:  ``,
+	Long: `Use get command to Find details about the resources within Blazemeter account. Use --help throughout subcommands to get an idea of how these commands are structured. Navigate to help.blazemeter.com for detailed info about these resources. 
+	
+	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
+	The file can be in the current working DIR or in $HOME`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
