@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +29,15 @@ var invitationsCmd = &cobra.Command{
 		} else {
 			accountId, _ = cmd.Flags().GetInt("accountid")
 		}
-		getInvitations(accountId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if rawOutput {
+			getInvitationsraw(accountId)
+		} else if !rawOutput {
+			getInvitations(accountId)
+		} else {
+			cmd.Help()
+		}
+
 	},
 }
 
@@ -73,29 +80,23 @@ func getInvitations(accountId int) {
 	var responseBodyInvites invitesResponse
 	json.Unmarshal(bodyText, &responseBodyInvites)
 	if responseBodyInvites.Error.Code == 0 {
-		totalWsNames := []string{}
-		totalARoles := []string{}
 		//totalWsRoles := []string{}
-		fmt.Printf("\n%-25s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "AC_ROLE", "WORKSPACE/S & ROLES")
+		fmt.Printf("\n%-30s %-20s %-20s %-10s %-5s\n", "INVITEE EMAIL", "ACCOUNT", "WORKSPACE", "AC_ROLE", "WORKSPACE ROLES")
 		for i := 0; i < len(responseBodyInvites.Result); i++ {
 			accountName := responseBodyInvites.Result[i].AccountName
 			userEmail := responseBodyInvites.Result[i].InviteeEmail
-
+			var workspaceName, acRoles, wsRoles string
 			for w := 0; w < len(responseBodyInvites.Result[i].WorkspaceNames); w++ {
-				arr := responseBodyInvites.Result[i].WorkspaceNames[w]
-				totalWsNames = append(totalWsNames, arr)
+				workspaceName = responseBodyInvites.Result[i].WorkspaceNames[w]
 			}
 			for ar := 0; ar < len(responseBodyInvites.Result[i].AccountRoles); ar++ {
-				arr1 := responseBodyInvites.Result[i].AccountRoles[ar]
-				totalARoles = append(totalARoles, arr1)
+				acRoles = responseBodyInvites.Result[i].AccountRoles[ar]
 			}
 			for wr := 0; wr < len(responseBodyInvites.Result[i].WorkspacesRoles); wr++ {
-				arr2 := responseBodyInvites.Result[i].WorkspacesRoles[wr]
-				totalWsNames = append(totalWsNames, arr2)
+				wsRoles = responseBodyInvites.Result[i].WorkspacesRoles[wr]
 			}
-			result1 := strings.Join(totalARoles, ",")
 
-			fmt.Printf("\n%-25s %-20s %-10s %-5s\n", userEmail, accountName, result1, totalWsNames)
+			fmt.Printf("\n%-30s %-20s %-20s %-10s %-5s", userEmail, accountName, workspaceName, acRoles, wsRoles)
 		}
 		fmt.Println("\n-")
 	} else {
@@ -103,4 +104,25 @@ func getInvitations(accountId int) {
 		errorMessage := responseBodyInvites.Error.Message
 		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
+}
+
+func getInvitationsraw(accountId int) {
+	apiId, apiSecret := Getapikeys()
+	client := &http.Client{}
+	accountIdStr := strconv.Itoa(accountId)
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/invitations?limit=0", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
 }
