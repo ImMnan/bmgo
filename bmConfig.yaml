@@ -1,6 +1,13 @@
+# Place this bmConfig.Yaml into your $HOME or current DIR
+
+id: # API ID for Blazemeter API Key
+secret: # API secret for Blazemeter API key
+pat: # Personal access-token for API monitoring
+
+
 # Your default account ID and workspace ID [flag 1]
 # Note these can be also be declared with command flag -a or -w followed by account id or workspace id respectively
 # Use --ac or --ws if you want to use these values by default[flag 1]
 accountId: 1195941
 workspaceId: 1226630
-teamId: "521ebb8f-b137-438a-8f2d-c5b7d66bb68e"
+teamId: "521ebb8f-b137-438a-8f2d-c5b7d66bb68e" 
