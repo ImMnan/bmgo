@@ -225,7 +225,7 @@ func findlogSessionConcOutput(sessionId string, download bool, wgSession *sync.W
 	var responseObjectLogs findLogsResponse
 	json.Unmarshal(bodyText, &responseObjectLogs)
 	if responseObjectLogs.Error.Code == 0 {
-		dataUrl := responseObjectLogs.Result.DataUrl
+		//dataUrl := responseObjectLogs.Result.DataUrl
 		var logsFileName, logsDataUrl string
 		var wgDownload sync.WaitGroup
 		for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
@@ -239,21 +239,20 @@ func findlogSessionConcOutput(sessionId string, download bool, wgSession *sync.W
 					go downloadFileSessions(fileURL, fileName, sessionId, &wgDownload)
 				}
 			} else {
-				fmt.Printf("DataUrl: %s\n\n", dataUrl)
+				//	fmt.Printf("DataUrl: %s\n\n", dataUrl)
 				if !termlink.SupportsHyperlinks() {
 					//	fmt.Printf("\n%-20s %-20s", logsFileName, logsDataUrl)
 					logsFileName = responseObjectLogs.Result.Data[i].Filename
 					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-					fmt.Printf("\nFile name: %s\n", logsFileName)
-					fmt.Println(logsDataUrl)
+					fmt.Printf("\nFile name: %s\n%v", logsFileName, logsDataUrl)
 				} else {
 					logsFileName = responseObjectLogs.Result.Data[i].Filename
 					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
 					fmt.Println("DOWNLOAD: ", termlink.Link(logsFileName, logsDataUrl))
 				}
-				fmt.Println("\n-")
 			}
 		}
+		fmt.Println("\n-")
 		wgDownload.Wait()
 	} else {
 		errorCode := responseObjectLogs.Error.Code
