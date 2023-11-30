@@ -6,6 +6,7 @@ package update
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/manifoldco/promptui"
@@ -52,15 +53,16 @@ func Getapikeys() (string, string) {
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
 	vp.AddConfigPath("$HOME")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	err := vp.ReadInConfig()
 	if err != nil {
-		log.Fatal(err, "\nPlease create add your Blazemeter configurations to bmConfig.yaml file in your home directory")
+		log.Fatal(err, "\nPlease add your Blazemeter configurations to bmConfig.yaml file in your home directory")
 	}
 	apiId := vp.GetString("id")
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
+
 func defaultAccount() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
@@ -90,8 +92,7 @@ func defaultWorkspace() int {
 	return workspaceId
 }
 
-// Helper functions added here
-// Prompt to user-input to enable or disable resources
+// Functions to support the subcommands
 func isEnabledPromt() bool {
 	prompt1 := promptui.Select{
 		Label:        "Enable:",
@@ -105,8 +106,6 @@ func isEnabledPromt() bool {
 	boolVal, _ := strconv.ParseBool(attachAuto)
 	return boolVal
 }
-
-// Prompt to user-input for role section within workspace
 func updateUserRolesWs() string {
 	prompt := promptui.Select{
 		Label:        "Select Account Role:",
@@ -119,12 +118,10 @@ func updateUserRolesWs() string {
 	}
 	return roleSelected
 }
-
-// Prompt to user-input for role section within account
 func updateUserRolesA() string {
 	prompt := promptui.Select{
 		Label:        "Select Account Role:",
-		Items:        []string{"admin", "standard", "user_manager", "billing"},
+		Items:        []string{"admin", "standard", "user_manager", "billing", "'admin', 'owner'"},
 		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
@@ -132,4 +129,17 @@ func updateUserRolesA() string {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
 	return roleSelected
+}
+
+func workspaceIdPrompt() string {
+	prompt := promptui.Prompt{
+		Label:       "Provide Workspace/s[separated by commas]",
+		HideEntered: true,
+	}
+	resultWsId, err := prompt.Run()
+	if err != nil {
+		fmt.Printf("Prompt failed %v\n", err)
+		os.Exit(1)
+	}
+	return resultWsId
 }

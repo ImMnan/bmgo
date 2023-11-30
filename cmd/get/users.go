@@ -132,14 +132,19 @@ func getUsersA(accountId int, disabledUsers bool) {
 	var responseBodyAUsers usersResponse
 	json.Unmarshal(bodyText, &responseBodyAUsers)
 	if responseBodyAUsers.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-25s %-12s %-10s %-10s\n", "ID", "DISPLAY NAME", "ROLES", "ENABLED", "EMAIL")
+		fmt.Printf("\n%-10s %-25s %-8s %-35s %-5s\n", "ID", "DISPLAY NAME", "ENABLED", "EMAIL", "ROLES")
 		//	rolesListTotal := []string{}
 		for i := 0; i < len(responseBodyAUsers.Result); i++ {
 			userIdWS := responseBodyAUsers.Result[i].Id
 			displayNameWS := responseBodyAUsers.Result[i].DisplayName
 			emailIdWS := responseBodyAUsers.Result[i].Email
 			enabledUserWS := responseBodyAUsers.Result[i].Enabled
-			fmt.Printf("\n%-10v %-25s %-12s %-10t %-10s", userIdWS, displayNameWS, responseBodyAUsers.Result[i].Roles[0], enabledUserWS, emailIdWS)
+			var totalRoles []string
+			for r := 0; r < len(responseBodyAUsers.Result[i].Roles); r++ {
+				rolesArr := responseBodyAUsers.Result[i].Roles[r]
+				totalRoles = append(totalRoles, rolesArr)
+			}
+			fmt.Printf("\n%-10v %-25s %-8t %-35s %-5s", userIdWS, displayNameWS, enabledUserWS, emailIdWS, totalRoles)
 		}
 		fmt.Println("\n-")
 	} else {
