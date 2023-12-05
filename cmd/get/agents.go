@@ -54,7 +54,7 @@ var agentsCmd = &cobra.Command{
 		case workspaceId == 0 && harbourId == "" && teamId != "" && rawOutput:
 			getAgentsTmraw(teamId)
 		case workspaceId == 0 && harbourId == "" && teamId != "":
-			getAgentsTmraw(teamId)
+			getAgentsTm(teamId)
 		case workspaceId != 0 && harbourId == "":
 			getAgentsWs(workspaceId)
 		case workspaceId != 0 && harbourId != "":
