@@ -22,27 +22,39 @@ var agentsCmd = &cobra.Command{
 	Long: `The command returns a list of created agents, you will need to provide a workspace id or a harborId to run the command. any server on which you install our agent is an agent within a Private location. These are your load generators. Formerly known as a 'ship'. The command returns a list of agents within a workspace or within a harborId id specified.  Outputs "SHIP ID", "STATE", etc.
 	
 	For example: [bmgo get -w <workspace id> agents --hid <harbour_id>] OR 
-	             [bmgo get agents <harbour_id> --raw]
 	             [bmgo get -w <workspace_id> agents]
+				 [bmgo get -t <team_id> agents]
 	For default: [bmgo get --ws agents]
-	             [bmgo get --ws agents --hid <harbour id>]`,
+	             [bmgo get --ws agents --hid <harbour id>]
+				 [bmgo get --tm agents]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ws, _ := cmd.Flags().GetBool("ws")
+		tm, _ := cmd.Flags().GetBool("tm")
 		var workspaceId int
+		var teamId string
 		if ws {
 			workspaceId = defaultWorkspace()
 		} else {
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
+		if tm {
+			teamId = defaultTeam()
+		} else {
+			teamId, _ = cmd.Flags().GetString("teamid")
+		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		harbourId, _ := cmd.Flags().GetString("hid")
 		switch {
-		case workspaceId == 0 && harbourId != "" && rawOutput:
+		case workspaceId == 0 && harbourId != "" && teamId == "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId != "" && rawOutput:
+		case workspaceId != 0 && harbourId != "" && teamId == "" && rawOutput:
 			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId == "" && rawOutput:
+		case workspaceId != 0 && harbourId == "" && teamId == "" && rawOutput:
 			getAgentsWsraw(workspaceId)
+		case workspaceId == 0 && harbourId == "" && teamId != "" && rawOutput:
+			getAgentsTmraw(teamId)
+		case workspaceId == 0 && harbourId == "" && teamId != "":
+			getAgentsTmraw(teamId)
 		case workspaceId != 0 && harbourId == "":
 			getAgentsWs(workspaceId)
 		case workspaceId != 0 && harbourId != "":
@@ -198,4 +210,73 @@ func getAgentsWsraw(workspaceId int) {
 		log.Fatal(err)
 	}
 	fmt.Printf("%s\n", bodyText)
+}
+
+type rsAgentResponse struct {
+	Meta meta          `json:"meta"`
+	Data []resultsData `json:"data"`
+}
+type meta struct {
+	Status string `json:"status"`
+}
+type resultsData struct {
+	Agent_id string `json:"agent_id"`
+	Name     string `json:"name"`
+	Version  string `json:"version"`
+	HostOs   string `json:"host_os"`
+}
+
+func getAgentsTmraw(teamId string) {
+	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", Bearer)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", bodyText)
+}
+
+func getAgentsTm(teamId string) {
+	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("Authorization", Bearer)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//	fmt.Printf("%s\n", bodyText)
+	var responseBodyTmAgents rsAgentResponse
+	json.Unmarshal(bodyText, &responseBodyTmAgents)
+	if responseBodyTmAgents.Meta.Status == "success" {
+		fmt.Printf("\n%-37s %-6s %-22s %-5s\n", "AGENT ID", "OS", "VERSION", "NAME")
+		for i := 0; i < len(responseBodyTmAgents.Data); i++ {
+			agentIdtm := responseBodyTmAgents.Data[i].Agent_id
+			agentNametm := responseBodyTmAgents.Data[i].Name
+			agentVersiontm := responseBodyTmAgents.Data[i].Version
+			agentHostOstm := responseBodyTmAgents.Data[i].HostOs
+			fmt.Printf("\n%-37s %-6s %-22s %-5s", agentIdtm, agentHostOstm, agentVersiontm, agentNametm)
+		}
+		fmt.Println("\n-")
+	} else {
+		fmt.Println(responseBodyTmAgents.Meta.Status)
+	}
 }
