@@ -119,31 +119,34 @@ func updateUserA(userId, accountId int) {
 	}
 }
 func updateUserAraw(userId, accountId int) {
-	apiId, apiSecret := Getapikeys()
+	//apiId, apiSecret := Getapikeys()
 	roleA := updateUserRolesA()
 	enableA := isEnabledPromt()
-	accountIdStr := strconv.Itoa(accountId)
-	client := &http.Client{}
-	userIdStr := strconv.Itoa(userId)
+	//accountIdStr := strconv.Itoa(accountId)
+	//client := &http.Client{}
+	//userIdStr := strconv.Itoa(userId)
 	// var data = strings.NewReader(`{"roles":["user_manager"],"enabled": false}`)
 	data := fmt.Sprintf(`{"roles": ["%s"], "enabled": %t}`, roleA, enableA)
 	var reqBodyDataA = strings.NewReader(data)
-	req, err := http.NewRequest("PUT", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users/"+userIdStr, reqBodyDataA)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
+	fmt.Println(data)
+	fmt.Println(reqBodyDataA)
+
+	//req, err := http.NewRequest("PUT", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users/"+userIdStr, reqBodyDataA)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//req.Header.Set("Content-Type", "application/json")
+	//req.SetBasicAuth(apiId, apiSecret)
+	//resp, err := client.Do(req)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//defer resp.Body.Close()
+	//bodyText, err := io.ReadAll(resp.Body)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//fmt.Printf("%s\n", bodyText)
 }
 
 func updateUserWs(userId, workspaceId int) {
