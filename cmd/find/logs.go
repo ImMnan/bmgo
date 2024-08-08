@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package find
 
@@ -43,11 +43,17 @@ var logsCmd = &cobra.Command{
 			findlogMockservice(mockId)
 		case sessionId == "" && mockId == 0 && masterId != 0:
 			var wg sync.WaitGroup
-			masterChan := make(chan string, 10)
-			wg.Add(2)
-			go findlogSessionConc(masterChan, &wg, download)
-			findMasterlogsConc(masterId, masterChan, &wg)
-			close(masterChan)
+			masterChan := make(chan string, 100)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				findMasterlogsConc(masterId, masterChan)
+				close(masterChan)
+			}()
+			for sessionId := range masterChan {
+				wg.Add(1)
+				go findlogSessionConcOutput(sessionId, download, &wg)
+			}
 			wg.Wait()
 		default:
 			cmd.Help()
@@ -75,6 +81,31 @@ type logsResult struct {
 type dataList struct {
 	Filename string `json:"filename"`
 	DataUrl  string `json:"dataUrl"`
+}
+
+type mastersResponseLogs struct {
+	Result mastersResultLogs `json:"result"`
+	Error  errorResult       `json:"error"`
+}
+
+type mastersResultLogs struct {
+	Id           int                `json:"id"`
+	Status       string             `json:"reportStatus"`
+	Created      int                `json:"created"`
+	Ended        int                `json:"ended"`
+	Locations    []string           `json:"locations"`
+	SessionId    []string           `json:"sessionsId"`
+	ProjectId    int                `json:"projectId"`
+	RunnerUserId int                `json:"runnerUserId"`
+	Executions   []masterExecutions `json:"executions"`
+	TestId       int                `json:"testId"`
+}
+type masterExecutions struct {
+	Concurrency int    `json:"concurrency"`
+	HoldFor     string `json:"holdFor"`
+	Rampup      string `json:"rampUp"`
+	Executor    string `json:"executor"`
+	TestId      int    `json:"testId"`
 }
 
 func findlogSession(sessionId string, download, rawOutput bool) {
@@ -109,8 +140,7 @@ func findlogSession(sessionId string, download, rawOutput bool) {
 					if fileName == "jmeter.log" || fileName == "bzt.log" {
 						continue
 					} else {
-						wgDownload.Add(1)
-						go downloadFileSessions(fileURL, fileName, sessionId, &wgDownload)
+						downloadFileSessions(fileURL, fileName, sessionId)
 					}
 				} else {
 					if !termlink.SupportsHyperlinks() {
@@ -135,6 +165,7 @@ func findlogSession(sessionId string, download, rawOutput bool) {
 	}
 }
 
+// This function is used to download the logs for a perticular mock service
 func findlogMockservice(mockId int) {
 	workspaceIdStr := workspaceIdPrompt()
 	mockIdStr := strconv.Itoa(mockId)
@@ -159,132 +190,130 @@ func findlogMockservice(mockId int) {
 	fmt.Printf("%s\n", bodyText)
 }
 
-func findMasterlogsConc(masterId int, ch chan<- string, wg *sync.WaitGroup) {
-	defer wg.Done()
+// This function is used to download or view the logs for all sessions within a master
+func findMasterlogsConc(masterId int, ch chan<- string) {
 	apiId, apiSecret := Getapikeys()
 	masterIdStr := strconv.Itoa(masterId)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/masters/"+masterIdStr, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error creating request: %v", err)
+		return
 	}
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error making request: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error reading response body: %v", err)
+		return
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseObjectMaster mastersResponse
-	json.Unmarshal(bodyText, &responseObjectMaster)
+	var responseObjectMaster mastersResponseLogs
+	err = json.Unmarshal(bodyText, &responseObjectMaster)
+	if err != nil {
+		log.Printf("Error unmarshalling response: %v", err)
+		return
+	}
 	if responseObjectMaster.Error.Code == 0 {
-		for rv := 0; rv < len(responseObjectMaster.Result.SessionId); rv++ {
-			sessionsId := responseObjectMaster.Result.SessionId[rv]
-			ch <- sessionsId
+		for _, sessionId := range responseObjectMaster.Result.SessionId {
+			ch <- sessionId
 		}
 	} else {
-		errorCode := responseObjectMaster.Error.Code
-		errorMessage := responseObjectMaster.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		log.Printf("Error code: %v, Error message: %v", responseObjectMaster.Error.Code, responseObjectMaster.Error.Message)
 	}
 }
-func findlogSessionConc(ch <-chan string, wg *sync.WaitGroup, download bool) {
+
+// This function will download the files from the sessionId and print the logs depending on the download flag
+func findlogSessionConcOutput(sessionId string, download bool, wg *sync.WaitGroup) {
 	defer wg.Done()
-	//apiId, apiSecret := Getapikeys()
-	//client := &http.Client{}
-	var wgSession sync.WaitGroup
-	for sessionId := range ch {
-		wgSession.Add(1)
-		go findlogSessionConcOutput(sessionId, download, &wgSession)
-	}
-	wgSession.Wait()
-}
-func findlogSessionConcOutput(sessionId string, download bool, wgSession *sync.WaitGroup) {
-	defer wgSession.Done()
+
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/sessions/"+sessionId+"/reports/logs", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error creating request: %v", err)
+		return
 	}
 	req.SetBasicAuth(apiId, apiSecret)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error making request: %v", err)
+		return
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error reading response body: %v", err)
+		return
 	}
-	//	fmt.Printf("%s\n", bodyText)
 	var responseObjectLogs findLogsResponse
-	json.Unmarshal(bodyText, &responseObjectLogs)
+	err = json.Unmarshal(bodyText, &responseObjectLogs)
+	if err != nil {
+		log.Printf("Error unmarshalling response: %v", err)
+		return
+	}
 	if responseObjectLogs.Error.Code == 0 {
-		//dataUrl := responseObjectLogs.Result.DataUrl
-		var logsFileName, logsDataUrl string
-		var wgDownload sync.WaitGroup
-		for i := 0; i < len(responseObjectLogs.Result.Data); i++ {
-			if download {
-				fileName := responseObjectLogs.Result.Data[i].Filename
-				fileURL := responseObjectLogs.Result.Data[i].DataUrl
-				if fileName == "jmeter.log" || fileName == "bzt.log" {
+		if download {
+			var wgDownload sync.WaitGroup
+			for _, data := range responseObjectLogs.Result.Data {
+				if data.Filename == "jmeter.log" || data.Filename == "bzt.log" {
 					continue
-				} else {
-					wgDownload.Add(1)
-					go downloadFileSessions(fileURL, fileName, sessionId, &wgDownload)
 				}
-			} else {
-				//	fmt.Printf("DataUrl: %s\n\n", dataUrl)
+				wgDownload.Add(1)
+				go func(url, filename, sid string) {
+					defer wgDownload.Done()
+					downloadFileSessions(url, filename, sid)
+				}(data.DataUrl, data.Filename, sessionId)
+			}
+			wgDownload.Wait()
+		} else {
+			for _, data := range responseObjectLogs.Result.Data {
 				if !termlink.SupportsHyperlinks() {
-					//	fmt.Printf("\n%-20s %-20s", logsFileName, logsDataUrl)
-					logsFileName = responseObjectLogs.Result.Data[i].Filename
-					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-					fmt.Printf("\nFile name: %s\n%v", logsFileName, logsDataUrl)
+					fmt.Printf("\nFile name: %s\n%v", data.Filename, data.DataUrl)
 				} else {
-					logsFileName = responseObjectLogs.Result.Data[i].Filename
-					logsDataUrl = responseObjectLogs.Result.Data[i].DataUrl
-					fmt.Println("DOWNLOAD: ", termlink.Link(logsFileName, logsDataUrl))
+					fmt.Printf("Session: %v: %v\n", sessionId, termlink.Link(data.Filename, data.DataUrl))
 				}
 			}
 		}
-		fmt.Println("\n-")
-		wgDownload.Wait()
 	} else {
-		errorCode := responseObjectLogs.Error.Code
-		errorMessage := responseObjectLogs.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		log.Printf("Error code: %v, Error message: %v", responseObjectLogs.Error.Code, responseObjectLogs.Error.Message)
 	}
 }
-func downloadFileSessions(fileURL, fileName, sessionId string, wgDownload *sync.WaitGroup) {
-	//Create blank file
+
+// This function is to download the files from the sessions of the provided master Id. It will download all the files except jmeter.log and bzt.log.
+func downloadFileSessions(fileURL, fileName, sessionId string) {
 	file, err := os.Create(sessionId + fileName)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error creating file: %v", err)
+		return
 	}
-	client := http.Client{
+	defer file.Close()
+
+	client := &http.Client{
 		CheckRedirect: func(r *http.Request, via []*http.Request) error {
 			r.URL.Opaque = r.URL.Path
 			return nil
 		},
 	}
-	// Put content on file
 	resp, err := client.Get(fileURL)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error downloading file: %v", err)
+		return
 	}
 	defer resp.Body.Close()
+
 	bar := progressbar.DefaultBytes(
 		resp.ContentLength,
 		"downloading",
 	)
-	io.Copy(io.MultiWriter(file, bar), resp.Body)
-	size, _ := io.Copy(file, resp.Body)
-	defer file.Close()
-	fmt.Printf("Downloaded %s for session %s with size %d\n", fileName, sessionId, size)
-	defer wgDownload.Done()
+	_, err = io.Copy(io.MultiWriter(file, bar), resp.Body)
+	if err != nil {
+		log.Printf("Error saving file: %v", err)
+		return
+	}
+	fmt.Printf("Downloaded %s for session %s\n", fileName, sessionId)
 }
