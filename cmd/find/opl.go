@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package find
 
@@ -17,15 +17,13 @@ import (
 var oplCmd = &cobra.Command{
 	Use:   "opl",
 	Short: "Find details about the Private location",
-	Long: `Use this command to find details about the specified private location (Harbour Id). Global Flag --raw can be used for raw Json output. 
+	Long: `Use this command to find details about the specified private location (Harbour Id). Global Flag --raw can be used for raw Json output. The output will confirm the "NAME", "Threads Per engine", "Engine Per agent", "Number of agents" and the "ACCOUNT"+"WORKSPACES" it is associated with. 
 	For example: [bmgo find opl --hid <harbour ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if harbourId != "" && rawOutput {
-			findOplraw(harbourId)
-		} else if harbourId != "" {
-			findOpl(harbourId)
+		if harbourId != "" {
+			findOpl(harbourId, rawOutput)
 		} else {
 			cmd.Help()
 		}
@@ -58,7 +56,7 @@ type ships struct {
 	State string `json:"state"`
 }
 
-func findOpl(harbourId string) {
+func findOpl(harbourId string, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId, nil)
@@ -75,55 +73,39 @@ func findOpl(harbourId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyOpl oplResponse
-	json.Unmarshal(bodyText, &responseBodyOpl)
-	if responseBodyOpl.Error.Code == 0 {
-		fmt.Printf("\n%-20s %-7s %-7s %-7s %-10s %-5s\n", "NAME", "TPE", "EPA", "AGENTS", "ACCOUNT", "WORKSPACES")
-		oplName := responseBodyOpl.Result.Name
-		threadsPerEngine := responseBodyOpl.Result.ThreadsPerEngine
-		enginePerAgent := responseBodyOpl.Result.Slots
-		oplAccountId := responseBodyOpl.Result.AccountId
-		oplWorkspaceId := responseBodyOpl.Result.WorkspacesId
-		fmt.Printf("%-20s %-7v %-7v %-7v %-10v %-5v\n", oplName, threadsPerEngine, enginePerAgent, len(responseBodyOpl.Result.ShipsId), oplAccountId, oplWorkspaceId)
-
-		fmt.Println("\n---------------------------------------------------------------------------------------------")
-		fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
-		for i := 0; i < len(responseBodyOpl.Result.FuncIds); i++ {
-			oplfunctionalities := responseBodyOpl.Result.FuncIds[i]
-			fmt.Printf("%-30v\n", oplfunctionalities)
-		}
-		fmt.Println("\n---------------------------------------------------------------------------------------------")
-		fmt.Printf("%-20s %-20s %-25s %-10s\n", "HARBOUR NAME", "SHIP NAME", "SHIP ID", "STATE")
-		for f := 0; f < len(responseBodyOpl.Result.Ships); f++ {
-			shipId := responseBodyOpl.Result.Ships[f].Id
-			shipName := responseBodyOpl.Result.Ships[f].Name
-			shipStatus := responseBodyOpl.Result.Ships[f].State
-			fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyOpl.Error.Code
-		errorMessage := responseBodyOpl.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyOpl oplResponse
+		json.Unmarshal(bodyText, &responseBodyOpl)
+		if responseBodyOpl.Error.Code == 0 {
+			fmt.Printf("\n%-20s %-7s %-7s %-7s %-10s %-5s\n", "NAME", "TPE", "EPA", "AGENTS", "ACCOUNT", "WORKSPACES")
+			oplName := responseBodyOpl.Result.Name
+			threadsPerEngine := responseBodyOpl.Result.ThreadsPerEngine
+			enginePerAgent := responseBodyOpl.Result.Slots
+			oplAccountId := responseBodyOpl.Result.AccountId
+			oplWorkspaceId := responseBodyOpl.Result.WorkspacesId
+			fmt.Printf("%-20s %-7v %-7v %-7v %-10v %-5v\n", oplName, threadsPerEngine, enginePerAgent, len(responseBodyOpl.Result.ShipsId), oplAccountId, oplWorkspaceId)
+
+			fmt.Println("\n---------------------------------------------------------------------------------------------")
+			fmt.Printf("%-30s\n\n", "FUNCTIONALITIES SUPPORTED")
+			for i := 0; i < len(responseBodyOpl.Result.FuncIds); i++ {
+				oplfunctionalities := responseBodyOpl.Result.FuncIds[i]
+				fmt.Printf("%-30v\n", oplfunctionalities)
+			}
+			fmt.Println("\n---------------------------------------------------------------------------------------------")
+			fmt.Printf("%-20s %-20s %-25s %-10s\n", "HARBOUR NAME", "SHIP NAME", "SHIP ID", "STATE")
+			for f := 0; f < len(responseBodyOpl.Result.Ships); f++ {
+				shipId := responseBodyOpl.Result.Ships[f].Id
+				shipName := responseBodyOpl.Result.Ships[f].Name
+				shipStatus := responseBodyOpl.Result.Ships[f].State
+				fmt.Printf("\n%-20s %-20s %-25s %-10s", oplName, shipName, shipId, shipStatus)
+			}
+			fmt.Println("\n-")
+		} else {
+			errorCode := responseBodyOpl.Error.Code
+			errorMessage := responseBodyOpl.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-}
-func findOplraw(harbourId string) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
