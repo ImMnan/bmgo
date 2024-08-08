@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package find
 
@@ -22,23 +22,65 @@ var FindCmd = &cobra.Command{
 	Long: `Use get command to Find details about the resources within Blazemeter account. Use --help throughout subcommands to get an idea of how these commands are structured. Navigate to help.blazemeter.com for detailed info about these resources. 
 	
 	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
-	The file can be in the current working DIR or in $HOME`,
+	The file can be in the current working DIR or in $HOME
+	
+	Also, use this command to get information about a workspace, team or an account. The command lists number of users, plan details, owners, status, etc. 
+	
+	For example: [bmgo find -a <account_id>] OR 
+	             [bmgo find -w <workspace_id>] OR
+				 [bmgo find -t <team_uuid>]
+	For default: [bmgo find --ac] OR 
+	             [bmgo find --ws] OR
+				 [bmgo find --tm]`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		ac, _ := cmd.Flags().GetBool("ac")
+		ws, _ := cmd.Flags().GetBool("ws")
+		tm, _ := cmd.Flags().GetBool("tm")
+
+		testId, _ := cmd.Flags().GetInt("tid")
+		var accountId, workspaceId int
+		var teamId string
+		if ac {
+			accountId = defaultAccount()
+		} else {
+			accountId, _ = cmd.Flags().GetInt("accountid")
+		}
+		if ws {
+			workspaceId = defaultWorkspace()
+		} else {
+			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
+		}
+		if tm {
+			teamId = defaultTeam()
+		} else {
+			teamId, _ = cmd.Flags().GetString("teamid")
+		}
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		switch {
+		case (workspaceId != 0) && (accountId == 0) && teamId == "":
+			getWorkspace(workspaceId, rawOutput)
+		case (accountId != 0) && (workspaceId == 0) && teamId == "":
+			getAccountId(accountId, rawOutput)
+		case (accountId == 0) && (workspaceId == 0) && teamId != "":
+			getTeamInfo(teamId, rawOutput)
+		case testId != 0:
+			findTest(testId, rawOutput)
+			findTestFiles(testId, rawOutput)
+		default:
+			cmd.Help()
+		}
 	},
 }
 
 func init() {
 	FindCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	FindCmd.Flags().IntP("accountid", "a", 0, "Provide Account ID to list a resources within an account")
+	FindCmd.Flags().IntP("workspaceid", "w", 0, "Provide Workspace ID to list a resource within a workspace")
+	FindCmd.Flags().Bool("ac", false, "Use default account Id (bmConfig.yaml)")
+	FindCmd.Flags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
+	FindCmd.Flags().StringP("teamid", "t", "", "[>]Provide Team UID to list resources within a team")
+	FindCmd.Flags().Bool("tm", false, "[>]Use default team UId (bmConfig.yaml)")
+	FindCmd.Flags().Int("tid", 0, "Provide the Test ID to view the Test details")
 }
 
 func Getapikeys() (string, string) {
@@ -55,11 +97,27 @@ func Getapikeys() (string, string) {
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
+
+func defaultAccount() int {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	//	vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	accountId := vp.GetInt("accountId")
+	return accountId
+}
+
+// Getting default workspace Id in case user uses --ws
 func defaultWorkspace() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -68,10 +126,37 @@ func defaultWorkspace() int {
 	workspaceId := vp.GetInt("workspaceId")
 	return workspaceId
 }
+func GetPersonalAccessToken() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err, "\nPlease add your Blazemeter API credentials to bmConfig.yaml file in your home directory")
+	}
+	pat := vp.GetString("pat")
+	return pat
+}
+func defaultTeam() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	//vp.AddConfigPath(".")
+	vp.AddConfigPath("$HOME")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	teamId := vp.GetString("teamId")
+	return teamId
+}
 
 type errorResult struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
+	Status  int    `json:"status"`
 }
 
 func promtHid() string {
