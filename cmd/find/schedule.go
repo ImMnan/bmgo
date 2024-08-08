@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package find
 
@@ -19,15 +19,13 @@ import (
 var scheduleCmd = &cobra.Command{
 	Use:   "schedule",
 	Short: "Find details about the specific schedule",
-	Long: `Use this command to find details about the specified schedule (--sheduleid). Global Flag --raw can be used for raw Json output. 
-	For example: [bmgo find schedule --scheduleid <schedule ID>]`,
+	Long: `Use this command to find details about the specified schedule (--sch). Global Flag --raw can be used for raw Json output. The output will confirm whether the schedule is "ENABLED" when it was"CREATED ON" and the associated "CRON".
+	For example: [bmgo find schedule --sch <schedule ID>]`,
 	Run: func(cmd *cobra.Command, args []string) {
-		scheduleId, _ := cmd.Flags().GetString("scheduleid")
+		scheduleId, _ := cmd.Flags().GetString("sch")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if scheduleId != "" && rawOutput {
-			findScheduleraw(scheduleId)
-		} else if scheduleId != "" {
-			findSchedule(scheduleId)
+		if scheduleId != "" {
+			findSchedule(scheduleId, rawOutput)
 		} else {
 			cmd.Help()
 		}
@@ -36,8 +34,8 @@ var scheduleCmd = &cobra.Command{
 
 func init() {
 	FindCmd.AddCommand(scheduleCmd)
-	scheduleCmd.Flags().String("scheduleid", "", "Provide the Schedule ID")
-	scheduleCmd.MarkFlagRequired("scheduleid")
+	scheduleCmd.Flags().String("sch", "", "Provide the Schedule ID")
+	scheduleCmd.MarkFlagRequired("sch")
 }
 
 type findshedulesResponse struct {
@@ -53,7 +51,7 @@ type findscheduleResult struct {
 	Enabled        bool   `json:"enabled"`
 }
 
-func findSchedule(scheduleId string) {
+func findSchedule(scheduleId string, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/schedules/"+scheduleId, nil)
@@ -70,52 +68,36 @@ func findSchedule(scheduleId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyFindShedules findshedulesResponse
-	json.Unmarshal(bodyText, &responseBodyFindShedules)
-	if responseBodyFindShedules.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-10s %-10s %-20s %-40s", "TEST", "OWNER", "ENABLED", "CREATED ON", "CRON")
-		scheduleTest := responseBodyFindShedules.Result.TestId
-		sheduleOwn := responseBodyFindShedules.Result.CreatedById
-		sheduleEnabled := responseBodyFindShedules.Result.Enabled
-		sheduleCron := responseBodyFindShedules.Result.Cron
-		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-		sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
-		sheduleCreatedEp := int64(responseBodyFindShedules.Result.Created)
-		sheduleCreated := time.Unix(sheduleCreatedEp, 0)
-		sheduleCreatedStr := fmt.Sprint(sheduleCreated)
-
-		fmt.Printf("\n%-10v %-10v %-10t %-20s %-40s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
-		fmt.Println("\n---------------------------------------------------------------------------------------------")
-		fmt.Println("List of upcomming test runs\n-")
-		for i := 0; i < len(responseBodyFindShedules.Result.NextExecutions); i++ {
-			nextRunsEp := int64(responseBodyFindShedules.Result.NextExecutions[i])
-			nextRun := time.Unix(nextRunsEp, 0)
-			fmt.Println(nextRun)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyFindShedules.Error.Code
-		errorMessage := responseBodyFindShedules.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyFindShedules findshedulesResponse
+		json.Unmarshal(bodyText, &responseBodyFindShedules)
+		if responseBodyFindShedules.Error.Code == 0 {
+			fmt.Printf("\n%-10s %-10s %-10s %-20s %-40s", "TEST", "OWNER", "ENABLED", "CREATED ON", "CRON")
+			scheduleTest := responseBodyFindShedules.Result.TestId
+			sheduleOwn := responseBodyFindShedules.Result.CreatedById
+			sheduleEnabled := responseBodyFindShedules.Result.Enabled
+			sheduleCron := responseBodyFindShedules.Result.Cron
+			cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+			sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
+			sheduleCreatedEp := int64(responseBodyFindShedules.Result.Created)
+			sheduleCreated := time.Unix(sheduleCreatedEp, 0)
+			sheduleCreatedStr := fmt.Sprint(sheduleCreated)
+
+			fmt.Printf("\n%-10v %-10v %-10t %-20s %-40s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleCreatedStr[0:16], *sheduleCronStr)
+			fmt.Println("\n---------------------------------------------------------------------------------------------")
+			fmt.Println("List of upcomming test runs\n-")
+			for i := 0; i < len(responseBodyFindShedules.Result.NextExecutions); i++ {
+				nextRunsEp := int64(responseBodyFindShedules.Result.NextExecutions[i])
+				nextRun := time.Unix(nextRunsEp, 0)
+				fmt.Println(nextRun)
+			}
+			fmt.Println("\n-")
+		} else {
+			errorCode := responseBodyFindShedules.Error.Code
+			errorMessage := responseBodyFindShedules.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-}
-func findScheduleraw(scheduleId string) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/schedules/"+scheduleId, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
