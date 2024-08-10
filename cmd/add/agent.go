@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package add
 
@@ -24,10 +24,8 @@ var agentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		harbourId, _ := cmd.Flags().GetString("hid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if harbourId != "" && rawOutput {
-			addAgentraw(harbourId)
-		} else if harbourId != "" {
-			addAgent(harbourId)
+		if harbourId != "" {
+			addAgent(harbourId, rawOutput)
 		} else {
 			cmd.Help()
 		}
@@ -56,7 +54,7 @@ type getAgentcmdResult struct {
 	DockerCommand string `json:"dockerCommand"`
 }
 
-func addAgent(harbourId string) {
+func addAgent(harbourId string, rawOutput bool) {
 	agentName := agentNamePrompt()
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
@@ -77,87 +75,46 @@ func addAgent(harbourId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyaddAgent addAgentResponse
-	json.Unmarshal(bodyText, &responseBodyaddAgent)
-	if responseBodyaddAgent.Error.Code == 0 {
-
-		fmt.Printf("\n%-30s %-20s %-10s\n", "SHIP-ID", "NAME", "STATE")
-		shipId := responseBodyaddAgent.Result.Id
-		shipName := responseBodyaddAgent.Result.Name
-		shipstate := responseBodyaddAgent.Result.State
-		fmt.Printf("\n%-30s %-20s %-10s\n", shipId, shipName, shipstate)
-
-		req1, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId+"/ships/"+shipId+"/docker-command", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		req1.Header.Set("Content-Type", "application/json")
-		req1.SetBasicAuth(apiId, apiSecret)
-		resp1, err := client.Do(req1)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer resp1.Body.Close()
-		bodyText1, err := io.ReadAll(resp1.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-		//	fmt.Printf("%s\n", bodyText1)
-		var responseBodyaddAgentCmd getAgentCmdResponse
-		json.Unmarshal(bodyText1, &responseBodyaddAgentCmd)
-		dockerRun := responseBodyaddAgentCmd.Result.DockerCommand
-		fmt.Println("\n---------------------------------------------------------------------------------------------")
-		fmt.Printf("Docker RUN COMMAND:\n %s\n", dockerRun)
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("\n%s\n", bodyText)
 	} else {
-		errorCode := responseBodyaddAgent.Error.Code
-		errorMessage := responseBodyaddAgent.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
-	}
-}
 
-func addAgentraw(harbourId string) {
-	agentName := agentNamePrompt()
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	data := fmt.Sprintf(`{"name":"%s","address":"127.0.0.1"}`, agentName)
-	reqBodydata := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId+"/servers", reqBodydata)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var responseBodyaddAgent addAgentResponse
-	json.Unmarshal(bodyText, &responseBodyaddAgent)
+		var responseBodyaddAgent addAgentResponse
+		json.Unmarshal(bodyText, &responseBodyaddAgent)
+		if responseBodyaddAgent.Error.Code == 0 {
 
-	fmt.Printf("\n%-30s %-20s %-10s\n", "SHIP-ID", "NAME", "STATE")
-	shipId := responseBodyaddAgent.Result.Id
-	fmt.Printf("%s\n", bodyText)
+			fmt.Printf("\n%-30s %-20s %-10s\n", "SHIP-ID", "NAME", "STATE")
+			shipId := responseBodyaddAgent.Result.Id
+			shipName := responseBodyaddAgent.Result.Name
+			shipstate := responseBodyaddAgent.Result.State
+			fmt.Printf("\n%-30s %-20s %-10s\n", shipId, shipName, shipstate)
 
-	req1, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId+"/ships/"+shipId+"/docker-command", nil)
-	if err != nil {
-		log.Fatal(err)
+			req1, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId+"/ships/"+shipId+"/docker-command", nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+			req1.Header.Set("Content-Type", "application/json")
+			req1.SetBasicAuth(apiId, apiSecret)
+			resp1, err := client.Do(req1)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer resp1.Body.Close()
+			bodyText1, err := io.ReadAll(resp1.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+			//	fmt.Printf("%s\n", bodyText1)
+			var responseBodyaddAgentCmd getAgentCmdResponse
+			json.Unmarshal(bodyText1, &responseBodyaddAgentCmd)
+			dockerRun := responseBodyaddAgentCmd.Result.DockerCommand
+			fmt.Println("\n---------------------------------------------------------------------------------------------")
+			fmt.Printf("Docker RUN COMMAND:\n %s\n", dockerRun)
+			fmt.Println("\n-")
+		} else {
+			errorCode := responseBodyaddAgent.Error.Code
+			errorMessage := responseBodyaddAgent.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-	req1.Header.Set("Content-Type", "application/json")
-	req1.SetBasicAuth(apiId, apiSecret)
-	resp1, err := client.Do(req1)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp1.Body.Close()
-	bodyText1, err := io.ReadAll(resp1.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("\n%s\n", bodyText1)
 }
