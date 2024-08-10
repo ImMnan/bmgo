@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package add
 
@@ -29,11 +29,7 @@ var AddCmd = &cobra.Command{
 }
 
 func init() {
-	AddCmd.PersistentFlags().IntP("accountid", "a", 0, " Provide Account ID to add a resource to")
-	AddCmd.PersistentFlags().IntP("workspaceid", "w", 0, " Provide Workspace ID to add a resource to")
 	AddCmd.PersistentFlags().BoolP("raw", "r", false, "[OPTIONAL] If set, the output will be raw json")
-	AddCmd.PersistentFlags().Bool("ac", false, "Use default account Id (bmConfig.yaml)")
-	AddCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
