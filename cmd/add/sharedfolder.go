@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package add
 
@@ -33,10 +33,8 @@ var sharedfolderCmd = &cobra.Command{
 		folderName, _ := cmd.Flags().GetString("name")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
-		case (workspaceId != 0) && (folderName != "") && rawOutput:
-			addSharedfolderraw(folderName, workspaceId)
 		case (workspaceId != 0) && (folderName != ""):
-			addSharedfolder(folderName, workspaceId)
+			addSharedfolder(folderName, workspaceId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -47,6 +45,8 @@ func init() {
 	AddCmd.AddCommand(sharedfolderCmd)
 	sharedfolderCmd.Flags().String("name", "", "Name your Shared folder")
 	sharedfolderCmd.MarkFlagRequired("name")
+	sharedfolderCmd.Flags().IntP("workspaceid", "w", 0, " Provide Workspace ID to add a resource to")
+	sharedfolderCmd.Flags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
 }
 
 type addFolderResponse struct {
@@ -58,7 +58,7 @@ type addfolderResult struct {
 	Name string `json:"name"`
 }
 
-func addSharedfolder(folderName string, workspaceId int) {
+func addSharedfolder(folderName string, workspaceId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	data := fmt.Sprintf(`{
@@ -80,42 +80,21 @@ func addSharedfolder(folderName string, workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyAddFolder addFolderResponse
-	json.Unmarshal(bodyText, &responseBodyAddFolder)
-	if responseBodyAddFolder.Error.Code == 0 {
-		folderIdres := responseBodyAddFolder.Result.Id
-		folderNameres := responseBodyAddFolder.Result.Name
-		fmt.Printf("\n%-30s %-15s", "Folder ID", "NAME")
-		fmt.Printf("\n%-30s %-15s", folderIdres, folderNameres)
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyAddFolder.Error.Code
-		errorMessage := responseBodyAddFolder.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyAddFolder addFolderResponse
+		json.Unmarshal(bodyText, &responseBodyAddFolder)
+		if responseBodyAddFolder.Error.Code == 0 {
+			folderIdres := responseBodyAddFolder.Result.Id
+			folderNameres := responseBodyAddFolder.Result.Name
+			fmt.Printf("\n%-30s %-15s", "Folder ID", "NAME")
+			fmt.Printf("\n%-30s %-15s", folderIdres, folderNameres)
+			fmt.Println("\n-")
+		} else {
+			errorCode := responseBodyAddFolder.Error.Code
+			errorMessage := responseBodyAddFolder.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-}
-func addSharedfolderraw(folderName string, workspaceId int) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	data := fmt.Sprintf(`{
-		"name": "%s",  
-		"workspaceId": %v}`, folderName, workspaceId)
-	reqBodyData := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/folders", reqBodyData)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
