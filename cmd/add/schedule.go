@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package add
 
@@ -26,10 +26,8 @@ var scheduleCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		testId, _ := cmd.Flags().GetInt("tid")
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if testId != 0 && rawOutput {
-			addScheduleraw(testId)
-		} else if testId != 0 {
-			addSchedule(testId)
+		if testId != 0 {
+			addSchedule(testId, rawOutput)
 		} else {
 			cmd.Help()
 		}
@@ -55,7 +53,7 @@ type addScheduleResult struct {
 	Enabled     bool   `json:"enabled"`
 }
 
-func addSchedule(testId int) {
+func addSchedule(testId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	cronExpression := cronPrompt()
 	client := &http.Client{}
@@ -76,47 +74,27 @@ func addSchedule(testId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyAddShedules addShedulesResponse
-	if responseBodyAddShedules.Error.Code == 0 {
-		json.Unmarshal(bodyText, &responseBodyAddShedules)
-		fmt.Printf("\n%-28s %-10s %-20s %-40s", "SCHEDULE ID", "ENABLED", "NEXT RUN", "CRON")
-		scheduleId := responseBodyAddShedules.Result.Id
-		//sheduleOwn := responseBodyAddShedules.Result.CreatedById
-		sheduleCron := responseBodyAddShedules.Result.Cron
-		cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-		sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
-		scheduleEnabled := responseBodyAddShedules.Result.Enabled
-		sheduleNextrunEP := int64(responseBodyAddShedules.Result.Created)
-		sheduleNextRun := time.Unix(sheduleNextrunEP, 0)
-		sheduleNextRunStr := fmt.Sprint(sheduleNextRun)
-		fmt.Printf("\n%-28s %-10t %-20s %-40s\n\n", scheduleId, scheduleEnabled, sheduleNextRunStr[0:16], *sheduleCronStr)
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyAddShedules.Error.Code
-		errorMessage := responseBodyAddShedules.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyAddShedules addShedulesResponse
+		if responseBodyAddShedules.Error.Code == 0 {
+			json.Unmarshal(bodyText, &responseBodyAddShedules)
+			fmt.Printf("\n%-28s %-10s %-20s %-40s", "SCHEDULE ID", "ENABLED", "NEXT RUN", "CRON")
+			scheduleId := responseBodyAddShedules.Result.Id
+			//sheduleOwn := responseBodyAddShedules.Result.CreatedById
+			sheduleCron := responseBodyAddShedules.Result.Cron
+			cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+			sheduleCronStr, _ := cd.GetDescription(crondescriptor.Full)
+			scheduleEnabled := responseBodyAddShedules.Result.Enabled
+			sheduleNextrunEP := int64(responseBodyAddShedules.Result.Created)
+			sheduleNextRun := time.Unix(sheduleNextrunEP, 0)
+			sheduleNextRunStr := fmt.Sprint(sheduleNextRun)
+			fmt.Printf("\n%-28s %-10t %-20s %-40s\n\n", scheduleId, scheduleEnabled, sheduleNextRunStr[0:16], *sheduleCronStr)
+		} else {
+			errorCode := responseBodyAddShedules.Error.Code
+			errorMessage := responseBodyAddShedules.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-}
-func addScheduleraw(testId int) {
-	apiId, apiSecret := Getapikeys()
-	cronExpression := cronPrompt()
-	client := &http.Client{}
-	data := fmt.Sprintf(`{"cron":"%s","testId":%d}`, cronExpression, testId)
-	reqBodydata := strings.NewReader(data)
-	req, err := http.NewRequest("POST", "https://a.blazemeter.com/api/v4/schedules", reqBodydata)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
