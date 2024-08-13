@@ -1,12 +1,11 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package update
 
 import (
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"github.com/manifoldco/promptui"
@@ -28,8 +27,6 @@ var UpdateCmd = &cobra.Command{
 }
 
 func init() {
-	UpdateCmd.PersistentFlags().IntP("accountid", "a", 0, "Account ID of the resource expected to being updated")
-	UpdateCmd.PersistentFlags().IntP("workspaceid", "w", 0, "Workspace ID of the resource expected to being updated")
 	UpdateCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional]If set, the output will be raw json")
 	// Here you will define your flags and configuration settings.
 
@@ -67,7 +64,7 @@ func defaultAccount() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -82,7 +79,7 @@ func defaultWorkspace() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -90,6 +87,20 @@ func defaultWorkspace() int {
 	}
 	workspaceId := vp.GetInt("workspaceId")
 	return workspaceId
+}
+
+func GetPersonalAccessToken() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err, "\nPlease add your Blazemeter API credentials to bmConfig.yaml file in your home directory")
+	}
+	pat := vp.GetString("pat")
+	return pat
 }
 
 // Functions to support the subcommands
@@ -121,7 +132,7 @@ func updateUserRolesWs() string {
 func updateUserRolesA() string {
 	prompt := promptui.Select{
 		Label:        "Select Account Role:",
-		Items:        []string{"admin", "standard", "user_manager", "billing", "'admin', 'owner'"},
+		Items:        []string{"admin", "standard", "user_manager", "billing", "admin + owner"},
 		HideSelected: true,
 	}
 	_, roleSelected, err := prompt.Run()
@@ -129,17 +140,4 @@ func updateUserRolesA() string {
 		fmt.Printf("Prompt failed %v\n", err)
 	}
 	return roleSelected
-}
-
-func workspaceIdPrompt() string {
-	prompt := promptui.Prompt{
-		Label:       "Provide Workspace/s[separated by commas]",
-		HideEntered: true,
-	}
-	resultWsId, err := prompt.Run()
-	if err != nil {
-		fmt.Printf("Prompt failed %v\n", err)
-		os.Exit(1)
-	}
-	return resultWsId
 }
