@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package update
 
@@ -51,6 +51,8 @@ func init() {
 	oplCmd.Flags().String("hid", "", "Provide the Harbour ID to update")
 	oplCmd.Flags().Bool("add", false, "To add the declared workspace to Private location")
 	oplCmd.Flags().Bool("remove", false, "To remove the declared workspace from Private location")
+	oplCmd.Flags().IntP("workspaceid", "w", 0, "Workspace ID of the resource expected to being updated")
+	oplCmd.Flags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
 }
 
 func updateOplAddWs(workspaceId int, harbourId string) {
