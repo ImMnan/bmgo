@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -45,20 +47,12 @@ var agentsCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		harbourId, _ := cmd.Flags().GetString("hid")
 		switch {
-		case workspaceId == 0 && harbourId != "" && teamId == "" && rawOutput:
-			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId != "" && teamId == "" && rawOutput:
-			getAgentsOplraw(harbourId)
-		case workspaceId != 0 && harbourId == "" && teamId == "" && rawOutput:
-			getAgentsWsraw(workspaceId)
-		case workspaceId == 0 && harbourId == "" && teamId != "" && rawOutput:
-			getAgentsTmraw(teamId)
 		case workspaceId == 0 && harbourId == "" && teamId != "":
-			getAgentsTm(teamId)
+			getAgentsTm(teamId, rawOutput)
 		case workspaceId != 0 && harbourId == "":
-			getAgentsWs(workspaceId)
+			getAgentsWs(workspaceId, rawOutput)
 		case workspaceId != 0 && harbourId != "":
-			getAgentsOpl(workspaceId, harbourId)
+			getAgentsOpl(workspaceId, harbourId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -71,7 +65,7 @@ func init() {
 }
 
 // This function is because the API response for listing agents using harbour id is a struct & not a list/array to iterate over.
-func getAgentsOpl(workspaceId int, harbourId string) {
+func getAgentsOpl(workspaceId int, harbourId string, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
@@ -89,15 +83,78 @@ func getAgentsOpl(workspaceId int, harbourId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyWsAgents oplsResponse
-	json.Unmarshal(bodyText, &responseBodyWsAgents)
-	if responseBodyWsAgents.Error.Code == 0 {
-		for i := 0; i < len(responseBodyWsAgents.Result); i++ {
-			oplId := responseBodyWsAgents.Result[i].Id
-			if oplId == harbourId {
-				fmt.Printf("For OPL/HARBOUR %v & NAMED %v:\n", oplId, responseBodyWsAgents.Result[i].Name)
-				fmt.Printf("\n%-28s %-8s %-18s %-10s\n", "SHIP ID", "STATE", "LAST BEAT", "NAME")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
+	} else {
+		var responseBodyWsAgents oplsResponse
+		json.Unmarshal(bodyText, &responseBodyWsAgents)
+		if responseBodyWsAgents.Error.Code == 0 {
+			for i := 0; i < len(responseBodyWsAgents.Result); i++ {
+				oplId := responseBodyWsAgents.Result[i].Id
+				if oplId == harbourId {
+					fmt.Printf("For OPL/HARBOUR %v & NAMED %v:\n", oplId, responseBodyWsAgents.Result[i].Name)
+					tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+					// Print headers
+					fmt.Fprintln(tabWriter, "SHIP ID\tSTATE\tLAST BEAT\tNAME")
+					//fmt.Printf("\n%-28s %-8s %-18s %-10s\n", "SHIP ID", "STATE", "LAST BEAT", "NAME")
+					for f := 0; f < len(responseBodyWsAgents.Result[i].Ships); f++ {
+						shipId := responseBodyWsAgents.Result[i].Ships[f].Id
+						shipName := responseBodyWsAgents.Result[i].Ships[f].Name
+						shipStatus := responseBodyWsAgents.Result[i].Ships[f].State
+						shipLastHeartBeatEp := int64(responseBodyWsAgents.Result[i].Ships[f].LastHeartBeat)
+						//	shipLastHeartBeat := time.Unix(shipLastHeartBeatEp, 0)
+						if shipLastHeartBeatEp != 0 {
+							shipLastHeartBeatStr := fmt.Sprint(time.Unix(shipLastHeartBeatEp, 0))
+							//	fmt.Printf("\n%-28s %-8s %-18s %-10s", shipId, shipStatus, shipLastHeartBeatStr[0:16], shipName)
+							fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%s\n", shipId, shipStatus, shipLastHeartBeatStr[0:16], shipName)
+						} else {
+							shipLastHeartBeat := shipLastHeartBeatEp
+							//	fmt.Printf("\n%-28s %-8s %-18d %-10s", shipId, shipStatus, shipLastHeartBeat, shipName)
+							fmt.Fprintf(tabWriter, "%s\t%s\t%d\t%s\n", shipId, shipStatus, shipLastHeartBeat, shipName)
+						}
+					}
+					tabWriter.Flush()
+					fmt.Println("-")
+				} else {
+					continue
+				}
+			}
+		} else {
+			errorCode := responseBodyWsAgents.Error.Code
+			errorMessage := responseBodyWsAgents.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
+	}
+}
+func getAgentsWs(workspaceId int, rawOutput bool) {
+	apiId, apiSecret := Getapikeys()
+	workspaceIdStr := strconv.Itoa(workspaceId)
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=0", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.SetBasicAuth(apiId, apiSecret)
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
+	} else {
+		var responseBodyWsAgents oplsResponse
+		json.Unmarshal(bodyText, &responseBodyWsAgents)
+		if responseBodyWsAgents.Error.Code == 0 {
+			for i := 0; i < len(responseBodyWsAgents.Result); i++ {
+				fmt.Printf("For OPL/HARBOUR %v & NAMED %v:\n", responseBodyWsAgents.Result[i].Id, responseBodyWsAgents.Result[i].Name)
+				tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				// Print headers
+				fmt.Fprintln(tabWriter, "SHIP ID\tSTATE\tLAST BEAT\tNAME")
 				for f := 0; f < len(responseBodyWsAgents.Result[i].Ships); f++ {
 					shipId := responseBodyWsAgents.Result[i].Ships[f].Id
 					shipName := responseBodyWsAgents.Result[i].Ships[f].Name
@@ -106,110 +163,21 @@ func getAgentsOpl(workspaceId int, harbourId string) {
 					//	shipLastHeartBeat := time.Unix(shipLastHeartBeatEp, 0)
 					if shipLastHeartBeatEp != 0 {
 						shipLastHeartBeatStr := fmt.Sprint(time.Unix(shipLastHeartBeatEp, 0))
-						fmt.Printf("\n%-28s %-8s %-18s %-10s", shipId, shipStatus, shipLastHeartBeatStr[0:16], shipName)
+						fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%s\n", shipId, shipStatus, shipLastHeartBeatStr[0:16], shipName)
 					} else {
 						shipLastHeartBeat := shipLastHeartBeatEp
-						fmt.Printf("\n%-28s %-8s %-18d %-10s", shipId, shipStatus, shipLastHeartBeat, shipName)
+						fmt.Fprintf(tabWriter, "%s\t%s\t%d\t%s\n", shipId, shipStatus, shipLastHeartBeat, shipName)
 					}
 				}
-				fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-			} else {
-				continue
+				tabWriter.Flush()
+				fmt.Println("\n-")
 			}
+		} else {
+			errorCode := responseBodyWsAgents.Error.Code
+			errorMessage := responseBodyWsAgents.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 		}
-	} else {
-		errorCode := responseBodyWsAgents.Error.Code
-		errorMessage := responseBodyWsAgents.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
 	}
-}
-func getAgentsOplraw(harbourId string) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations/"+harbourId+"/servers", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-func getAgentsWs(workspaceId int) {
-	apiId, apiSecret := Getapikeys()
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=0", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyWsAgents oplsResponse
-	json.Unmarshal(bodyText, &responseBodyWsAgents)
-	if responseBodyWsAgents.Error.Code == 0 {
-		for i := 0; i < len(responseBodyWsAgents.Result); i++ {
-			fmt.Printf("For OPL/HARBOUR %v & NAMED %v:\n", responseBodyWsAgents.Result[i].Id, responseBodyWsAgents.Result[i].Name)
-			fmt.Printf("\n%-28s %-8s %-18s %-10s\n", "SHIP ID", "STATE", "LAST BEAT", "NAME")
-			for f := 0; f < len(responseBodyWsAgents.Result[i].Ships); f++ {
-				shipId := responseBodyWsAgents.Result[i].Ships[f].Id
-				shipName := responseBodyWsAgents.Result[i].Ships[f].Name
-				shipStatus := responseBodyWsAgents.Result[i].Ships[f].State
-				shipLastHeartBeatEp := int64(responseBodyWsAgents.Result[i].Ships[f].LastHeartBeat)
-				//	shipLastHeartBeat := time.Unix(shipLastHeartBeatEp, 0)
-				if shipLastHeartBeatEp != 0 {
-					shipLastHeartBeatStr := fmt.Sprint(time.Unix(shipLastHeartBeatEp, 0))
-					fmt.Printf("\n%-28s %-8s %-18s %-10s", shipId, shipStatus, shipLastHeartBeatStr[0:16], shipName)
-				} else {
-					shipLastHeartBeat := shipLastHeartBeatEp
-					fmt.Printf("\n%-28s %-8s %-18d %-10s", shipId, shipStatus, shipLastHeartBeat, shipName)
-				}
-			}
-			fmt.Println("\n\n---------------------------------------------------------------------------------------------")
-		}
-		fmt.Println("\n-")
-	} else {
-		errorCode := responseBodyWsAgents.Error.Code
-		errorMessage := responseBodyWsAgents.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
-	}
-}
-func getAgentsWsraw(workspaceId int) {
-	apiId, apiSecret := Getapikeys()
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/private-locations?workspaceId="+workspaceIdStr+"&limit=0", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
 
 type rsAgentResponse struct {
@@ -226,7 +194,7 @@ type resultsData struct {
 	HostOs   string `json:"host_os"`
 }
 
-func getAgentsTmraw(teamId string) {
+func getAgentsTm(teamId string, rawOutput bool) {
 	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
@@ -243,40 +211,28 @@ func getAgentsTmraw(teamId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-func getAgentsTm(teamId string) {
-	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.runscope.com/v1/teams/"+teamId+"/agents", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", Bearer)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseBodyTmAgents rsAgentResponse
-	json.Unmarshal(bodyText, &responseBodyTmAgents)
-	if responseBodyTmAgents.Meta.Status == "success" {
-		fmt.Printf("\n%-37s %-6s %-22s %-5s\n", "AGENT ID", "OS", "VERSION", "NAME")
-		for i := 0; i < len(responseBodyTmAgents.Data); i++ {
-			agentIdtm := responseBodyTmAgents.Data[i].Agent_id
-			agentNametm := responseBodyTmAgents.Data[i].Name
-			agentVersiontm := responseBodyTmAgents.Data[i].Version
-			agentHostOstm := responseBodyTmAgents.Data[i].HostOs
-			fmt.Printf("\n%-37s %-6s %-22s %-5s", agentIdtm, agentHostOstm, agentVersiontm, agentNametm)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		fmt.Println(responseBodyTmAgents.Meta.Status)
+		var responseBodyTmAgents rsAgentResponse
+		json.Unmarshal(bodyText, &responseBodyTmAgents)
+		if responseBodyTmAgents.Meta.Status == "success" {
+			fmt.Printf("\n%-37s %-6s %-22s %-5s\n", "AGENT ID", "OS", "VERSION", "NAME")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "AGENT ID\tOS\tVERSION\tNAME")
+			for i := 0; i < len(responseBodyTmAgents.Data); i++ {
+				agentIdtm := responseBodyTmAgents.Data[i].Agent_id
+				agentNametm := responseBodyTmAgents.Data[i].Name
+				agentVersiontm := responseBodyTmAgents.Data[i].Version
+				agentHostOstm := responseBodyTmAgents.Data[i].HostOs
+				//			fmt.Printf("\n%-37s %-6s %-22s %-5s", agentIdtm, agentHostOstm, agentVersiontm, agentNametm)
+				fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%s\n", agentIdtm, agentHostOstm, agentVersiontm, agentNametm)
+			}
+			tabWriter.Flush()
+			fmt.Println("\n-")
+		} else {
+			fmt.Println(responseBodyTmAgents.Meta.Status)
+		}
 	}
 }
