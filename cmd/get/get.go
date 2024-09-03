@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -13,7 +13,7 @@ import (
 // getCmd represents the get command
 var GetCmd = &cobra.Command{
 	Use:   "get",
-	Short: "Use get command for listing the information",
+	Short: "Use get command for listing the resources within Blazemeter",
 	Long: `Use get command to list resources in your Blazemeter account. Use --help throughout subcommands to get an idea of how these commands are structured. Navigate to help.blazemeter.com for detailed info about these resources. 
 	
 	For defaults: Make sure you have a file named bmConfig.yaml specifying the defaults.
@@ -29,10 +29,11 @@ func init() {
 	GetCmd.PersistentFlags().BoolP("raw", "r", false, "[Optional] If set, the output will be raw json")
 	GetCmd.PersistentFlags().Bool("ac", false, "Use default account Id (bmConfig.yaml)")
 	GetCmd.PersistentFlags().Bool("ws", false, "Use default workspace Id (bmConfig.yaml)")
-	GetCmd.PersistentFlags().StringP("teamid", "t", "", "[#] Provide Team UID to list resources within a team")
-	GetCmd.PersistentFlags().Bool("tm", false, "Use default team UId (bmConfig.yaml)")
+	GetCmd.PersistentFlags().StringP("teamid", "t", "", "[>]Provide Team UID to list resources within a team")
+	GetCmd.PersistentFlags().Bool("tm", false, "[>]Use default team UId (bmConfig.yaml)")
 	// and all subcommands, e.g.:
 	// getCmd.PersistentFlags().String("foo", "", "A help for foo")
+
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// getCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
@@ -60,26 +61,13 @@ func Getapikeys() (string, string) {
 	apiSecret := vp.GetString("secret")
 	return apiId, apiSecret
 }
-func GetPersonalAccessToken() string {
-	vp := viper.New()
-	vp.SetConfigName("bmConfig")
-	vp.SetConfigType("yaml")
-	vp.AddConfigPath("$HOME")
-	//	vp.AddConfigPath(".")
-	err := vp.ReadInConfig()
-	if err != nil {
-		log.Fatal(err, "\nPlease add your Blazemeter configurations to bmConfig.yaml file in your home directory")
-	}
-	pat := vp.GetString("pat")
-	return pat
-}
 
 // Getting default account Id in case user uses --ac
 func defaultAccount() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -94,7 +82,7 @@ func defaultWorkspace() int {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//	vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -103,11 +91,24 @@ func defaultWorkspace() int {
 	workspaceId := vp.GetInt("workspaceId")
 	return workspaceId
 }
+func GetPersonalAccessToken() string {
+	vp := viper.New()
+	vp.SetConfigName("bmConfig")
+	vp.SetConfigType("yaml")
+	vp.AddConfigPath("$HOME")
+	//	vp.AddConfigPath(".")
+	err := vp.ReadInConfig()
+	if err != nil {
+		log.Fatal(err, "\nPlease add your Blazemeter API credentials to bmConfig.yaml file in your home directory")
+	}
+	pat := vp.GetString("pat")
+	return pat
+}
 func defaultTeam() string {
 	vp := viper.New()
 	vp.SetConfigName("bmConfig")
 	vp.SetConfigType("yaml")
-	vp.AddConfigPath(".")
+	//vp.AddConfigPath(".")
 	vp.AddConfigPath("$HOME")
 	err := vp.ReadInConfig()
 	if err != nil {
@@ -118,7 +119,6 @@ func defaultTeam() string {
 }
 
 // Helper functions added here
-// Removing duplicates
 func removeDuplicateValuesInt(slice []int) []int {
 	keys := make(map[int]bool)
 	list := []int{}
@@ -134,3 +134,36 @@ func removeDuplicateValuesInt(slice []int) []int {
 	}
 	return list
 }
+
+//func removeDuplicateValues(slice []string) []string {
+//	keys := make(map[string]bool)
+//	list := []string{}
+//	for _, entry := range slice {
+//		if _, value := keys[entry]; !value {
+//			keys[entry] = true
+//			list = append(list, entry)
+//		}
+//	}
+//	return list
+//}
+
+//func workspaceIdPrompt() string {
+//	validate := func(input string) error {
+//		_, err := strconv.ParseFloat(input, 64)
+//		if err != nil {
+//			return errors.New("invalid workspace")
+//		}
+//		return nil
+//	}
+//	prompt := promptui.Prompt{
+//		Label:       "Provide Workspace Id: ",
+//		HideEntered: true,
+//		Validate:    validate,
+//	}
+//	resultWsId, err := prompt.Run()
+//	if err != nil {
+//		fmt.Printf("Prompt failed %v\n", err)
+//		os.Exit(1)
+//	}
+//	return resultWsId
+//}
