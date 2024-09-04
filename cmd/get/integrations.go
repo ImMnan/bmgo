@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -30,14 +30,7 @@ var integrationsCmd = &cobra.Command{
 			teamId, _ = cmd.Flags().GetString("teamid")
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
-		if rawOutput {
-			getIntegrationsTmraw(teamId)
-		} else if !rawOutput {
-			getIntegrationsTm(teamId)
-		} else {
-			cmd.Help()
-		}
-
+		getIntegrationsTm(teamId, rawOutput)
 	},
 }
 
@@ -55,7 +48,7 @@ type integrationsData struct {
 	Description string `json:"description"`
 }
 
-func getIntegrationsTm(teamId string) {
+func getIntegrationsTm(teamId string, rawOutput bool) {
 	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/integrations", nil)
@@ -72,42 +65,26 @@ func getIntegrationsTm(teamId string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseObjectIntegrations integrationsResponse
-	json.Unmarshal(bodyText, &responseObjectIntegrations)
-	if responseObjectIntegrations.Error.Code == 0 {
-		//	fmt.Printf("\n%-40s %-15s %-10s\n", "UUID", "TYPE", "DESCRIPTION")
-		for i := 0; i < len(responseObjectIntegrations.Data); i++ {
-			integrationId := responseObjectIntegrations.Data[i].Uuid
-			integrationsType := responseObjectIntegrations.Data[i].Type
-			integrationsDesc := responseObjectIntegrations.Data[i].Description
-			//	fmt.Printf("\n%-40s %-15s %-10s\n", integrationId, integrationsType, integrationsDesc)
-			fmt.Printf("\nUUID: %s\nTYPE: %s\nDESCRIPTION: %s\n", integrationId, integrationsType, integrationsDesc)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseObjectIntegrations.Error.Status
-		errorMessage := responseObjectIntegrations.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseObjectIntegrations integrationsResponse
+		json.Unmarshal(bodyText, &responseObjectIntegrations)
+		if responseObjectIntegrations.Error.Code == 0 {
+			//	fmt.Printf("\n%-40s %-15s %-10s\n", "UUID", "TYPE", "DESCRIPTION")
+			for i := 0; i < len(responseObjectIntegrations.Data); i++ {
+				integrationId := responseObjectIntegrations.Data[i].Uuid
+				integrationsType := responseObjectIntegrations.Data[i].Type
+				integrationsDesc := responseObjectIntegrations.Data[i].Description
+				//	fmt.Printf("\n%-40s %-15s %-10s\n", integrationId, integrationsType, integrationsDesc)
+				fmt.Printf("\nUUID: %s\nTYPE: %s\nDESCRIPTION: %s\n", integrationId, integrationsType, integrationsDesc)
+			}
+			fmt.Println("\n-")
+		} else {
+			errorCode := responseObjectIntegrations.Error.Status
+			errorMessage := responseObjectIntegrations.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
 
-}
-func getIntegrationsTmraw(teamId string) {
-	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/integrations", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", Bearer)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
