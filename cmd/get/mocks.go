@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -35,10 +37,8 @@ var mocksCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		serviceId, _ := cmd.Flags().GetInt("svc")
 		switch {
-		case (workspaceId != 0 || serviceId != 0) && rawOutput:
-			getMocksWsraw(workspaceId, serviceId)
-		case (workspaceId != 0 || serviceId != 0) && !rawOutput:
-			getMocksWs(workspaceId, serviceId)
+		case (workspaceId != 0 || serviceId != 0):
+			getMocksWs(workspaceId, serviceId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -61,7 +61,7 @@ type mockResult struct {
 	ServiceName string `json:"serviceName"`
 }
 
-func getMocksWs(workspaceId, serviceId int) {
+func getMocksWs(workspaceId, serviceId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
@@ -91,53 +91,29 @@ func getMocksWs(workspaceId, serviceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseBodyMocks mocksResponse
-	json.Unmarshal(bodyText, &responseBodyMocks)
-	if len(responseBodyMocks.Result) >= 1 {
-		fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
-		for i := 0; i < len(responseBodyMocks.Result); i++ {
-			mockId := responseBodyMocks.Result[i].Id
-			mockName := responseBodyMocks.Result[i].Name
-			serviceId := responseBodyMocks.Result[i].ServiceId
-			serviceName := responseBodyMocks.Result[i].ServiceName
-			fmt.Printf("\n%-10d %-35s %-10d %-15s", mockId, mockName, serviceId, serviceName)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := 404
-		fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
-	}
-}
-func getMocksWsraw(workspaceId, serviceId int) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	var req *http.Request
-	var err error
-	if serviceId != 0 {
-		serviceIdStr := strconv.Itoa(serviceId)
-		//	serviceId := serviceIdPrompt()
-		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks?serviceId="+serviceIdStr, nil)
-		if err != nil {
-			log.Fatal(err)
+		var responseBodyMocks mocksResponse
+		json.Unmarshal(bodyText, &responseBodyMocks)
+		if len(responseBodyMocks.Result) >= 1 {
+			//fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "ID\tNAME\tSERVICE\tSERVICE_NAME")
+			for i := 0; i < len(responseBodyMocks.Result); i++ {
+				mockId := responseBodyMocks.Result[i].Id
+				mockName := responseBodyMocks.Result[i].Name
+				serviceId := responseBodyMocks.Result[i].ServiceId
+				serviceName := responseBodyMocks.Result[i].ServiceName
+				//		fmt.Printf("\n%-10d %-35s %-10d %-15s", mockId, mockName, serviceId, serviceName)
+				fmt.Fprintf(tabWriter, "%d\t%s\t%d\t%s\n", mockId, mockName, serviceId, serviceName)
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := 404
+			fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
 		}
-	} else {
-		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/service-mocks", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
-	req.Header.Set("accept", "*/*")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
