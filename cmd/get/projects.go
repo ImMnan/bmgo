@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -41,14 +43,10 @@ var projectsCmd = &cobra.Command{
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
-		case workspaceId == 0 && accountId != 0 && rawOutput:
-			getProjectsAraw(accountId)
-		case workspaceId != 0 && accountId == 0 && rawOutput:
-			getProjectsWsraw(workspaceId)
-		case workspaceId == 0 && accountId != 0 && !rawOutput:
-			getProjectsA(accountId)
-		case workspaceId != 0 && accountId == 0 && !rawOutput:
-			getProjectsWs(workspaceId)
+		case workspaceId == 0 && accountId != 0:
+			getProjectsA(accountId, rawOutput)
+		case workspaceId != 0 && accountId == 0:
+			getProjectsWs(workspaceId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -59,8 +57,9 @@ func init() {
 	GetCmd.AddCommand(projectsCmd)
 }
 
-type projectsResponse struct {
+type results struct {
 	Result []projectsResult `json:"result"`
+	Error  errorResult      `json:"error"`
 }
 type projectsResult struct {
 	Id         int    `json:"id"`
@@ -69,7 +68,7 @@ type projectsResult struct {
 	Created    int    `json:"created"`
 }
 
-func getProjectsWs(workspaceId int) {
+func getProjectsWs(workspaceId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	workspaceIdstr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
@@ -87,41 +86,33 @@ func getProjectsWs(workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyProjectsWs projectsResponse
-	json.Unmarshal(bodyText, &responseBodyProjectsWs)
-	fmt.Printf("\n%-10s %-25s %-8s %-20s\n", "ID", "NAME", "TESTS", "CREATED")
-	for i := 0; i < len(responseBodyProjectsWs.Result); i++ {
-		projectId := responseBodyProjectsWs.Result[i].Id
-		projectName := responseBodyProjectsWs.Result[i].Name
-		projectTests := responseBodyProjectsWs.Result[i].TestsCount
-		pCreatedEpoch := int64(responseBodyProjectsWs.Result[i].Created)
-		projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
-		fmt.Printf("\n%-10v %-25s %-8v %-20v", projectId, projectName, projectTests, projectCreated[0:10])
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
+	} else {
+		var response results
+		json.Unmarshal(bodyText, &response)
+		if response.Error.Code == 0 {
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(tabWriter, "ID\tNAME\tTESTS\tCREATED")
+			for i := 0; i < len(response.Result); i++ {
+				projectId := response.Result[i].Id
+				projectName := response.Result[i].Name
+				projectTests := response.Result[i].TestsCount
+				pCreatedEpoch := int64(response.Result[i].Created)
+				projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
+				fmt.Fprintf(tabWriter, "%d\t%s\t%d\t%s\n", projectId, projectName, projectTests, projectCreated[0:10])
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := response.Error.Code
+			errorMessage := response.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-	fmt.Println("\n-")
-}
-func getProjectsWsraw(workspaceId int) {
-	apiId, apiSecret := Getapikeys()
-	workspaceIdstr := strconv.Itoa(workspaceId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?workspaceId="+workspaceIdstr+"&limit=0", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
 
-func getProjectsA(accountId int) {
+func getProjectsA(accountId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	accountIdstr := strconv.Itoa(accountId)
 	client := &http.Client{}
@@ -139,36 +130,28 @@ func getProjectsA(accountId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyProjectsA projectsResponse
-	json.Unmarshal(bodyText, &responseBodyProjectsA)
-	fmt.Printf("\n%-10s %-25s %-8s %-10s\n", "ID", "NAME", "TESTS", "CREATED")
-	for i := 0; i < len(responseBodyProjectsA.Result); i++ {
-		projectId := responseBodyProjectsA.Result[i].Id
-		projectName := responseBodyProjectsA.Result[i].Name
-		projectTests := responseBodyProjectsA.Result[i].TestsCount
-		pCreatedEpoch := int64(responseBodyProjectsA.Result[i].Created)
-		projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
-		fmt.Printf("\n%-10v %-25s %-8v %-10v", projectId, projectName, projectTests, projectCreated[0:10])
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
+	} else {
+		var response results
+		json.Unmarshal(bodyText, &response)
+		if response.Error.Code == 0 {
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(tabWriter, "ID\tNAME\tTESTS\tCREATED")
+			for i := 0; i < len(response.Result); i++ {
+				projectId := response.Result[i].Id
+				projectName := response.Result[i].Name
+				projectTests := response.Result[i].TestsCount
+				pCreatedEpoch := int64(response.Result[i].Created)
+				projectCreated := fmt.Sprint(time.Unix(pCreatedEpoch, 0))
+				fmt.Fprintf(tabWriter, "%d\t%s\t%d\t%s\n", projectId, projectName, projectTests, projectCreated[0:10])
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := response.Error.Code
+			errorMessage := response.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-	fmt.Println("\n-")
-}
-func getProjectsAraw(accountId int) {
-	apiId, apiSecret := Getapikeys()
-	accountIdstr := strconv.Itoa(accountId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/projects?accountId="+accountIdstr+"&limit=0", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
