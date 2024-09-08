@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/jsuar/go-cron-descriptor/pkg/crondescriptor"
 	"github.com/spf13/cobra"
@@ -41,14 +43,10 @@ var schedulesCmd = &cobra.Command{
 		}
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		switch {
-		case (accountId != 0) && (workspaceId == 0) && rawOutput:
-			getShedulesAraw(accountId)
-		case (accountId == 0) && (workspaceId != 0) && rawOutput:
-			getShedulesWsraw(workspaceId)
-		case (accountId != 0) && (workspaceId == 0) && !rawOutput:
-			getShedulesA(accountId)
-		case (accountId == 0) && (workspaceId != 0) && !rawOutput:
-			getShedulesWs(workspaceId)
+		case (accountId != 0) && (workspaceId == 0):
+			getShedulesA(accountId, rawOutput)
+		case (accountId == 0) && (workspaceId != 0):
+			getShedulesWs(workspaceId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -72,7 +70,7 @@ type scheduleResult struct {
 	Enabled     bool   `json:"enabled"`
 }
 
-func getShedulesA(accountId int) {
+func getShedulesA(accountId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	accountIdStr := strconv.Itoa(accountId)
 	client := &http.Client{}
@@ -90,52 +88,39 @@ func getShedulesA(accountId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyShedules shedulesResponse
-	json.Unmarshal(bodyText, &responseBodyShedules)
-	if responseBodyShedules.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
-		for i := 0; i < len(responseBodyShedules.Result); i++ {
-			sheduleId := responseBodyShedules.Result[i].Id
-			scheduleTest := responseBodyShedules.Result[i].TestId
-			sheduleOwn := responseBodyShedules.Result[i].CreatedById
-			sheduleCron := responseBodyShedules.Result[i].Cron
-			sheduleEnabled := responseBodyShedules.Result[i].Enabled
-			//	sheduleNextRun := responseBodyShedules.Result[i].Next
-			cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-			fullDescription, _ := cd.GetDescription(crondescriptor.Full)
-			fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyShedules.Error.Code
-		errorMessage := responseBodyShedules.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyShedules shedulesResponse
+		json.Unmarshal(bodyText, &responseBodyShedules)
+		if responseBodyShedules.Error.Code == 0 {
+			//	fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "TEST\tOWNER\tENABLED\tSCHEDULE_ID\tCRON")
+			for i := 0; i < len(responseBodyShedules.Result); i++ {
+				sheduleId := responseBodyShedules.Result[i].Id
+				scheduleTest := responseBodyShedules.Result[i].TestId
+				sheduleOwn := responseBodyShedules.Result[i].CreatedById
+				sheduleCron := responseBodyShedules.Result[i].Cron
+				sheduleEnabled := responseBodyShedules.Result[i].Enabled
+				//	sheduleNextRun := responseBodyShedules.Result[i].Next
+				cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+				fullDescription, _ := cd.GetDescription(crondescriptor.Full)
+				//	fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
+				fmt.Fprintf(tabWriter, "%d\t%d\t%t\t%s\t%s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := responseBodyShedules.Error.Code
+			errorMessage := responseBodyShedules.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-
 }
-func getShedulesAraw(accountId int) {
-	apiId, apiSecret := Getapikeys()
 
-	accountIdStr := strconv.Itoa(accountId)
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/schedules?accountId="+accountIdStr+"&limit=500", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
-}
-
-func getShedulesWs(workspaceId int) {
+func getShedulesWs(workspaceId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	wprkspaceIdStr := strconv.Itoa(workspaceId)
 
@@ -154,47 +139,34 @@ func getShedulesWs(workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var responseBodyShedulesWs shedulesResponse
-	json.Unmarshal(bodyText, &responseBodyShedulesWs)
-	if responseBodyShedulesWs.Error.Code == 0 {
-		fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
-		for i := 0; i < len(responseBodyShedulesWs.Result); i++ {
-			sheduleId := responseBodyShedulesWs.Result[i].Id
-			scheduleTest := responseBodyShedulesWs.Result[i].TestId
-			sheduleOwn := responseBodyShedulesWs.Result[i].CreatedById
-			sheduleCron := responseBodyShedulesWs.Result[i].Cron
-			sheduleEnabled := responseBodyShedulesWs.Result[i].Enabled
-			//	sheduleNextRun := responseBodyShedules.Result[i].Next
-			cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
-			fullDescription, _ := cd.GetDescription(crondescriptor.Full)
-			fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyShedulesWs.Error.Code
-		errorMessage := responseBodyShedulesWs.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		var responseBodyShedulesWs shedulesResponse
+		json.Unmarshal(bodyText, &responseBodyShedulesWs)
+		if responseBodyShedulesWs.Error.Code == 0 {
+			//	fmt.Printf("\n%-10s %-10s %-8s %-28s %-50s \n", "TEST", "OWNER", "ENABLED", "SCHEDULE ID", "CRON")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "TEST\tOWNER\tENABLED\tSCHEDULE_ID\tCRON")
+			for i := 0; i < len(responseBodyShedulesWs.Result); i++ {
+				sheduleId := responseBodyShedulesWs.Result[i].Id
+				scheduleTest := responseBodyShedulesWs.Result[i].TestId
+				sheduleOwn := responseBodyShedulesWs.Result[i].CreatedById
+				sheduleCron := responseBodyShedulesWs.Result[i].Cron
+				sheduleEnabled := responseBodyShedulesWs.Result[i].Enabled
+				//	sheduleNextRun := responseBodyShedules.Result[i].Next
+				cd, _ := crondescriptor.NewCronDescriptor(sheduleCron)
+				fullDescription, _ := cd.GetDescription(crondescriptor.Full)
+				//	fmt.Printf("\n%-10v %-10v %-8v %-28s %-50s ", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
+				fmt.Fprintf(tabWriter, "%d\t%d\t%t\t%s\t%s\n", scheduleTest, sheduleOwn, sheduleEnabled, sheduleId, *fullDescription)
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := responseBodyShedulesWs.Error.Code
+			errorMessage := responseBodyShedulesWs.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 	}
-}
-
-func getShedulesWsraw(workspaceId int) {
-	apiId, apiSecret := Getapikeys()
-	wprkspaceIdStr := strconv.Itoa(workspaceId)
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/schedules?workspaceId="+wprkspaceIdStr+"&limit=1000", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
