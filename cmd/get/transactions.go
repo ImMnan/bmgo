@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 )
@@ -35,10 +37,8 @@ var transactionsCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		serviceId, _ := cmd.Flags().GetInt("svc")
 		switch {
-		case (workspaceId != 0 || serviceId != 0) && rawOutput:
-			getTransactionsWsraw(workspaceId, serviceId)
-		case (workspaceId != 0 || serviceId != 0) && !rawOutput:
-			getTransactionsWs(workspaceId, serviceId)
+		case (workspaceId != 0 || serviceId != 0):
+			getTransactionsWs(workspaceId, serviceId, rawOutput)
 		default:
 			cmd.Help()
 		}
@@ -61,7 +61,7 @@ type transactionsResult struct {
 	ServiceName string `json:"serviceName"`
 }
 
-func getTransactionsWs(workspaceId, serviceId int) {
+func getTransactionsWs(workspaceId, serviceId int, rawOutput bool) {
 	apiId, apiSecret := Getapikeys()
 	client := &http.Client{}
 	workspaceIdStr := strconv.Itoa(workspaceId)
@@ -90,52 +90,29 @@ func getTransactionsWs(workspaceId, serviceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//	fmt.Printf("%s\n", bodyText)
-	var responseBodyTransactions transactionsResponse
-	json.Unmarshal(bodyText, &responseBodyTransactions)
-	if len(responseBodyTransactions.Result) >= 1 {
-		fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
-		for i := 0; i < len(responseBodyTransactions.Result); i++ {
-			transId := responseBodyTransactions.Result[i].Id
-			transName := responseBodyTransactions.Result[i].Name
-			serviceId := responseBodyTransactions.Result[i].ServiceId
-			serviceName := responseBodyTransactions.Result[i].ServiceName
-			fmt.Printf("\n%-10d %-35s %-10d %-15s", transId, transName, serviceId, serviceName)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := 404
-		fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
-	}
-}
-func getTransactionsWsraw(workspaceId, serviceId int) {
-	apiId, apiSecret := Getapikeys()
-	client := &http.Client{}
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	var req *http.Request
-	var err error
-	if serviceId != 0 {
-		serviceIdStr := strconv.Itoa(serviceId)
-		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?serviceId="+serviceIdStr+"&limit=-1", nil)
-		if err != nil {
-			log.Fatal(err)
+		var responseBodyTransactions transactionsResponse
+		json.Unmarshal(bodyText, &responseBodyTransactions)
+		if len(responseBodyTransactions.Result) >= 1 {
+			//	fmt.Printf("\n%-10s %-35s %-10s %-15s\n", "ID", "NAME", "SERVICE", "SERVICE NAME")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "ID\tNAME\tSERVICE\tSERVICE_NAME")
+			for i := 0; i < len(responseBodyTransactions.Result); i++ {
+				transId := responseBodyTransactions.Result[i].Id
+				transName := responseBodyTransactions.Result[i].Name
+				serviceId := responseBodyTransactions.Result[i].ServiceId
+				serviceName := responseBodyTransactions.Result[i].ServiceName
+				//	fmt.Printf("\n%-10d %-35s %-10d %-15s", transId, transName, serviceId, serviceName)
+				fmt.Fprintf(tabWriter, "%d\t%s\t%d\t%s\n", transId, transName, serviceId, serviceName)
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := 404
+			fmt.Printf("\nError code: %v\nError Message: No Transactions found in workspace %v, provide correct workspace Id.\n\n", errorCode, workspaceId)
 		}
-	} else {
-		req, err = http.NewRequest("GET", "https://mock.blazemeter.com/api/v1/workspaces/"+workspaceIdStr+"/transactions?limit=-1", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
-	req.Header.Set("accept", "*/*")
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
