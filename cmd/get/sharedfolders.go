@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2024 Manan Patel - github.com/immnan
 */
 package get
 
@@ -9,7 +9,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
+	"text/tabwriter"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -31,11 +33,9 @@ var sharedfoldersCmd = &cobra.Command{
 		} else {
 			workspaceId, _ = cmd.Flags().GetInt("workspaceid")
 		}
-		rawrawOutput, _ := cmd.Flags().GetBool("raw")
-		if workspaceId != 0 && rawrawOutput {
-			getSharedFolderWsRaw(workspaceId)
-		} else if workspaceId != 0 {
-			getSharedFolderWs(workspaceId)
+		rawOutput, _ := cmd.Flags().GetBool("raw")
+		if workspaceId != 0 {
+			getSharedFolderWs(workspaceId, rawOutput)
 		} else {
 			cmd.Help()
 		}
@@ -58,7 +58,7 @@ type sfoldersResult struct {
 	Hidden  bool   `json:"hidden"`
 }
 
-func getSharedFolderWs(workspaceId int) {
+func getSharedFolderWs(workspaceId int, rawOutput bool) {
 	workspaceIdStr := strconv.Itoa(workspaceId)
 	client := &http.Client{}
 	apiId, apiSecret := Getapikeys()
@@ -76,45 +76,32 @@ func getSharedFolderWs(workspaceId int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//fmt.Printf("%s\n", bodyText)
-	var responseBodyWsSfolders sfolderResponseWS
-	json.Unmarshal(bodyText, &responseBodyWsSfolders)
-	if responseBodyWsSfolders.Error.Code == 0 {
-		fmt.Printf("\n%-27s %-30s %-18s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
-		for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
-			sFolderId := responseBodyWsSfolders.Result[i].Id
-			sFolderName := responseBodyWsSfolders.Result[i].Name
-			sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
-			sFHidden := responseBodyWsSfolders.Result[i].Hidden
-			epochCreated := fmt.Sprint(time.Unix(sFolderCreated, 0))
-			fmt.Printf("\n%-27s %-30s %-18v %-10t", sFolderId, sFolderName, epochCreated[0:16], sFHidden)
-		}
-		fmt.Println("\n-")
+	if rawOutput {
+		fmt.Printf("%s\n", bodyText)
 	} else {
-		errorCode := responseBodyWsSfolders.Error.Code
-		errorMessage := responseBodyWsSfolders.Error.Message
-		fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
-	}
+		var responseBodyWsSfolders sfolderResponseWS
+		json.Unmarshal(bodyText, &responseBodyWsSfolders)
+		if responseBodyWsSfolders.Error.Code == 0 {
+			//fmt.Printf("\n%-27s %-30s %-18s %-10s", "ID", "NAME", "CREATED ON", "HIDDEN")
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			// Print headers
+			fmt.Fprintln(tabWriter, "ID\tNAME\tCREATED_ON\tHIDDEN")
+			for i := 0; i < len(responseBodyWsSfolders.Result); i++ {
+				sFolderId := responseBodyWsSfolders.Result[i].Id
+				sFolderName := responseBodyWsSfolders.Result[i].Name
+				sFolderCreated := int64(responseBodyWsSfolders.Result[i].Created)
+				sFHidden := responseBodyWsSfolders.Result[i].Hidden
+				epochCreated := fmt.Sprint(time.Unix(sFolderCreated, 0))
+				//	fmt.Printf("\n%-27s %-30s %-18v %-10t", sFolderId, sFolderName, epochCreated[0:16], sFHidden)
+				fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%t\n", sFolderId, sFolderName, epochCreated[0:16], sFHidden)
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := responseBodyWsSfolders.Error.Code
+			errorMessage := responseBodyWsSfolders.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
 
-}
-
-func getSharedFolderWsRaw(workspaceId int) {
-	workspaceIdStr := strconv.Itoa(workspaceId)
-	client := &http.Client{}
-	apiId, apiSecret := Getapikeys()
-	req, err := http.NewRequest("GET", "https://a.blazemeter.com/api/v4/folders?workspaceId="+workspaceIdStr+"&limit=200", nil)
-	if err != nil {
-		log.Fatal(err)
 	}
-	req.SetBasicAuth(apiId, apiSecret)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s\n", bodyText)
 }
