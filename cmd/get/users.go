@@ -58,13 +58,14 @@ var usersCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		disabledUsers, _ := cmd.Flags().GetBool("disabled")
 		csvOutput, _ := cmd.Flags().GetBool("csv")
+		pages, _ := cmd.Flags().GetInt("pages")
 		switch {
 		case accountId != 0 && workspaceId == 0 && teamId == "":
 			getUsersA(accountId, disabledUsers, rawOutput, csvOutput)
 		case accountId == 0 && workspaceId != 0 && teamId == "":
 			getUsersWS(workspaceId, disabledUsers, rawOutput, csvOutput)
 		case accountId == 0 && workspaceId == 0 && teamId != "":
-			getUsersTm(teamId, rawOutput, csvOutput)
+			getUsersTm(teamId, rawOutput, csvOutput, pages)
 		default:
 			cmd.Help()
 		}
@@ -75,6 +76,7 @@ func init() {
 	GetCmd.AddCommand(usersCmd)
 	usersCmd.Flags().Bool("disabled", false, "[Optional] will show disabled users only")
 	usersCmd.Flags().Bool("csv", false, "This will output in csv format")
+	usersCmd.Flags().IntP("pages", "p", 1, "Total pages of output, 1 page only contains 200 max entries for this")
 }
 
 type usersResponse struct {
@@ -187,7 +189,7 @@ func getUsersWS(workspaceId int, disabledUsers, rawOutput, csvOutput bool) {
 	var req *http.Request
 	var err error
 	if disabledUsers {
-		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-500&enabled=false", nil)
+		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-1&enabled=false", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -253,58 +255,58 @@ func getUsersWS(workspaceId int, disabledUsers, rawOutput, csvOutput bool) {
 	}
 }
 
-func getUsersTm(teamId string, rawOutput, csvOutput bool) {
+func getUsersTm(teamId string, rawOutput, csvOutput bool, pages int) {
 	Bearer := fmt.Sprintf("Bearer %v", GetPersonalAccessToken())
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/people", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Set("Authorization", Bearer)
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	bodyText, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if rawOutput {
-		fmt.Printf("%s\n", bodyText)
+	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	// Print headers
+	if csvOutput {
+		fmt.Fprintln(tabWriter, "UUID,ROLES,NAME,EMAIL,LAST_ACCESS")
 	} else {
-		var responseBodyTmUsers usersResponse
-		json.Unmarshal(bodyText, &responseBodyTmUsers)
-		if responseBodyTmUsers.Error.Status == 0 {
-			//	fmt.Printf("\n%-38s %-14s %-28s %-10s\n", "UUID", "ROLES", "NAME", "EMAIL")
-			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			// Print headers
-			if csvOutput {
-				fmt.Fprintln(tabWriter, "UUID,ROLES,NAME,EMAIL,LAST_ACCESS")
-			} else {
-				fmt.Fprintln(tabWriter, "UUID\tROLES\tNAME\tEMAIL\tLAST_ACCESS")
-			}
-			for i := 0; i < len(responseBodyTmUsers.Data); i++ {
-				userIdTm := responseBodyTmUsers.Data[i].Uuid
-				userNameTm := responseBodyTmUsers.Data[i].Name
-				userEmailTm := responseBodyTmUsers.Data[i].Email
-				userRoleTm := responseBodyTmUsers.Data[i].Role_name
-				lastAccessedTm := responseBodyTmUsers.Data[i].Last_login_at
-				//	userCreatedTm := responseBodyTmUsers.Data[i].Created_at
-				//fmt.Printf("\n%-38s %-14s %-28s %-10s", userIdTm, userRoleTm, userNameTm, userEmailTm)
-				if csvOutput {
-					fmt.Printf("%s,%s,%s,%s,%s\n", userIdTm, userRoleTm, userNameTm, userEmailTm, lastAccessedTm[5:16])
-				} else {
-					fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%s\t%s\n", userIdTm, userRoleTm, userNameTm, userEmailTm, lastAccessedTm[5:16])
-				}
-			}
-			tabWriter.Flush()
-			fmt.Println("-")
+		fmt.Fprintln(tabWriter, "UUID\tROLES\tNAME\tEMAIL\tLAST_ACCESS")
+	}
+	for i := 1; i <= pages; i++ {
+		req, err := http.NewRequest("GET", "https://api.runscope.com/teams/"+teamId+"/people?count=200&page="+strconv.Itoa(i), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		req.Header.Set("Authorization", Bearer)
+		resp, err := client.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer resp.Body.Close()
+		bodyText, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if rawOutput {
+			fmt.Printf("%s\n", bodyText)
 		} else {
-			errorCode := responseBodyTmUsers.Error.Status
-			errorMessage := responseBodyTmUsers.Error.Message
-			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+			var responseBodyTmUsers usersResponse
+			json.Unmarshal(bodyText, &responseBodyTmUsers)
+			if responseBodyTmUsers.Error.Status == 0 {
+
+				for i := 0; i < len(responseBodyTmUsers.Data); i++ {
+					userIdTm := responseBodyTmUsers.Data[i].Uuid
+					userNameTm := responseBodyTmUsers.Data[i].Name
+					userEmailTm := responseBodyTmUsers.Data[i].Email
+					userRoleTm := responseBodyTmUsers.Data[i].Role_name
+					lastAccessedTm := responseBodyTmUsers.Data[i].Last_login_at
+					//	userCreatedTm := responseBodyTmUsers.Data[i].Created_at
+					//fmt.Printf("\n%-38s %-14s %-28s %-10s", userIdTm, userRoleTm, userNameTm, userEmailTm)
+					if csvOutput {
+						fmt.Printf("%s,%s,%s,%s,%s\n", userIdTm, userRoleTm, userNameTm, userEmailTm, lastAccessedTm)
+					} else {
+						fmt.Fprintf(tabWriter, "%s\t%s\t%s\t%s\t%s\n", userIdTm, userRoleTm, userNameTm, userEmailTm, lastAccessedTm)
+					}
+				}
+				tabWriter.Flush()
+			} else {
+				errorCode := responseBodyTmUsers.Error.Status
+				errorMessage := responseBodyTmUsers.Error.Message
+				fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+			}
 		}
 	}
-	//fmt.Printf("%s\n", bodyText)
 }
