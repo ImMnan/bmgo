@@ -26,12 +26,14 @@ var usersCmd = &cobra.Command{
 	For example: [bmgo get -w <workspace id> users] OR
 	             [bmgo get -a <account id> users] OR
 		     [bmgo get -t <team id> users] OR
+			     [bmgo get -t <team id> users --pages <page_number>] OR
 	             [bmgo get -w <workspace id> users --disabled] OR
 	             [bmgo get -a <account id> users --disabled]
 
     For default: [bmgo get --ws users] OR
 	             [bmgo get --ac users] OR 
 	             [bmgo get --tm users] OR
+				 [bmgo get --tm users --pages <page_number>] OR
 	             [bmgo get --ws users --disabled] OR
 	             [bmgo get --ac users --disabled]`,
 	Run: func(cmd *cobra.Command, args []string) {
