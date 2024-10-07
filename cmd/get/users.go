@@ -25,17 +25,19 @@ var usersCmd = &cobra.Command{
 	
 	For example: [bmgo get -w <workspace id> users] OR
 	             [bmgo get -a <account id> users] OR
-		     [bmgo get -t <team id> users] OR
-			     [bmgo get -t <team id> users --pages <page_number>] OR
+		     [bmgo get -a <account id> users --old] OR
+                 [bmgo get -t <team id> users] OR
 	             [bmgo get -w <workspace id> users --disabled] OR
-	             [bmgo get -a <account id> users --disabled]
+	             [bmgo get -a <account id> users --disabled] OR
+		     [bmgo get -a <account id> users --disabled --old]
 
     For default: [bmgo get --ws users] OR
 	             [bmgo get --ac users] OR 
-	             [bmgo get --tm users] OR
-				 [bmgo get --tm users --pages <page_number>] OR
+	             [bmgo get --ac users --old] OR	             
+                   [bmgo get --tm users] OR				 
 	             [bmgo get --ws users --disabled] OR
-	             [bmgo get --ac users --disabled]`,
+	             [bmgo get --ac users --disabled] OR
+	             [bmgo get --ac users --disabled --old]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
@@ -60,10 +62,11 @@ var usersCmd = &cobra.Command{
 		rawOutput, _ := cmd.Flags().GetBool("raw")
 		disabledUsers, _ := cmd.Flags().GetBool("disabled")
 		csvOutput, _ := cmd.Flags().GetBool("csv")
+		oldOutput, _ := cmd.Flags().GetBool("old")
 		pages, _ := cmd.Flags().GetInt("pages")
 		switch {
 		case accountId != 0 && workspaceId == 0 && teamId == "":
-			getUsersA(accountId, disabledUsers, rawOutput, csvOutput)
+			getUsersA(accountId, disabledUsers, rawOutput, csvOutput, oldOutput)
 		case accountId == 0 && workspaceId != 0 && teamId == "":
 			getUsersWS(workspaceId, disabledUsers, rawOutput, csvOutput)
 		case accountId == 0 && workspaceId == 0 && teamId != "":
@@ -78,6 +81,7 @@ func init() {
 	GetCmd.AddCommand(usersCmd)
 	usersCmd.Flags().Bool("disabled", false, "[Optional] will show disabled users only")
 	usersCmd.Flags().Bool("csv", false, "This will output in csv format")
+	usersCmd.Flags().Bool("old", false, "This will generate output for older accounts")
 	usersCmd.Flags().IntP("pages", "p", 1, "Total pages of output, 1 page only contains 200 max entries for this")
 }
 
@@ -104,7 +108,7 @@ type usersData struct {
 	Last_login_at string `json:"last_login_at"`
 }
 
-func getUsersA(accountId int, disabledUsers, rawOutput, csvOutput bool) {
+func getUsersA(accountId int, disabledUsers, rawOutput, csvOutput, oldOutput bool) {
 	apiId, apiSecret := Getapikeys()
 
 	client := &http.Client{}
@@ -134,7 +138,7 @@ func getUsersA(accountId int, disabledUsers, rawOutput, csvOutput bool) {
 	}
 	if rawOutput {
 		fmt.Printf("%s\n", bodyText)
-	} else {
+	} else if !oldOutput {
 		var responseBodyAUsers usersResponse
 		json.Unmarshal(bodyText, &responseBodyAUsers)
 		if responseBodyAUsers.Error.Code == 0 {
@@ -162,6 +166,45 @@ func getUsersA(accountId int, disabledUsers, rawOutput, csvOutput bool) {
 				var lastAccessStr string
 				lastAccessEp := int64(responseBodyAUsers.Result[i].LastAccess)
 				// This is because there are epoch values as "0", it converts to a time on 1970s, so we want to condition that here:
+				if lastAccessEp != 0 {
+					lastAccess := time.Unix(lastAccessEp, 0)
+					lastAccessStr = fmt.Sprint(lastAccess)
+				} else {
+					lastAccessStr = "NA"
+				}
+				if csvOutput {
+					fmt.Printf("%d,%s,%t,%s,%s,%s\n", userIdWS, displayNameWS, enabledUserWS, totalRoles, emailIdWS, lastAccessStr)
+				} else {
+					fmt.Fprintf(tabWriter, "%d\t%s\t%t\t%s\t%s\t%s\n", userIdWS, displayNameWS, enabledUserWS, totalRoles, emailIdWS, lastAccessStr)
+				}
+			}
+			tabWriter.Flush()
+			fmt.Println("-")
+		} else {
+			errorCode := responseBodyAUsers.Error.Code
+			errorMessage := responseBodyAUsers.Error.Message
+			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+		}
+	} else {
+		var responseBodyAUsers OldAUsersResponse
+		json.Unmarshal(bodyText, &responseBodyAUsers)
+		if responseBodyAUsers.Error.Code == 0 {
+			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			if csvOutput {
+				fmt.Fprintln(tabWriter, "ID,DISPLAY_NAME,ENABLED,ROLES,EMAIL,LAST_ACCESS")
+			} else {
+				fmt.Fprintln(tabWriter, "ID\tDISPLAY_NAME\tENABLED\tROLES\tEMAIL\tLAST_ACCESS")
+			}
+			for _, user := range responseBodyAUsers.Result {
+				userIdWS := user.ID
+				displayNameWS := user.DisplayName
+				emailIdWS := user.Email
+				enabledUserWS := user.Enabled
+				totalRoles := make([]string, len(user.Roles))
+				copy(totalRoles, user.Roles)
+
+				var lastAccessStr string
+				lastAccessEp := int64(user.LastAccess)
 				if lastAccessEp != 0 {
 					lastAccess := time.Unix(lastAccessEp, 0)
 					lastAccessStr = fmt.Sprint(lastAccess)
@@ -312,3 +355,102 @@ func getUsersTm(teamId string, rawOutput, csvOutput bool, pages int) {
 		}
 	}
 }
+
+type OldAUsersResponse struct {
+	Error  errorResult     `json:"error"`
+	Result map[string]User `json:"result"`
+}
+
+type User struct {
+	ID          int         `json:"id"`
+	Email       string      `json:"email"`
+	DisplayName string      `json:"displayName"`
+	FirstName   string      `json:"firstName"`
+	LastName    string      `json:"lastName"`
+	Login       int64       `json:"login"`
+	Access      int64       `json:"access"`
+	Workspaces  []Workspace `json:"workspaces"`
+	Roles       []string    `json:"roles"`
+	Enabled     bool        `json:"enabled"`
+	LastAccess  int64       `json:"lastAccess"`
+	Type        string      `json:"type"`
+}
+
+type Workspace struct {
+	ID    int      `json:"id"`
+	Name  string   `json:"name"`
+	Roles []string `json:"roles"`
+}
+
+//func getUsersAOld(accountId int, disabledUsers, rawOutput, csvOutput bool) {
+//	apiId, apiSecret := Getapikeys()
+//	client := &http.Client{}
+//	accountIdStr := strconv.Itoa(accountId)
+//	//fmt.Printf("Executing OldAccount Func. %s", accountIdStr)
+//	var req *http.Request
+//	var err error
+//	if disabledUsers {
+//		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=false", nil)
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//	} else {
+//		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=true", nil)
+//		if err != nil {
+//			log.Fatal(err)
+//		}
+//	}
+//	req.SetBasicAuth(apiId, apiSecret)
+//	resp, err := client.Do(req)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	defer resp.Body.Close()
+//	bodyText, err := io.ReadAll(resp.Body)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	if rawOutput {
+//		fmt.Printf("%s\n", bodyText)
+//	} else {
+//		var responseBodyAUsers OldAUsersResponse
+//		json.Unmarshal(bodyText, &responseBodyAUsers)
+//		if responseBodyAUsers.Error.Code == 0 {
+//			tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+//			if csvOutput {
+//				fmt.Fprintln(tabWriter, "ID,DISPLAY_NAME,ENABLED,ROLES,EMAIL,LAST_ACCESS")
+//			} else {
+//				fmt.Fprintln(tabWriter, "ID\tDISPLAY_NAME\tENABLED\tROLES\tEMAIL\tLAST_ACCESS")
+//			}
+//			for _, user := range responseBodyAUsers.Result {
+//				userIdWS := user.ID
+//				displayNameWS := user.DisplayName
+//				emailIdWS := user.Email
+//				enabledUserWS := user.Enabled
+//				totalRoles := make([]string, len(user.Roles))
+//				copy(totalRoles, user.Roles)
+//
+//				var lastAccessStr string
+//				lastAccessEp := int64(user.LastAccess)
+//				if lastAccessEp != 0 {
+//					lastAccess := time.Unix(lastAccessEp, 0)
+//					lastAccessStr = fmt.Sprint(lastAccess)
+//				} else {
+//					lastAccessStr = "NA"
+//				}
+//				if csvOutput {
+//					fmt.Printf("%d,%s,%t,%s,%s,%s\n", userIdWS, displayNameWS, enabledUserWS, totalRoles, emailIdWS, lastAccessStr)
+//				} else {
+//					fmt.Fprintf(tabWriter, "%d\t%s\t%t\t%s\t%s\t%s\n", userIdWS, displayNameWS, enabledUserWS, totalRoles, emailIdWS, lastAccessStr)
+//				}
+//			}
+//			tabWriter.Flush()
+//			fmt.Println("-")
+//		} else {
+//			errorCode := responseBodyAUsers.Error.Code
+//			errorMessage := responseBodyAUsers.Error.Message
+//			fmt.Printf("\nError code: %v\nError Message: %v\n\n", errorCode, errorMessage)
+//		}
+//	}
+//}
+//
