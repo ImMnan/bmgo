@@ -27,6 +27,7 @@ var usersCmd = &cobra.Command{
 	             [bmgo get -a <account id> users] OR
 		     [bmgo get -a <account id> users --old] OR
                  [bmgo get -t <team id> users] OR
+				 [bmgo get -t <team id> users --pages <page number>] OR
 	             [bmgo get -w <workspace id> users --disabled] OR
 	             [bmgo get -a <account id> users --disabled] OR
 		     [bmgo get -a <account id> users --disabled --old]
@@ -34,7 +35,8 @@ var usersCmd = &cobra.Command{
     For default: [bmgo get --ws users] OR
 	             [bmgo get --ac users] OR 
 	             [bmgo get --ac users --old] OR	             
-                   [bmgo get --tm users] OR				 
+                   [bmgo get --tm users] OR
+				   [bmgo get --tm users --pages <page number>] OR				 
 	             [bmgo get --ws users --disabled] OR
 	             [bmgo get --ac users --disabled] OR
 	             [bmgo get --ac users --disabled --old]`,
