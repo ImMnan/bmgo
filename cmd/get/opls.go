@@ -25,7 +25,7 @@ var oplsCmd = &cobra.Command{
 	For example: [bmgo get -w <workspace id> opls] OR 
 	             [bmgo get -a <account id> opls]
 	For default: [bmgo get --ws opls] OR 
-	             [bmgo get --ac projects]`,
+	             [bmgo get --ac opls]`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ac, _ := cmd.Flags().GetBool("ac")
 		ws, _ := cmd.Flags().GetBool("ws")
