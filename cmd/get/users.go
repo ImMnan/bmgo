@@ -118,12 +118,12 @@ func getUsersA(accountId int, disabledUsers, rawOutput, csvOutput, oldOutput boo
 	var req *http.Request
 	var err error
 	if disabledUsers {
-		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=false", nil)
+		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=10000&enabled=false", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=-1&enabled=true", nil)
+		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/accounts/"+accountIdStr+"/users?limit=10000&enabled=true", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -236,12 +236,12 @@ func getUsersWS(workspaceId int, disabledUsers, rawOutput, csvOutput bool) {
 	var req *http.Request
 	var err error
 	if disabledUsers {
-		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-1&enabled=false", nil)
+		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=10000&enabled=false", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=-1&enabled=true", nil)
+		req, err = http.NewRequest("GET", "https://a.blazemeter.com/api/v4/workspaces/"+workspaceIdStr+"/users?limit=10000&enabled=true", nil)
 		if err != nil {
 			log.Fatal(err)
 		}
